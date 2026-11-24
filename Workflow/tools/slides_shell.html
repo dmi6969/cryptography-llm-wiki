@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cryptography 101</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: full-viewport slide stage between a slim top bar and a control bar; each slide =
+   eyebrow + title + lead, then two columns (key points | visual), then a source line.
+   Color rule: gold always means "key", blue means data / ciphertext. */
+:root {
+  --bg: #F3F5F9;
+  --surface: #FFFFFF;
+  --ink: #0F1B2D;
+  --muted: #56657B;
+  --line: #D5DCE6;
+  --accent: #2352D6;
+  --accent-soft: #E2E9FC;
+  --key: #A86400;
+  --key-soft: #FAEED8;
+  --warn: #B42318;
+  --warn-soft: #FDE7E4;
+  --ok: #1D7447;
+  --font-display: "Sora", "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  --font-body: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", "Heiti TC", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace;
+  --top-h: 44px;
+  --ctrl-h: 58px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131C2F; --ink: #E6EBF3; --muted: #9AA8BE; --line: #26334C;
+    --accent: #85A7FF; --accent-soft: #1B2A52; --key: #F0B44C; --key-soft: #3B2A0D;
+    --warn: #FF8F80; --warn-soft: #3D1814; --ok: #5DD39B; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131C2F; --ink: #E6EBF3; --muted: #9AA8BE; --line: #26334C;
+  --accent: #85A7FF; --accent-soft: #1B2A52; --key: #F0B44C; --key-soft: #3B2A0D;
+  --warn: #FF8F80; --warn-soft: #3D1814; --ok: #5DD39B; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }   /* 讓 hidden 屬性永遠優先於 .mode-panel / .grid 的 display 設定 */
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  overflow: hidden;
+}
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+/* ---------- chrome ---------- */
+.topbar {
+  position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; height: var(--top-h);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  border-bottom: 1px solid var(--line); background: var(--surface); z-index: 5;
+  font-size: 13px; color: var(--muted);
+}
+.brand { font-family: var(--font-display); font-weight: 600; color: var(--ink); letter-spacing: .01em; white-space: nowrap; }
+.brand b { color: var(--accent); font-weight: 700; }
+.topic-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: calc(var(--ctrl-h) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--line); background: var(--surface); z-index: 5;
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 38px; min-width: 38px; padding: 0 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--bg); cursor: pointer; font-size: 14px;
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn .txt { white-space: nowrap; }
+#counter { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px; min-width: 64px; text-align: center; }
+.track { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; min-width: 40px; }
+#progress-bar { height: 100%; width: 0; background: var(--accent); border-radius: 3px; transition: width .3s ease; }
+
+/* ---------- slides ---------- */
+.deck { position: fixed; left: 0; right: 0; top: calc(env(safe-area-inset-top, 0px) + var(--top-h)); bottom: calc(var(--ctrl-h) + env(safe-area-inset-bottom, 0px)); }
+.slide {
+  position: absolute; inset: 0; opacity: 0; visibility: hidden;
+  transition: opacity .28s ease, visibility 0s linear .28s;
+}
+.slide.active { opacity: 1; visibility: visible; transition: opacity .28s ease; }
+.slide-inner {
+  height: 100%; max-width: 1200px; margin: 0 auto; overflow-y: auto;
+  padding-block: 22px 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 14px;
+}
+.slide-head { display: flex; flex-direction: column; gap: 4px; }
+.eyebrow { margin: 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1, h2 { margin: 0; font-family: var(--font-display); font-weight: 700; letter-spacing: -.01em; text-wrap: balance; line-height: 1.25; }
+h2 { font-size: clamp(24px, 2.6vw, 34px); }
+.lead { margin: 0; font-size: 17px; color: var(--muted); }
+.slide-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr); gap: 36px; align-items: center; }
+.points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.points li { position: relative; padding-left: 22px; font-size: 18px; line-height: 1.55; }
+.points li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); }
+.k { color: var(--key); font-weight: 700; }
+.mono { font-family: var(--font-mono); }
+.visual { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.visual figcaption { font-size: 13px; color: var(--muted); }
+.sources { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; line-height: 1.7; }
+.sources a { color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--muted); }
+.sources a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+.sources .sid { font-family: var(--font-mono); font-weight: 600; color: var(--accent); margin-right: 3px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+
+/* cover */
+.cover .slide-inner { justify-content: center; gap: 26px; }
+.cover h1 { font-size: clamp(40px, 6vw, 72px); }
+.cover h1 span { color: var(--accent); }
+.cover .subtitle { margin: 0; font-family: var(--font-display); font-size: clamp(20px, 2.4vw, 30px); font-weight: 600; }
+.cover .lead { font-size: 18px; }
+.cipher-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: clamp(18px, 2.2vw, 26px); }
+.cipher-strip .box { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); letter-spacing: .12em; }
+.cipher-strip .box.ct { color: var(--accent); }
+.cipher-strip .op { font-size: 14px; color: var(--key); }
+.route { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.route li { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); font-size: 14px; background: var(--surface); }
+.route li .n { font-family: var(--font-mono); color: var(--accent); margin-right: 6px; }
+
+/* goals */
+.goal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.goal { display: grid; grid-template-columns: 40px minmax(0,1fr); gap: 4px 12px; align-items: start; }
+.goal svg { grid-row: span 3; width: 40px; height: 40px; padding: 8px; border-radius: 10px; background: var(--accent-soft); stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.goal .gl { font-weight: 700; }
+.goal .ge { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); letter-spacing: .03em; }
+.goal .gd { font-size: 14px; color: var(--muted); }
+
+/* flow */
+.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; align-items: center; }
+.node { text-align: center; padding: 10px 6px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.node.op { border-style: dashed; border-color: var(--key); color: var(--key); background: var(--key-soft); }
+.node.ct { color: var(--accent); font-family: var(--font-mono); }
+.channel { position: relative; margin-top: 4px; padding: 10px 12px; border-radius: 10px; border: 1px dashed var(--warn); background: var(--warn-soft); color: var(--warn); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; }
+
+/* caesar */
+.demo-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.demo-row label { font-size: 14px; color: var(--muted); min-width: 64px; }
+#caesar-input { width: 12ch; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); font-family: var(--font-mono); font-size: 20px; letter-spacing: .12em; text-transform: uppercase; }
+#caesar-shift { flex: 1; min-width: 140px; accent-color: var(--key); }
+.kval { font-family: var(--font-mono); font-size: 20px; color: var(--key); font-weight: 600; min-width: 3ch; }
+#caesar-output { font-family: var(--font-mono); font-size: 28px; letter-spacing: .16em; color: var(--accent); font-weight: 600; min-height: 1.4em; overflow-wrap: anywhere; }
+.alpha-wrap { overflow-x: auto; }
+.alpha { display: grid; grid-template-columns: repeat(26, minmax(12px, 1fr)); gap: 1px; font-family: var(--font-mono); font-size: 12px; text-align: center; min-width: 100%; }
+.alpha span { padding: 2px 0; border-radius: 4px; }
+.alpha .top { color: var(--muted); }
+.alpha .bot { color: var(--accent); background: var(--accent-soft); }
+.alpha .hit { outline: 1.5px solid var(--key); color: var(--ink); }
+
+/* tables */
+.tbl { width: 100%; border-collapse: collapse; font-size: 15px; }
+.tbl th, .tbl td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl th { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: .03em; }
+.tbl td.num, .tbl th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.tbl .ex { font-family: var(--font-mono); color: var(--accent); white-space: nowrap; }
+.tbl-wrap { overflow-x: auto; }
+
+/* symmetric */
+.sym { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 10px; }
+.actor { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 14px; }
+.keychip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--key-soft); color: var(--key); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.keychip svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+.wire { position: relative; height: 2px; background: var(--line); }
+.wire span { position: absolute; left: 50%; top: -15px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 12px; color: var(--accent); background: var(--surface); padding: 0 6px; white-space: nowrap; }
+.samekey { text-align: center; font-size: 13px; color: var(--key); }
+
+/* Caesar 加密／解密切換 */
+.seg { display: inline-flex; align-self: flex-start; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: var(--bg); padding: 5px 12px; font-size: 13px; cursor: pointer; font-family: var(--font-mono); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+/* 對稱式：同一把金鑰的來回 */
+.roundtrip { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.roundtrip li { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; padding: 6px 10px; border-radius: 8px; background: var(--bg); }
+.roundtrip b { color: var(--key); font-size: 13px; min-width: 2.5em; }
+.ct { color: var(--accent); }
+
+/* AES 逐步圖解 */
+.aes-body { grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: 28px; }
+.aes-walk { gap: 10px; }
+.aes-steps { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.aes-dir { flex-basis: 100%; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .06em; color: var(--accent); text-transform: uppercase; }
+.aes-dir.dec { color: var(--ok); margin-top: 2px; }
+.aes-step { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 3px 9px; font-size: 12.5px; font-family: var(--font-body); cursor: pointer; }
+.aes-step:hover { border-color: var(--accent); }
+.aes-step.key { border-color: var(--key); }
+.aes-step.on { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.aes-step.dec.on { background: var(--ok); border-color: var(--ok); }
+.aes-stage { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; justify-items: center; }
+.gwrap { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.glabel { font-size: 12px; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(4, 34px); gap: 3px; }
+.grid .cell { height: 30px; display: grid; place-items: center; border-radius: 5px; font-family: var(--font-mono); font-size: 13px; background: var(--accent-soft); color: var(--ink); border: 1px solid transparent; }
+#aes-before .cell { background: var(--bg); color: var(--muted); }
+.grid .cell.hl, #aes-before .cell.hl { background: var(--key-soft); border-color: var(--key); color: var(--ink); font-weight: 600; }
+.grid.mini { grid-template-columns: repeat(4, 24px); gap: 2px; }
+.grid.mini .cell { height: 20px; font-size: 10.5px; border-radius: 4px; background: var(--key-soft); color: var(--key); }
+.aes-op { display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; }
+#aes-op { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; white-space: nowrap; }
+#aes-op::after { content: " →"; }
+.aes-explain { margin: 0; font-size: 14.5px; line-height: 1.55; padding: 8px 12px; border-radius: 8px; background: var(--bg); min-height: 3.2em; }
+
+/* 操作模式分頁 */
+.mode-tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.mode-tab { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 4px 10px; font-size: 13px; cursor: pointer; }
+.mode-tab[aria-selected="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.mode-panel { display: flex; flex-direction: column; gap: 8px; }
+.pcap { margin: 0; font-size: 13px; color: var(--muted); }
+.chain { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr); align-items: center; gap: 6px; }
+.blk { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.blk i { font-style: normal; color: var(--muted); font-size: 12px; line-height: 1.1; }
+.blk small { font-size: 11.5px; color: var(--ok); font-weight: 600; }
+.b { min-width: 62px; text-align: center; padding: 3px 8px; border-radius: 7px; border: 1px solid var(--line); background: var(--surface); font-family: var(--font-mono); font-size: 13px; }
+.b.k { border-color: var(--key); background: var(--key-soft); color: var(--key); font-weight: 600; }
+.b.x { border-style: dashed; }
+.b.ct { color: var(--accent); border-color: var(--accent); }
+.b.pt { font-weight: 600; }
+.b.cnt { color: var(--muted); }
+.blk.dec { padding: 4px; border-radius: 8px; outline: 1px dashed var(--ok); }
+.link { font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); white-space: nowrap; }
+.link.sep { width: 1px; height: 80%; background: var(--line); }
+
+/* ECB demo */
+.canvases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.canvases figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.canvases canvas { width: 100%; height: auto; aspect-ratio: 3 / 2; image-rendering: pixelated; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); max-width: 100%; }
+.canvases figcaption { font-size: 13px; text-align: center; }
+.canvases .bad { color: var(--warn); font-weight: 700; }
+.canvases .good { color: var(--ok); font-weight: 700; }
+
+/* DH */
+.mailbox { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--muted); }
+.mailbox svg { flex: none; width: 34px; height: 34px; stroke: var(--key); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dh .secret { color: var(--key); font-weight: 600; }
+.dh .pub { color: var(--accent); }
+.dh .shared td { font-weight: 700; color: var(--ok); }
+.nowrap { white-space: nowrap; }
+
+/* RSA 加解密流程 */
+.rsa-keys { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 14px; padding: 8px 12px; border-radius: 8px; background: var(--bg); }
+.rsa-keys b { color: var(--muted); font-weight: 500; }
+.pubk { color: var(--accent); font-weight: 600; }
+.privk { color: var(--key); font-weight: 600; }
+.rsa-flow { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 10px; align-items: center; }
+.party { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.party .mono { font-size: 13.5px; }
+.tag { font-size: 12.5px; padding: 2px 8px; border-radius: 6px; align-self: flex-start; }
+.tag.pubk { background: var(--accent-soft); }
+.tag.privk { background: var(--key-soft); }
+.send { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+.send .arrow { font-size: 22px; color: var(--accent); line-height: 1; }
+.send small { font-size: 11.5px; color: var(--muted); max-width: 7em; }
+
+/* TLS */
+.tls { display: grid; grid-template-columns: 84px minmax(0,1fr) 84px; gap: 8px 10px; align-items: center; }
+.tls .end { text-align: center; font-weight: 700; font-size: 14px; padding: 8px 4px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
+.tls .msg { grid-column: 2; font-size: 14px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
+.tls .msg.r { text-align: right; }
+.tls .msg.key { border-color: var(--key); }
+.tls .msg.data { border-color: var(--ok); color: var(--ok); font-weight: 600; text-align: center; }
+
+/* timeline */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 8px; position: relative; }
+.timeline li { position: relative; padding-top: 22px; font-size: 14px; }
+.timeline li::before { content: ""; position: absolute; top: 6px; left: 0; right: -8px; height: 2px; background: var(--line); }
+.timeline li::after { content: ""; position: absolute; top: 1px; left: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+.timeline li:last-child::before { right: 0; }
+.timeline b { display: block; font-family: var(--font-mono); color: var(--accent); }
+.principle { font-family: var(--font-display); font-size: 18px; font-weight: 600; }
+.principle .k { font-family: inherit; }
+
+/* ---------- narrow screens ---------- */
+@media (max-width: 860px) {
+  /* 窄螢幕：內容用原本的高度、整頁往下捲，不要被壓縮到蓋住來源欄 */
+  .slide-body { grid-template-columns: 1fr; gap: 20px; align-items: start; flex: none; }
+  .points li { font-size: 16px; }
+  .flow { grid-template-columns: 1fr; }
+  .timeline { grid-template-columns: 1fr; gap: 4px; }
+  .timeline li { padding-top: 0; padding-left: 22px; }
+  .timeline li::before { top: 0; bottom: -4px; left: 5px; right: auto; width: 2px; height: auto; }
+  .timeline li::after { top: 6px; }
+  .btn .txt { display: none; }
+  .topic-label { display: none; }
+  .aes-body { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .goal-grid { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: repeat(4, 27px); gap: 2px; }
+  .grid .cell { height: 26px; font-size: 11.5px; }
+  .grid.mini { grid-template-columns: repeat(4, 20px); }
+  .grid.mini .cell { font-size: 9px; }
+  .rsa-flow { grid-template-columns: 1fr; }
+  .send .arrow { transform: rotate(90deg); }
+  .b { min-width: 0; padding: 3px 4px; font-size: 11.5px; }
+  .tls { grid-template-columns: 58px minmax(0,1fr) 58px; }
+  .canvases { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slide, .slide.active, #progress-bar { transition: none; }
+}
+
+/*{{EXTRA_CSS}}*/
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="brand">Cryptography <b>101</b></span>
+  <span class="topic-label" id="topic-label">Intro</span>
+</header>
+
+<main class="deck" id="deck">
+{{SLIDES}}
+</main>
+
+<nav class="controls" aria-label="投影片控制">
+  <button class="btn" id="prev" type="button" aria-label="上一頁">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span class="txt">上一頁</span>
+  </button>
+  <span id="counter" aria-live="polite">1 / {{N}}</span>
+  <div class="track" aria-hidden="true"><div id="progress-bar"></div></div>
+  <button class="btn" id="next" type="button" aria-label="下一頁">
+    <span class="txt">下一頁</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
+  <button class="btn" id="fullscreen" type="button" aria-label="全螢幕（F）">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+  </button>
+</nav>
+
+<script>
+(() => {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const n = slides.length;
+  const counter = document.getElementById('counter');
+  const bar = document.getElementById('progress-bar');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+  const fsBtn = document.getElementById('fullscreen');
+  const topic = document.getElementById('topic-label');
+  let cur = 0;
+
+  function goTo(i) {
+    i = Math.max(0, Math.min(n - 1, i | 0));
+    slides.forEach((s, k) => {
+      const on = k === i;
+      s.classList.toggle('active', on);
+      s.setAttribute('aria-hidden', on ? 'false' : 'true');
+      if (on) s.removeAttribute('inert'); else s.setAttribute('inert', '');
+    });
+    cur = i;
+    counter.textContent = (i + 1) + ' / ' + n;
+    bar.style.width = ((i + 1) / n * 100) + '%';
+    prevBtn.disabled = i === 0;
+    nextBtn.disabled = i === n - 1;
+    topic.textContent = slides[i].dataset.topic || '';
+    const inner = slides[i].querySelector('.slide-inner');
+    if (inner) inner.scrollTop = 0;
+    try { history.replaceState(null, '', '#s' + (i + 1)); } catch (e) { /* 某些環境不允許改網址 */ }
+  }
+  window.goTo = goTo;
+
+  prevBtn.addEventListener('click', () => goTo(cur - 1));
+  nextBtn.addEventListener('click', () => goTo(cur + 1));
+
+  function toggleFullscreen() {
+    try {
+      if (!document.fullscreenElement) {
+        const r = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+        if (r && r.catch) r.catch(() => {});
+      } else if (document.exitFullscreen) {
+        const r = document.exitFullscreen();
+        if (r && r.catch) r.catch(() => {});
+      }
+    } catch (e) { /* 不支援全螢幕的環境（例如部分手機） */ }
+  }
+  fsBtn.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', () => {
+    fsBtn.setAttribute('aria-label', document.fullscreenElement ? '離開全螢幕（F）' : '全螢幕（F）');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const t = e.target;
+    const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+    if (typing && t.type !== 'range') return;
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'PageDown': goTo(cur + 1); e.preventDefault(); break;
+      case 'ArrowLeft': case 'PageUp': goTo(cur - 1); e.preventDefault(); break;
+      case 'Home': goTo(0); e.preventDefault(); break;
+      case 'End': goTo(n - 1); e.preventDefault(); break;
+      case 'f': case 'F': toggleFullscreen(); break;
+    }
+  });
+
+  // 手機滑動切換
+  let sx = null, sy = null;
+  document.getElementById('deck').addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  document.getElementById('deck').addEventListener('touchend', (e) => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) goTo(cur + (dx < 0 ? 1 : -1));
+    sx = sy = null;
+  });
+
+  // ---------- Caesar 互動示範 ----------
+  const cIn = document.getElementById('caesar-input');
+  const cShift = document.getElementById('caesar-shift');
+  const cOut = document.getElementById('caesar-output');
+  const cK = document.getElementById('caesar-k');
+  const alpha = document.getElementById('caesar-alpha');
+  const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  function caesar(text, k) {
+    return text.toUpperCase().replace(/[A-Z]/g, ch => A[(ch.charCodeAt(0) - 65 + k) % 26]);
+  }
+  let caesarDec = false;                 // false = 加密 c = m + k；true = 解密 m = c − k
+  const encBtn = document.getElementById('caesar-mode-enc');
+  const decBtn = document.getElementById('caesar-mode-dec');
+  function renderCaesar() {
+    const k = parseInt(cShift.value, 10) || 0;
+    const shift = caesarDec ? (26 - k) % 26 : k;
+    cK.textContent = k;
+    cOut.textContent = caesar(cIn.value, shift);
+    document.getElementById('caesar-in-label').textContent = caesarDec ? '密文' : '明文';
+    document.getElementById('caesar-out-label').textContent = caesarDec ? '明文' : '密文';
+    const used = new Set(cIn.value.toUpperCase().replace(/[^A-Z]/g, ''));
+    let html = '';
+    for (const ch of A) html += '<span class="top' + (used.has(ch) ? ' hit' : '') + '">' + ch + '</span>';
+    for (const ch of A) html += '<span class="bot' + (used.has(ch) ? ' hit' : '') + '">' + A[(ch.charCodeAt(0) - 65 + shift) % 26] + '</span>';
+    alpha.innerHTML = html;
+  }
+  function setCaesarMode(dec) {
+    if (dec !== caesarDec) cIn.value = cOut.textContent;   // 把剛才的結果帶過去，示範「解回來」
+    caesarDec = dec;
+    encBtn.setAttribute('aria-pressed', String(!dec));
+    decBtn.setAttribute('aria-pressed', String(dec));
+    renderCaesar();
+  }
+  encBtn.addEventListener('click', () => setCaesarMode(false));
+  decBtn.addEventListener('click', () => setCaesarMode(true));
+  cIn.addEventListener('input', renderCaesar);
+  cShift.addEventListener('input', renderCaesar);
+  renderCaesar();
+
+  // ---------- AES 第 1 輪逐步圖解（數值來自 slide_content.json，已由 Content Validation 重算） ----------
+  const AES = /*AES_DATA*/null;
+  const aesBefore = document.getElementById('aes-before');
+  const aesAfter = document.getElementById('aes-after');
+  const aesWith = document.getElementById('aes-with');
+  const aesBtns = Array.from(document.querySelectorAll('.aes-step'));
+  function fillGrid(el, rows, hl) {
+    const isHl = (r, c) => (hl || []).some(h => h[0] === r && h[1] === c);
+    el.innerHTML = rows.map((row, r) => row.split(' ').map((v, c) =>
+      '<span class="cell' + (isHl(r, c) ? ' hl' : '') + '">' + v + '</span>').join('')).join('');
+  }
+  function showAes(k) {
+    const f = AES.frames[k];
+    const prev = f.before ? AES.frames.find(x => x.id === f.before) : null;
+    if (prev) {
+      fillGrid(aesBefore, prev.rows, f.hl);
+      document.getElementById('aes-before-label').textContent = prev.label;
+    } else {   // 輸入：原始 16 個位元組依序每 4 個一行，對照右邊「依欄」排好的 state
+      const b = AES.input.match(/../g);
+      fillGrid(aesBefore, [0, 1, 2, 3].map(i => b.slice(4 * i, 4 * i + 4).join(' ')), [[0, 0], [0, 1], [0, 2], [0, 3]]);
+      document.getElementById('aes-before-label').textContent = '輸入位元組（依序）';
+    }
+    fillGrid(aesAfter, f.rows, f.hl);
+    document.getElementById('aes-after-label').textContent = f.label;
+    document.getElementById('aes-op').textContent = f.op;
+    if (f.with) { fillGrid(aesWith, AES[f.with + '_rows'], f.hl); aesWith.hidden = false; }
+    else { aesWith.innerHTML = ''; aesWith.hidden = true; }
+    document.getElementById('aes-explain').textContent = f.explain;
+    aesBtns.forEach((b, i) => { b.classList.toggle('on', i === k); b.setAttribute('aria-pressed', String(i === k)); });
+  }
+  aesBtns.forEach(b => b.addEventListener('click', () => showAes(parseInt(b.dataset.step, 10))));
+  showAes(0);
+
+  // ---------- 操作模式分頁 ----------
+  const modeTabs = Array.from(document.querySelectorAll('.mode-tab'));
+  const modePanels = Array.from(document.querySelectorAll('.mode-panel'));
+  function showModeTab(j) {
+    modeTabs.forEach((t, i) => t.setAttribute('aria-selected', String(i === j)));
+    modePanels.forEach((p, i) => { p.hidden = i !== j; });
+  }
+  modeTabs.forEach(t => t.addEventListener('click', () => showModeTab(parseInt(t.dataset.tab, 10))));
+
+  // ---------- ECB vs CBC 示範（玩具 32 位元區塊加密，非 AES）----------
+  // 圖案以 24×16 個「區塊」設計，每個區塊 4×4 像素；每區塊 16 像素 × 2 位元 = 32 位元。
+  const ART = [
+    '........................',
+    '........................',
+    '.........######.........',
+    '........##....##........',
+    '.......##......##.......',
+    '.......##......##.......',
+    '.....##############.....',
+    '.....##############.....',
+    '.....######..######.....',
+    '.....######..######.....',
+    '.....#######.######.....',
+    '.....#######.######.....',
+    '.....##############.....',
+    '.....##############.....',
+    '........................',
+    '........................'
+  ];
+  function toyEncrypt(x) {               // 可逆的玩具置換：加金鑰、旋轉、乘奇數、xorshift
+    const K = [0xA5C3F00D, 0x1B873593, 0xCC9E2D51, 0x7FEB352D];
+    x >>>= 0;
+    for (let r = 0; r < 4; r++) {
+      x = (x + K[r]) >>> 0;
+      x = ((x << 7) | (x >>> 25)) >>> 0;
+      x = Math.imul(x, 0x2C1B3C6D) >>> 0;
+      x = (x ^ (x >>> 15)) >>> 0;
+    }
+    return x;
+  }
+  function tokens() {
+    const cs = getComputedStyle(document.documentElement);
+    return { bg: cs.getPropertyValue('--surface').trim(), fg: cs.getPropertyValue('--accent').trim(), hole: cs.getPropertyValue('--key').trim() };
+  }
+  function cipherColor(c) {
+    // 把密文最高位元組畫成明暗（12%～92%），色相固定：密文值不同 → 明暗明顯不同
+    const l = 12 + ((c >>> 24) / 255) * 80;
+    return 'hsl(222 28% ' + l.toFixed(1) + '%)';
+  }
+  function drawModes() {
+    const tk = tokens();
+    const ids = ['ecb-orig', 'ecb-ecb', 'ecb-cbc'];
+    const ctx = ids.map(id => document.getElementById(id).getContext('2d'));
+    let prev = 0x6A09E667;                // CBC 的 IV（示意用固定值）
+    for (let by = 0; by < 16; by++) {
+      for (let bx = 0; bx < 24; bx++) {
+        const v = ART[by][bx] === '#' ? 3 : 0;   // 2 位元墨色：00 = 空白、11 = 滿墨
+        // 區塊內 16 個像素都相同顏色 → 32 位元區塊值
+        let block = 0;
+        for (let p = 0; p < 16; p++) block = ((block << 2) | v) >>> 0;
+        ctx[0].fillStyle = v ? tk.fg : tk.bg;
+        ctx[0].fillRect(bx * 4, by * 4, 4, 4);
+        ctx[1].fillStyle = cipherColor(toyEncrypt(block));            // ECB：E(P)
+        ctx[1].fillRect(bx * 4, by * 4, 4, 4);
+        prev = toyEncrypt((block ^ prev) >>> 0);                      // CBC：E(P ⊕ 前一塊密文)
+        ctx[2].fillStyle = cipherColor(prev);
+        ctx[2].fillRect(bx * 4, by * 4, 4, 4);
+      }
+    }
+  }
+  drawModes();
+  try {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawModes);
+    new MutationObserver(drawModes).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  } catch (e) { /* 舊瀏覽器 */ }
+
+  // 起始頁：網址 #sN
+  const m = /^#s(\d+)$/.exec(location.hash || '');
+  goTo(m ? parseInt(m[1], 10) - 1 : 0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "passed": true,
+  "n_errors": 0,
+  "n_warnings": 0,
+  "by_check": {
+    "W1": {
+      "error": 0,
+      "warn": 0
+    },
+    "W2": {
+      "error": 0,
+      "warn": 0
+    },
+    "W3": {
+      "error": 0,
+      "warn": 0
+    },
+    "W4": {
+      "error": 0,
+      "warn": 0
+    },
+    "W5": {
+      "error": 0,
+      "warn": 0
+    },
+    "W6": {
+      "error": 0,
+      "warn": 0
+    },
+    "W7": {
+      "error": 0,
+      "warn": 0
+    },
+    "W8": {
+      "error": 0,
+      "warn": 0
+    }
+  },
+  "issues": [],
+  "stats": {
+    "concept_pages": 20,
+    "source_pages": 12,
+    "quotes": 254,
+    "facts": 19
+  },
+  "decision": "pass"
+}

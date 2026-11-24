@@ -1,0 +1,100 @@
+[
+  {
+    "batch": 1,
+    "topic": "T1",
+    "name": "Introduction to Cryptography",
+    "sources": [
+      "S01",
+      "S02"
+    ],
+    "nodes": [
+      "intro-what-is-crypto",
+      "intro-terminology",
+      "intro-kerckhoffs"
+    ]
+  },
+  {
+    "batch": 2,
+    "topic": "T2",
+    "name": "Classical Cryptography",
+    "sources": [
+      "S02",
+      "S03"
+    ],
+    "nodes": [
+      "classical-caesar",
+      "classical-substitution",
+      "classical-transposition",
+      "classical-limitations"
+    ]
+  },
+  {
+    "batch": 3,
+    "topic": "T3",
+    "name": "Symmetric Encryption",
+    "sources": [
+      "S02",
+      "S04",
+      "S06",
+      "S12"
+    ],
+    "nodes": [
+      "sym-concept",
+      "sym-block-vs-stream",
+      "sym-aes"
+    ]
+  },
+  {
+    "batch": 4,
+    "topic": "T4",
+    "name": "Block Cipher Modes",
+    "sources": [
+      "S03",
+      "S05",
+      "S11"
+    ],
+    "nodes": [
+      "mode-overview",
+      "mode-ecb",
+      "mode-cbc",
+      "mode-ctr",
+      "mode-gcm-aead"
+    ]
+  },
+  {
+    "batch": 5,
+    "topic": "T5",
+    "name": "Asymmetric Cryptography & Applications",
+    "sources": [
+      "S06",
+      "S07",
+      "S08",
+      "S09",
+      "S10",
+      "S12"
+    ],
+    "nodes": [
+      "asym-public-key",
+      "asym-key-exchange",
+      "asym-rsa",
+      "asym-signature",
+      "app-hybrid-tls"
+    ]
+  },
+  {
+    "batch": 6,
+    "topic": "T6",
+    "name": "教學補充：基礎工具與別人怎麼教",
+    "sources": [
+      "S04",
+      "S08",
+      "S13",
+      "S14",
+      "S15"
+    ],
+    "nodes": [
+      "basics-bits-xor-mod",
+      "teaching-how-others-explain"
+    ]
+  }
+]

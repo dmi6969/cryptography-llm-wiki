@@ -1,0 +1,75 @@
+{
+  "passed": true,
+  "n_errors": 0,
+  "n_warnings": 0,
+  "by_check": {
+    "H1": {
+      "error": 0,
+      "warn": 0
+    },
+    "H2": {
+      "error": 0,
+      "warn": 0
+    },
+    "H3": {
+      "error": 0,
+      "warn": 0
+    },
+    "H4": {
+      "error": 0,
+      "warn": 0
+    },
+    "H5": {
+      "error": 0,
+      "warn": 0
+    },
+    "H6": {
+      "error": 0,
+      "warn": 0
+    },
+    "H7": {
+      "error": 0,
+      "warn": 0
+    }
+  },
+  "issues": [],
+  "stats": {
+    "file": "Slides\\index.html",
+    "bytes": 52893,
+    "external_requests": [
+      "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+    ],
+    "slides_in_dom": 12,
+    "navigation": {
+      "初始": true,
+      "第 1 頁按 ←": true,
+      "→": true,
+      "下一頁按鈕": true,
+      "上一頁按鈕": true,
+      "←": true,
+      "連按 → 到最後": true,
+      "最後一頁按 ←": true
+    },
+    "fullscreen": {
+      "requestFullscreen_calls": 1,
+      "fullscreenElement_after_click": true
+    },
+    "desktop_overflow_slides": [],
+    "demos": {
+      "caesar HELLO+3": "KHOOR",
+      "caesar HAL+1": "IBM",
+      "caesar ABC+0": "ABC",
+      "ecb": {
+        "distinct": [
+          2,
+          2,
+          130
+        ],
+        "ecbStructure": 1,
+        "cbcStructure": 0
+      }
+    },
+    "mobile_hscroll_slides": []
+  },
+  "decision": "pass"
+}

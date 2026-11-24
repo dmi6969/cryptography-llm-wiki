@@ -1,0 +1,11 @@
+# 原始資料：HAC 教科書章節的授權僅允許個人保存，不公開散布（且檔案很大）
+Wiki/raw/
+
+# Graph 的本機 checkpoint 資料庫
+Workflow/state/
+
+# Python / Word 暫存檔
+__pycache__/
+*.pyc
+*.tmp
+~$*

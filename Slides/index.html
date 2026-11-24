@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cryptography 101</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: full-viewport slide stage between a slim top bar and a control bar; each slide =
+   eyebrow + title + lead, then two columns (key points | visual), then a source line.
+   Color rule: gold always means "key", blue means data / ciphertext. */
+:root {
+  --bg: #F3F5F9;
+  --surface: #FFFFFF;
+  --ink: #0F1B2D;
+  --muted: #56657B;
+  --line: #D5DCE6;
+  --accent: #2352D6;
+  --accent-soft: #E2E9FC;
+  --key: #A86400;
+  --key-soft: #FAEED8;
+  --warn: #B42318;
+  --warn-soft: #FDE7E4;
+  --ok: #1D7447;
+  --font-display: "Sora", "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  --font-body: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", "Heiti TC", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace;
+  --top-h: 44px;
+  --ctrl-h: 58px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131C2F; --ink: #E6EBF3; --muted: #9AA8BE; --line: #26334C;
+    --accent: #85A7FF; --accent-soft: #1B2A52; --key: #F0B44C; --key-soft: #3B2A0D;
+    --warn: #FF8F80; --warn-soft: #3D1814; --ok: #5DD39B; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131C2F; --ink: #E6EBF3; --muted: #9AA8BE; --line: #26334C;
+  --accent: #85A7FF; --accent-soft: #1B2A52; --key: #F0B44C; --key-soft: #3B2A0D;
+  --warn: #FF8F80; --warn-soft: #3D1814; --ok: #5DD39B; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }   /* 讓 hidden 屬性永遠優先於 .mode-panel / .grid 的 display 設定 */
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  overflow: hidden;
+}
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+/* ---------- chrome ---------- */
+.topbar {
+  position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; height: var(--top-h);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  border-bottom: 1px solid var(--line); background: var(--surface); z-index: 5;
+  font-size: 13px; color: var(--muted);
+}
+.brand { font-family: var(--font-display); font-weight: 600; color: var(--ink); letter-spacing: .01em; white-space: nowrap; }
+.brand b { color: var(--accent); font-weight: 700; }
+.topic-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: calc(var(--ctrl-h) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--line); background: var(--surface); z-index: 5;
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 38px; min-width: 38px; padding: 0 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--bg); cursor: pointer; font-size: 14px;
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn .txt { white-space: nowrap; }
+#counter { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px; min-width: 64px; text-align: center; }
+.track { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; min-width: 40px; }
+#progress-bar { height: 100%; width: 0; background: var(--accent); border-radius: 3px; transition: width .3s ease; }
+
+/* ---------- slides ---------- */
+.deck { position: fixed; left: 0; right: 0; top: calc(env(safe-area-inset-top, 0px) + var(--top-h)); bottom: calc(var(--ctrl-h) + env(safe-area-inset-bottom, 0px)); }
+.slide {
+  position: absolute; inset: 0; opacity: 0; visibility: hidden;
+  transition: opacity .28s ease, visibility 0s linear .28s;
+}
+.slide.active { opacity: 1; visibility: visible; transition: opacity .28s ease; }
+.slide-inner {
+  height: 100%; max-width: 1200px; margin: 0 auto; overflow-y: auto;
+  padding-block: 22px 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 14px;
+}
+.slide-head { display: flex; flex-direction: column; gap: 4px; }
+.eyebrow { margin: 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1, h2 { margin: 0; font-family: var(--font-display); font-weight: 700; letter-spacing: -.01em; text-wrap: balance; line-height: 1.25; }
+h2 { font-size: clamp(24px, 2.6vw, 34px); }
+.lead { margin: 0; font-size: 17px; color: var(--muted); }
+.slide-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr); gap: 36px; align-items: center; }
+.points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.points li { position: relative; padding-left: 22px; font-size: 18px; line-height: 1.55; }
+.points li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); }
+.k { color: var(--key); font-weight: 700; }
+.mono { font-family: var(--font-mono); }
+.visual { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.visual figcaption { font-size: 13px; color: var(--muted); }
+.sources { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; line-height: 1.7; }
+.sources a { color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--muted); }
+.sources a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+.sources .sid { font-family: var(--font-mono); font-weight: 600; color: var(--accent); margin-right: 3px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+
+/* cover */
+.cover .slide-inner { justify-content: center; gap: 26px; }
+.cover h1 { font-size: clamp(40px, 6vw, 72px); }
+.cover h1 span { color: var(--accent); }
+.cover .subtitle { margin: 0; font-family: var(--font-display); font-size: clamp(20px, 2.4vw, 30px); font-weight: 600; }
+.cover .lead { font-size: 18px; }
+.cipher-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: clamp(18px, 2.2vw, 26px); }
+.cipher-strip .box { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); letter-spacing: .12em; }
+.cipher-strip .box.ct { color: var(--accent); }
+.cipher-strip .op { font-size: 14px; color: var(--key); }
+.route { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.route li { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); font-size: 14px; background: var(--surface); }
+.route li .n { font-family: var(--font-mono); color: var(--accent); margin-right: 6px; }
+
+/* goals */
+.goal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.goal { display: grid; grid-template-columns: 40px minmax(0,1fr); gap: 4px 12px; align-items: start; }
+.goal svg { grid-row: span 3; width: 40px; height: 40px; padding: 8px; border-radius: 10px; background: var(--accent-soft); stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.goal .gl { font-weight: 700; }
+.goal .ge { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); letter-spacing: .03em; }
+.goal .gd { font-size: 14px; color: var(--muted); }
+
+/* flow */
+.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; align-items: center; }
+.node { text-align: center; padding: 10px 6px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.node.op { border-style: dashed; border-color: var(--key); color: var(--key); background: var(--key-soft); }
+.node.ct { color: var(--accent); font-family: var(--font-mono); }
+.channel { position: relative; margin-top: 4px; padding: 10px 12px; border-radius: 10px; border: 1px dashed var(--warn); background: var(--warn-soft); color: var(--warn); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; }
+
+/* caesar */
+.demo-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.demo-row label { font-size: 14px; color: var(--muted); min-width: 64px; }
+#caesar-input { width: 12ch; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); font-family: var(--font-mono); font-size: 20px; letter-spacing: .12em; text-transform: uppercase; }
+#caesar-shift { flex: 1; min-width: 140px; accent-color: var(--key); }
+.kval { font-family: var(--font-mono); font-size: 20px; color: var(--key); font-weight: 600; min-width: 3ch; }
+#caesar-output { font-family: var(--font-mono); font-size: 28px; letter-spacing: .16em; color: var(--accent); font-weight: 600; min-height: 1.4em; overflow-wrap: anywhere; }
+.alpha-wrap { overflow-x: auto; }
+.alpha { display: grid; grid-template-columns: repeat(26, minmax(12px, 1fr)); gap: 1px; font-family: var(--font-mono); font-size: 12px; text-align: center; min-width: 100%; }
+.alpha span { padding: 2px 0; border-radius: 4px; }
+.alpha .top { color: var(--muted); }
+.alpha .bot { color: var(--accent); background: var(--accent-soft); }
+.alpha .hit { outline: 1.5px solid var(--key); color: var(--ink); }
+
+/* tables */
+.tbl { width: 100%; border-collapse: collapse; font-size: 15px; }
+.tbl th, .tbl td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl th { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: .03em; }
+.tbl td.num, .tbl th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.tbl .ex { font-family: var(--font-mono); color: var(--accent); white-space: nowrap; }
+.tbl-wrap { overflow-x: auto; }
+
+/* symmetric */
+.sym { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 10px; }
+.actor { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 14px; }
+.keychip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--key-soft); color: var(--key); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.keychip svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+.wire { position: relative; height: 2px; background: var(--line); }
+.wire span { position: absolute; left: 50%; top: -15px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 12px; color: var(--accent); background: var(--surface); padding: 0 6px; white-space: nowrap; }
+.samekey { text-align: center; font-size: 13px; color: var(--key); }
+
+/* Caesar 加密／解密切換 */
+.seg { display: inline-flex; align-self: flex-start; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: var(--bg); padding: 5px 12px; font-size: 13px; cursor: pointer; font-family: var(--font-mono); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+/* 對稱式：同一把金鑰的來回 */
+.roundtrip { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.roundtrip li { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; padding: 6px 10px; border-radius: 8px; background: var(--bg); }
+.roundtrip b { color: var(--key); font-size: 13px; min-width: 2.5em; }
+.ct { color: var(--accent); }
+
+/* AES 逐步圖解 */
+.aes-body { grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: 28px; }
+.aes-walk { gap: 10px; }
+.aes-steps { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.aes-dir { flex-basis: 100%; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .06em; color: var(--accent); text-transform: uppercase; }
+.aes-dir.dec { color: var(--ok); margin-top: 2px; }
+.aes-step { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 3px 9px; font-size: 12.5px; font-family: var(--font-body); cursor: pointer; }
+.aes-step:hover { border-color: var(--accent); }
+.aes-step.key { border-color: var(--key); }
+.aes-step.on { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.aes-step.dec.on { background: var(--ok); border-color: var(--ok); }
+.aes-stage { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; justify-items: center; }
+.gwrap { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.glabel { font-size: 12px; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(4, 34px); gap: 3px; }
+.grid .cell { height: 30px; display: grid; place-items: center; border-radius: 5px; font-family: var(--font-mono); font-size: 13px; background: var(--accent-soft); color: var(--ink); border: 1px solid transparent; }
+#aes-before .cell { background: var(--bg); color: var(--muted); }
+.grid .cell.hl, #aes-before .cell.hl { background: var(--key-soft); border-color: var(--key); color: var(--ink); font-weight: 600; }
+.grid.mini { grid-template-columns: repeat(4, 24px); gap: 2px; }
+.grid.mini .cell { height: 20px; font-size: 10.5px; border-radius: 4px; background: var(--key-soft); color: var(--key); }
+.aes-op { display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; }
+#aes-op { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; white-space: nowrap; }
+#aes-op::after { content: " →"; }
+.aes-explain { margin: 0; font-size: 14.5px; line-height: 1.55; padding: 8px 12px; border-radius: 8px; background: var(--bg); min-height: 3.2em; }
+
+/* 操作模式分頁 */
+.mode-tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.mode-tab { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 4px 10px; font-size: 13px; cursor: pointer; }
+.mode-tab[aria-selected="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.mode-panel { display: flex; flex-direction: column; gap: 8px; }
+.pcap { margin: 0; font-size: 13px; color: var(--muted); }
+.chain { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr); align-items: center; gap: 6px; }
+.blk { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.blk i { font-style: normal; color: var(--muted); font-size: 12px; line-height: 1.1; }
+.blk small { font-size: 11.5px; color: var(--ok); font-weight: 600; }
+.b { min-width: 62px; text-align: center; padding: 3px 8px; border-radius: 7px; border: 1px solid var(--line); background: var(--surface); font-family: var(--font-mono); font-size: 13px; }
+.b.k { border-color: var(--key); background: var(--key-soft); color: var(--key); font-weight: 600; }
+.b.x { border-style: dashed; }
+.b.ct { color: var(--accent); border-color: var(--accent); }
+.b.pt { font-weight: 600; }
+.b.cnt { color: var(--muted); }
+.blk.dec { padding: 4px; border-radius: 8px; outline: 1px dashed var(--ok); }
+.link { font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); white-space: nowrap; }
+.link.sep { width: 1px; height: 80%; background: var(--line); }
+
+/* ECB demo */
+.canvases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.canvases figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.canvases canvas { width: 100%; height: auto; aspect-ratio: 3 / 2; image-rendering: pixelated; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); max-width: 100%; }
+.canvases figcaption { font-size: 13px; text-align: center; }
+.canvases .bad { color: var(--warn); font-weight: 700; }
+.canvases .good { color: var(--ok); font-weight: 700; }
+
+/* DH */
+.mailbox { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--muted); }
+.mailbox svg { flex: none; width: 34px; height: 34px; stroke: var(--key); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dh .secret { color: var(--key); font-weight: 600; }
+.dh .pub { color: var(--accent); }
+.dh .shared td { font-weight: 700; color: var(--ok); }
+.nowrap { white-space: nowrap; }
+
+/* RSA 加解密流程 */
+.rsa-keys { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 14px; padding: 8px 12px; border-radius: 8px; background: var(--bg); }
+.rsa-keys b { color: var(--muted); font-weight: 500; }
+.pubk { color: var(--accent); font-weight: 600; }
+.privk { color: var(--key); font-weight: 600; }
+.rsa-flow { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 10px; align-items: center; }
+.party { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.party .mono { font-size: 13.5px; }
+.tag { font-size: 12.5px; padding: 2px 8px; border-radius: 6px; align-self: flex-start; }
+.tag.pubk { background: var(--accent-soft); }
+.tag.privk { background: var(--key-soft); }
+.send { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+.send .arrow { font-size: 22px; color: var(--accent); line-height: 1; }
+.send small { font-size: 11.5px; color: var(--muted); max-width: 7em; }
+
+/* TLS */
+.tls { display: grid; grid-template-columns: 84px minmax(0,1fr) 84px; gap: 8px 10px; align-items: center; }
+.tls .end { text-align: center; font-weight: 700; font-size: 14px; padding: 8px 4px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
+.tls .msg { grid-column: 2; font-size: 14px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
+.tls .msg.r { text-align: right; }
+.tls .msg.key { border-color: var(--key); }
+.tls .msg.data { border-color: var(--ok); color: var(--ok); font-weight: 600; text-align: center; }
+
+/* timeline */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 8px; position: relative; }
+.timeline li { position: relative; padding-top: 22px; font-size: 14px; }
+.timeline li::before { content: ""; position: absolute; top: 6px; left: 0; right: -8px; height: 2px; background: var(--line); }
+.timeline li::after { content: ""; position: absolute; top: 1px; left: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+.timeline li:last-child::before { right: 0; }
+.timeline b { display: block; font-family: var(--font-mono); color: var(--accent); }
+.principle { font-family: var(--font-display); font-size: 18px; font-weight: 600; }
+.principle .k { font-family: inherit; }
+
+/* ---------- narrow screens ---------- */
+@media (max-width: 860px) {
+  /* 窄螢幕：內容用原本的高度、整頁往下捲，不要被壓縮到蓋住來源欄 */
+  .slide-body { grid-template-columns: 1fr; gap: 20px; align-items: start; flex: none; }
+  .points li { font-size: 16px; }
+  .flow { grid-template-columns: 1fr; }
+  .timeline { grid-template-columns: 1fr; gap: 4px; }
+  .timeline li { padding-top: 0; padding-left: 22px; }
+  .timeline li::before { top: 0; bottom: -4px; left: 5px; right: auto; width: 2px; height: auto; }
+  .timeline li::after { top: 6px; }
+  .btn .txt { display: none; }
+  .topic-label { display: none; }
+  .aes-body { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .goal-grid { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: repeat(4, 27px); gap: 2px; }
+  .grid .cell { height: 26px; font-size: 11.5px; }
+  .grid.mini { grid-template-columns: repeat(4, 20px); }
+  .grid.mini .cell { font-size: 9px; }
+  .rsa-flow { grid-template-columns: 1fr; }
+  .send .arrow { transform: rotate(90deg); }
+  .b { min-width: 0; padding: 3px 4px; font-size: 11.5px; }
+  .tls { grid-template-columns: 58px minmax(0,1fr) 58px; }
+  .canvases { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slide, .slide.active, #progress-bar { transition: none; }
+}
+
+
+/* ---------- run-07：名詞小卡、公式符號表、圖名、參考資料 ---------- */
+.textcol { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.textcol .points { gap: 9px; }
+.slide-inner { gap: 10px; }
+.rightcol { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.points li { font-size: 16.5px; line-height: 1.5; }
+.defs { border-radius: 12px; background: var(--key-soft); padding: 8px 12px; }
+.defs-h, .fx-h { margin: 0 0 4px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .08em; color: var(--key); text-transform: uppercase; }
+.defs dl, .syms { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 12px; font-size: 13.5px; line-height: 1.45; }
+.defs dt { font-weight: 700; color: var(--ink); }
+.defs dd, .syms dd { margin: 0; color: var(--muted); min-width: 0; }
+.formula { border-radius: 12px; border: 1px solid var(--line); background: var(--surface); padding: 8px 12px; }
+.formula .fx-h { color: var(--accent); }
+.fx { margin: 0 0 4px; font-family: var(--font-mono); font-size: 15px; font-weight: 600; color: var(--accent); overflow-wrap: anywhere; }
+.syms dt { font-family: var(--font-mono); font-weight: 700; color: var(--ink); }
+/* run-08：MathML 數學排版 */
+math { font-family: "Cambria Math", "STIX Two Math", "Latin Modern Math", math, serif; }
+.fx { font-family: var(--font-body); color: var(--accent); overflow-x: auto; }
+.fx math[display="block"] { margin: 2px 0 6px; font-size: 1.22em; text-align: left; math-style: normal; }
+.syms dt math { font-size: 1.12em; }
+sub, sup { font-size: .72em; line-height: 0; }
+.figname { font-size: 13.5px; color: var(--ink); font-weight: 600; text-align: center; }
+.vt { margin: 0; font-size: 13px; font-weight: 700; color: var(--muted); }
+.vt.dec { color: var(--ok); }
+.vnote { margin: 0; font-size: 13px; color: var(--muted); }
+.mono { font-family: var(--font-mono); }
+.road { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.road li { padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; display: flex; gap: 10px; align-items: center; }
+.road b { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-family: var(--font-mono); flex: none; }
+.road-note { margin: 0; font-size: 14px; color: var(--muted); text-align: center; }
+.goal { grid-template-columns: 40px minmax(0,1fr); }
+.goal svg { grid-row: span 2; }
+.ks { display: flex; flex-direction: column; gap: 12px; }
+.ks-row { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 4px 10px; align-items: center; font-size: 14px; }
+.ks-bar { height: 14px; border-radius: 7px; background: var(--bg); overflow: hidden; border: 1px solid var(--line); }
+.ks-bar i { display: block; height: 100%; background: var(--accent); }
+.ks-v { grid-column: 2; font-size: 13px; color: var(--muted); }
+.lockbox { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.pill { padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 14px; }
+.pill.pub { background: var(--accent-soft); color: var(--accent); }
+.pill.key { background: var(--key-soft); color: var(--key); }
+.tools { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.clock-wrap, .tools > div { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.clock { position: relative; width: 130px; height: 130px; border-radius: 50%; border: 2px solid var(--line); }
+.clock span { position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; display: grid; place-items: center; border-radius: 50%; background: var(--bg); font-family: var(--font-mono); font-size: 13px;
+  transform: rotate(calc(var(--i) * 51.43deg)) translateY(-50px) rotate(calc(var(--i) * -51.43deg)); }
+.clock span.hit { background: var(--key-soft); color: var(--key); font-weight: 700; outline: 1.5px solid var(--key); }
+.xor { border-collapse: collapse; font-family: var(--font-mono); font-size: 16px; }
+.xor th, .xor td { width: 42px; height: 36px; text-align: center; border: 1px solid var(--line); }
+.xor th { color: var(--muted); background: var(--bg); }
+.xor td.one { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.sub-wrap { overflow-x: auto; }
+.subst, .vig { border-collapse: collapse; font-family: var(--font-mono); font-size: 13px; width: 100%; }
+.subst th, .vig th { font-family: var(--font-body); font-size: 12px; color: var(--muted); font-weight: 500; padding: 3px 6px; text-align: left; white-space: nowrap; }
+.subst td, .vig td { text-align: center; padding: 3px 1px; border-bottom: 1px solid var(--line); }
+.subst tr:nth-child(2) td, .subst tr:nth-child(4) td, .vig tr:last-child td { color: var(--accent); }
+.vig tr.k td { color: var(--key); font-size: 12px; }
+.subst td.h, .vig td.h { background: var(--key-soft); font-weight: 700; }
+.vig td.h2 { background: var(--accent-soft); font-weight: 700; }
+.tp { display: flex; flex-direction: column; gap: 6px; font-family: var(--font-mono); }
+.tp-row { display: grid; grid-template-columns: 4.5em repeat(6, minmax(0, 1fr)); gap: 6px; text-align: center; font-size: 17px; }
+.tp-row .tp-h { font-family: var(--font-body); font-size: 12.5px; color: var(--muted); text-align: left; align-self: center; }
+.tp-row span:not(.tp-h) { padding: 6px 0; border-radius: 6px; background: var(--bg); }
+.tp-row.k span:not(.tp-h) { background: var(--key-soft); color: var(--key); font-size: 14px; }
+.tp-row.ct span:not(.tp-h) { color: var(--accent); background: var(--accent-soft); }
+.tp-row .h { outline: 1.5px solid var(--key); }
+.break { display: flex; flex-direction: column; gap: 10px; }
+.bk { display: grid; grid-template-columns: 6em minmax(0,1fr); gap: 2px 12px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.bk b { grid-row: span 2; align-self: center; }
+.bk em { font-style: normal; color: var(--warn); }
+.pc { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 14px; }
+.pro, .con { padding: 8px 10px; border-radius: 8px; }
+.pro { background: var(--accent-soft); color: var(--accent); }
+.con { background: var(--warn-soft); color: var(--warn); }
+.bs { display: flex; flex-direction: column; gap: 6px; }
+.bs-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-family: var(--font-mono); font-size: 14px; }
+.bs-row.arrows { color: var(--muted); font-size: 12px; gap: 30px; }
+.blkc { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); letter-spacing: .12em; }
+.blkc.ct { color: var(--accent); border-color: var(--accent); }
+.bs-row.st span { padding: 4px 8px; border-radius: 6px; background: var(--key-soft); color: var(--key); }
+.bytes { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.bitrow { display: flex; gap: 4px; font-family: var(--font-mono); font-size: 18px; }
+.bitrow span { width: 30px; height: 34px; display: grid; place-items: center; border-radius: 6px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.bitrow span.sep { width: 8px; background: none; }
+.bitlab { display: flex; gap: 18px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; justify-content: center; }
+.bigx { margin: 0; font-size: 20px; font-weight: 700; }
+.by-grid { display: grid; grid-template-columns: repeat(4, 24px); gap: 3px; }
+.by-grid i { display: block; height: 24px; border-radius: 4px; background: var(--accent-soft); border: 1px solid var(--line); }
+.tl3 { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; font-size: 14px; }
+.tl3 li { padding: 8px; border-radius: 8px; background: var(--bg); }
+.tl3 b { display: block; font-family: var(--font-mono); color: var(--accent); }
+.s4 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.s4c { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.s4c .mono { color: var(--accent); font-size: 13px; }
+.s4c small { color: var(--muted); }
+.s4c.key { border-color: var(--key); background: var(--key-soft); }
+.dir { display: flex; flex-direction: column; gap: 8px; }
+.dir-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-family: var(--font-mono); font-size: 13px; }
+.dir-row span { padding: 5px 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
+.dir-row span.key { border-color: var(--key); background: var(--key-soft); color: var(--key); }
+.dir-row.dec span:not(.key) { border-color: var(--ok); color: var(--ok); }
+.dir-row i { font-style: normal; color: var(--muted); }
+.canvases.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.canvases.one { grid-template-columns: minmax(0, 60%); justify-content: center; }
+.chain.three { grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr); }
+.gcm { margin-top: 4px; padding: 10px 12px; border-radius: 10px; border: 1px dashed var(--ok); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.tagbox { padding: 2px 8px; border-radius: 6px; background: var(--ok); color: var(--surface); font-size: 12.5px; }
+.mb { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mbc { display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; padding: 16px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.mbc svg { width: 40px; height: 40px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mbc.pub svg { stroke: var(--accent); } .mbc.key svg { stroke: var(--key); }
+.mbc.pub b { color: var(--accent); } .mbc.key b { color: var(--key); }
+.rk { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rk li { display: grid; grid-template-columns: 4em minmax(0,1fr); gap: 10px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.rk li.key { border-color: var(--key); } .rk li.pub { border-color: var(--accent); }
+.rkey { margin: 0; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; font-family: var(--font-mono); }
+.sig { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 10px; align-items: center; }
+.okv { color: var(--ok); font-weight: 700; }
+.refs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 22px; font-size: 13px; line-height: 1.45; }
+.refs li { display: grid; grid-template-columns: 2.6em minmax(0, 1fr); gap: 6px; }
+.refs .sid { font-family: var(--font-mono); font-weight: 700; color: var(--accent); }
+.refs a { color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--muted); overflow-wrap: anywhere; }
+.refs small { color: var(--muted); }
+.slide-body.single { grid-template-columns: 1fr; }
+/* run-09：轉場頁 */
+.divider .slide-inner { justify-content: center; }
+.divider .slide-body { flex: none; }
+.divider .slide-inner { gap: 22px; }
+.divider h2 { display: flex; align-items: center; gap: 14px; font-size: clamp(26px, 3vw, 38px); }
+.chno { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 14px; background: var(--accent); color: var(--surface); font-family: var(--font-mono); font-size: 26px; flex: none; }
+.div3 { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, .9fr); gap: 18px; align-items: start; }
+.div3 > div { border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.recap { background: var(--surface); border: 1px solid var(--line); }
+.recap .points li { font-size: 15px; }
+.turn { background: var(--accent-soft); border: 1px solid var(--accent); }
+.turn .q { margin: 0; font-family: var(--font-display); font-size: 20px; font-weight: 600; line-height: 1.5; color: var(--ink); }
+.next { background: var(--surface); border: 1px dashed var(--line); }
+.next ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+.dh { margin: 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+.turn .dh { color: var(--accent); font-weight: 700; }
+.chain2 { display: flex; flex-direction: column; gap: 7px; }
+.c2 { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: center; font-size: 14px; }
+.c2 .pb { padding: 7px 10px; border-radius: 8px; background: var(--warn-soft); color: var(--warn); }
+.c2 .sol { padding: 7px 10px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.c2 i { font-style: normal; color: var(--muted); }
+.c2 small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+@media (max-width: 860px) {
+  .tools, .mb, .pc, .s4, .road { grid-template-columns: 1fr; }
+  .refs { grid-template-columns: 1fr; }
+  .div3 { grid-template-columns: 1fr; }
+  .c2 { grid-template-columns: 1fr; }
+  .sig { grid-template-columns: 1fr; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="brand">Cryptography <b>101</b></span>
+  <span class="topic-label" id="topic-label">Intro</span>
+</header>
+
+<main class="deck" id="deck">
+<section class="slide active cover" data-topic="Cryptography 101" aria-label="第 1 張：封面">
+  <div class="slide-inner">
+    <p class="eyebrow">Cryptography 101 · 給初學者的入門</p>
+    <h1>Cryptography <span>101</span></h1>
+    <p class="subtitle">密碼學如何保護我們的資訊？</p>
+    <p class="lead">從兩千年前的 Caesar 密碼，到你每天使用的 HTTPS</p>
+    <div class="cipher-strip" aria-label="HELLO 每個字母往後移 3 位變成 KHOOR"><span class="box">HELLO</span><span class="op">— 每個字母往後移 3 位 →</span><span class="box ct">KHOOR</span></div>
+    <ol class="route" aria-label="課程路線"><li><span class="n">1</span>基礎觀念</li><li><span class="n">2</span>古典密碼</li><li><span class="n">3</span>對稱式加密</li><li><span class="n">4</span>操作模式</li><li><span class="n">5</span>公開金鑰加密</li><li><span class="n">6</span>綜合應用</li></ol>
+  </div>
+</section>
+
+<section class="slide" data-topic="開場" aria-label="第 2 張：今天的路線圖">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">開場</p><h2>今天的路線圖</h2><p class="lead">先認識名詞和工具，再從最簡單的密碼一路走到網路加密</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>先認識基本名詞和兩個數學小工具，再開始看密碼</li><li>每個主題都照「原理 → 為什麼需要 → 現實中怎麼做」來講</li><li>從最簡單的 Caesar 密碼開始，最後看懂 HTTPS 背後的技術</li></ul></div>
+      <div class="rightcol"><figure class="visual panel">
+  <ol class="road">
+    <li><b>1</b>基礎觀念</li><li><b>2</b>古典密碼</li><li><b>3</b>對稱式加密</li>
+    <li><b>4</b>操作模式</li><li><b>5</b>公開金鑰加密</li><li><b>6</b>綜合應用：HTTPS</li>
+  </ol>
+  <p class="road-note">每一章：原理 → 為什麼需要／好處與限制 → 現實中怎麼做</p>
+<figcaption class="figname">圖：課程路線圖</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 1 章 · 基礎觀念" aria-label="第 3 張：為什麼需要密碼學？">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 1 章 · 基礎觀念</p><h2>為什麼需要密碼學？</h2><p class="lead">網購、傳訊息、登入帳號——資料一路上都可能被偷看或偷改</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>1960 年代電腦與通訊普及後，民間也開始需要保護數位資訊</li><li>機密性：只有被授權的人看得到內容</li><li>完整性：資料被偷改能被發現；鑑別：確認對方是誰</li><li>不可否認性：做過的承諾或動作，事後不能否認</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>密碼學</dt><dd>研究如何用數學方法保護資訊安全的學問</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="goal-grid">
+    <div class="goal panel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span class="gl">機密性</span><span class="gd">卡號不能被看到</span></div>
+    <div class="goal panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="gl">完整性</span><span class="gd">金額不能被偷改</span></div>
+    <div class="goal panel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.8-1.6 1.8-2 3-2s2.2.4 3 2M14 10h4M14 13h3"/></svg><span class="gl">鑑別</span><span class="gd">確認是真的商店</span></div>
+    <div class="goal panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M14.5 4.5l3 3L8 17H5v-3z"/></svg><span class="gl">不可否認性</span><span class="gd">商店不能否認收到訂單</span></div>
+  </div>
+<figcaption class="figname">圖：網路購物時的四個安全需求</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 1 章 · 基礎觀念" aria-label="第 4 張：密碼學在做什麼？基本名詞">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 1 章 · 基礎觀念</p><h2>密碼學在做什麼？基本名詞</h2><p class="lead">把資料變成別人看不懂的樣子，只有拿到金鑰的人能還原</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>Alice 用金鑰把明文加密成密文，再經過網路傳給 Bob</li><li>Bob 用金鑰把密文解密，還原成原本的明文</li><li>網路上任何人都可能偷聽，但只看得到看不懂的密文</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>明文</dt><dd>原本看得懂的資料，例如 HELLO</dd><dt>加密</dt><dd>用金鑰把明文變成看不懂的樣子</dd><dt>密文</dt><dd>加密後看不懂的資料，例如 KHOOR</dd><dt>解密</dt><dd>用金鑰把密文還原成明文</dd><dt>金鑰</dt><dd>控制加密怎麼變的祕密值，像一把鑰匙</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="flow">
+    <div class="node">Alice：明文 <span class="mono">HELLO</span></div>
+    <div class="node op">加密（用金鑰）</div>
+    <div class="node ct">密文 KHOOR</div>
+    <div class="node op">解密（用金鑰）</div>
+    <div class="node">Bob：明文 <span class="mono">HELLO</span></div>
+  </div>
+  <div class="channel"><span>網路（任何人都能偷聽）</span><span>偷聽的人只看得到密文</span></div>
+<figcaption class="figname">圖：Alice 傳祕密訊息給 Bob</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 1 章 · 基礎觀念" aria-label="第 5 張：演算法可以公開，金鑰必須保密">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 1 章 · 基礎觀念</p><h2>演算法可以公開，金鑰必須保密</h2><p class="lead">鎖的構造大家都知道，但沒有你的鑰匙還是打不開</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>Kerckhoffs 原則（1883）：安全只能靠金鑰，不能靠隱藏演算法</li><li>演算法很難一直保密，公開讓大家檢驗反而更安全</li><li>金鑰空間要大到暴力破解在計算上做不到</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>演算法</dt><dd>加密和解密的固定步驟（方法）</dd><dt>攻擊者</dt><dd>想偷看或竄改訊息的人</dd><dt>暴力破解</dt><dd>把所有可能的金鑰一個一個試</dd><dt>金鑰空間</dt><dd>所有可能的金鑰有多少種</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="ks">
+    <div class="ks-row"><span class="ks-name">Caesar 密碼</span><div class="ks-bar"><i style="width:6%"></i></div><span class="ks-v">26 種：幾秒就試完</span></div>
+    <div class="ks-row"><span class="ks-name">好的現代密碼</span><div class="ks-bar"><i style="width:100%"></i></div><span class="ks-v">多到全世界電腦一起試也試不完</span></div>
+  </div>
+  <div class="lockbox"><span class="pill pub">演算法：公開</span><span class="pill key">金鑰：保密</span></div>
+<figcaption class="figname">圖：金鑰數量決定暴力破解要試多久</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 1 章 · 基礎觀念" aria-label="第 6 張：兩個數學小工具：mod 與 XOR">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 1 章 · 基礎觀念</p><h2>兩個數學小工具：mod 與 XOR</h2><p class="lead">後面的密碼都會用到這兩個運算</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>mod 像時鐘：數到 n 就繞回 0，例如 20 mod 7 = 6</li><li>XOR（⊕）：兩個 0／1 數字相同得 0、不同得 1</li><li>同一個值 XOR 兩次就變回原樣，所以同一個動作能加密也能解密</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>mod</dt><dd>取餘數：a mod n 是 a 除以 n 的餘數</dd><dt>XOR</dt><dd>互斥或，符號 ⊕：相同得 0，不同得 1</dd></dl></div><div class="formula"><p class="fx-h">公式與符號</p><div class="fx" data-expr="a mod n" role="math" aria-label="a mod n"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>a</mi><mo>mod</mo><mi>n</mi></mrow></math></div><dl class="syms"><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>a</mi></mrow></math></dt><dd>被除的數</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>n</mi></mrow></math></dt><dd>除數（正整數）</dd><dt>mod</dt><dd>取餘數，結果一定在 0 到 n − 1 之間</dd></dl></div><div class="formula"><p class="fx-h">公式與符號</p><div class="fx" data-expr="(P ⊕ K) ⊕ K = P" role="math" aria-label="(P ⊕ K) ⊕ K = P"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mo stretchy="false">&#x00028;</mo><mi>P</mi><mo>&#x02295;</mo><mi>K</mi><mo stretchy="false">&#x00029;</mo><mo>&#x02295;</mo><mi>K</mi><mo>&#x0003D;</mo><mi>P</mi></mrow></math></div><dl class="syms"><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>P</mi></mrow></math></dt><dd>原本的資料</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>K</mi></mrow></math></dt><dd>拿來 XOR 的值，例如金鑰</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="tools">
+    <div class="clock-wrap">
+      <p class="vt">mod 7 時鐘</p>
+      <div class="clock" aria-label="0 到 6 排成一圈">
+        <span style="--i:0">0</span><span style="--i:1">1</span><span style="--i:2">2</span><span style="--i:3">3</span><span style="--i:4">4</span><span style="--i:5">5</span><span class="hit" style="--i:6">6</span>
+      </div>
+      <p class="vnote mono">20 = 2 × 7 + 6 → 20 mod 7 = 6</p>
+    </div>
+    <div>
+      <p class="vt">XOR 對照表</p>
+      <table class="xor">
+        <tr><th>⊕</th><th>0</th><th>1</th></tr>
+        <tr><th>0</th><td>0</td><td class="one">1</td></tr>
+        <tr><th>1</th><td class="one">1</td><td>0</td></tr>
+      </table>
+      <p class="vnote mono">1 ⊕ 1 = 0，再 ⊕ 1 = 1（變回來）</p>
+    </div>
+  </div>
+<figcaption class="figname">圖：mod 時鐘與 XOR 對照表</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide divider" data-topic="第 2 章 · 古典密碼" aria-label="第 7 張：第 2 章：古典密碼">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 2 章 · 古典密碼</p><h2><span class="chno">2</span>第 2 章：古典密碼</h2></header>
+    <div class="slide-body div3">
+      <div class="recap"><p class="dh">剛剛學到</p><ul class="points"><li>加密要有演算法和金鑰；演算法可以公開，只有金鑰要保密</li><li>金鑰的種類要多到暴力破解試不完</li><li>mod 和 XOR 是後面會一直用到的兩個工具</li></ul></div>
+      <div class="turn"><p class="dh">但是……</p><p class="q">人類最早是怎麼加密的？這些方法安全嗎？</p></div>
+      <div class="next" data-glossary-skip><p class="dh">這一章會看到</p><ol><li>Caesar 密碼：每個字母往後移</li><li>替換密碼：整個字母表打亂</li><li>多表替換：Vigenère 密碼</li><li>換位密碼：字母不變、位置打亂</li><li>古典密碼怎麼被破解</li></ol></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 2 章 · 古典密碼" aria-label="第 8 張：Caesar 密碼：每個字母往後移 k 位">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 2 章 · 古典密碼</p><h2>Caesar 密碼：每個字母往後移 k 位</h2><p class="lead">兩千年前的加密法，傳說凱撒用 k = 3</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>先把字母換成編號：A=0、B=1、…、Z=25</li><li>加密時每個編號加 k，解密時減 k，超過 25 就用 mod 26 繞回</li><li>例：k = 3 時，HELLO 加密成 KHOOR</li></ul><div class="formula"><p class="fx-h">公式與符號</p><div class="fx" data-expr="c = (m + k) mod 26，m = (c − k) mod 26" role="math" aria-label="c = (m + k) mod 26，m = (c − k) mod 26"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>c</mi><mo>&#x0003D;</mo><mo stretchy="false">&#x00028;</mo><mi>m</mi><mo>&#x0002B;</mo><mi>k</mi><mo stretchy="false">&#x00029;</mo><mo>mod</mo><mn>26</mn><mo>&#x0002C;</mo><mspace width="2em" /><mi>m</mi><mo>&#x0003D;</mo><mo stretchy="false">&#x00028;</mo><mi>c</mi><mo>&#x02212;</mo><mi>k</mi><mo stretchy="false">&#x00029;</mo><mo>mod</mo><mn>26</mn></mrow></math></div><dl class="syms"><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>m</mi></mrow></math></dt><dd>明文字母的編號（A=0…Z=25）</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>k</mi></mrow></math></dt><dd>金鑰：往後移幾位（0–25）</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>c</mi></mrow></math></dt><dd>密文字母的編號</dd><dt>mod</dt><dd>除以 26 取餘數，讓 Z 之後繞回 A</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="seg" role="group" aria-label="切換加密或解密">
+    <button type="button" id="caesar-mode-enc" aria-pressed="true">加密 c = m + k</button>
+    <button type="button" id="caesar-mode-dec" aria-pressed="false">解密 m = c − k</button>
+  </div>
+  <div class="demo-row"><label for="caesar-input" id="caesar-in-label">明文</label>
+    <input id="caesar-input" type="text" value="HELLO" maxlength="16" autocomplete="off" spellcheck="false" aria-label="輸入要加密或解密的英文"></div>
+  <div class="demo-row"><label for="caesar-shift">位移 k</label>
+    <input id="caesar-shift" type="range" min="0" max="25" step="1" value="3"><span class="kval" id="caesar-k">3</span></div>
+  <div class="demo-row"><label id="caesar-out-label">密文</label><output id="caesar-output" for="caesar-input caesar-shift">KHOOR</output></div>
+  <div class="alpha-wrap"><div class="alpha" id="caesar-alpha" aria-hidden="true"></div></div>
+<figcaption class="figname">圖：Caesar 加密／解密互動示範</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 2 章 · 古典密碼" aria-label="第 9 張：替換密碼：把整個字母表打亂">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 2 章 · 古典密碼</p><h2>替換密碼：把整個字母表打亂</h2><p class="lead">Caesar 只能整排位移，替換密碼可以任意對應</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>金鑰就是一張對照表，整篇訊息都用同一張表換字母</li><li>Caesar 是特例：對照表只能整排往後移</li><li>英文的對照表有 26! 種（約 4 × 10²⁶），遠多於 Caesar 的 26 種</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>替換密碼</dt><dd>依一張對照表，把每個字母換成另一個字母</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="sub-wrap"><table class="subst">
+    <tr><th>明文</th><td>A</td><td>B</td><td>C</td><td>D</td><td class="h">E</td><td>F</td><td>G</td><td class="h">H</td><td>I</td><td>J</td><td>K</td><td class="h">L</td><td>M</td></tr>
+    <tr><th>密文</th><td>Q</td><td>W</td><td>E</td><td>R</td><td class="h">T</td><td>Y</td><td>U</td><td class="h">I</td><td>O</td><td>P</td><td>A</td><td class="h">S</td><td>D</td></tr>
+    <tr><th>明文</th><td>N</td><td class="h">O</td><td>P</td><td>Q</td><td>R</td><td>S</td><td>T</td><td>U</td><td>V</td><td>W</td><td>X</td><td>Y</td><td>Z</td></tr>
+    <tr><th>密文</th><td>F</td><td class="h">G</td><td>H</td><td>J</td><td>K</td><td>L</td><td>Z</td><td>X</td><td>C</td><td>V</td><td>B</td><td>N</td><td>M</td></tr>
+  </table></div>
+  <p class="vnote">用這張表：<span class="mono">HELLO → ITSSG</span>（兩個 L 都變成 S）</p>
+<figcaption class="figname">圖：替換密碼的對照表（範例）</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 2 章 · 古典密碼" aria-label="第 10 張：多表替換：Vigenère 密碼">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 2 章 · 古典密碼</p><h2>多表替換：Vigenère 密碼</h2><p class="lead">不只用一張表：每個位置輪流用不同的位移</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>金鑰是一串位移量，例如 3、7、10，從頭到尾輪流使用</li><li>第 1 個字母移 3、第 2 個移 7、第 3 個移 10，第 4 個再移 3</li><li>同一個字母 E 會變成 O 或 L，看字母次數猜不出來</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>多表替換</dt><dd>不同位置用不同對照表，同一個字母會變成不同字母</dd></dl></div><div class="formula"><p class="fx-h">公式與符號</p><div class="fx" data-expr="c_i = (m_i + k_i) mod 26" role="math" aria-label="c_i = (m_i + k_i) mod 26"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>c</mi><mi>i</mi></msub><mo>&#x0003D;</mo><mo stretchy="false">&#x00028;</mo><msub><mi>m</mi><mi>i</mi></msub><mo>&#x0002B;</mo><msub><mi>k</mi><mi>i</mi></msub><mo stretchy="false">&#x00029;</mo><mo>mod</mo><mn>26</mn></mrow></math></div><dl class="syms"><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>m</mi><mi>i</mi></msub></mrow></math></dt><dd>第 i 個明文字母的編號</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>k</mi><mi>i</mi></msub></mrow></math></dt><dd>第 i 個位置輪到的位移（3、7、10 輪流）</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>c</mi><mi>i</mi></msub></mrow></math></dt><dd>第 i 個密文字母的編號</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="sub-wrap"><table class="vig">
+    <tr><th>明文</th><td>T</td><td>H</td><td>I</td><td>S</td><td>C</td><td>I</td><td>P</td><td>H</td><td class="h">E</td><td>R</td><td>I</td><td>S</td><td>C</td><td class="h2">E</td><td>R</td></tr>
+    <tr class="k"><th>位移</th><td>3</td><td>7</td><td>10</td><td>3</td><td>7</td><td>10</td><td>3</td><td>7</td><td>10</td><td>3</td><td>7</td><td>10</td><td>3</td><td>7</td><td>10</td></tr>
+    <tr><th>密文</th><td>W</td><td>O</td><td>S</td><td>V</td><td>J</td><td>S</td><td>S</td><td>O</td><td class="h">O</td><td>U</td><td>P</td><td>C</td><td>F</td><td class="h2">L</td><td>B</td></tr>
+  </table></div>
+  <p class="vnote">兩個 E 位置不同、位移不同：一個變成 O，一個變成 L</p>
+<figcaption class="figname">圖：Vigenère 加密範例（位移 3、7、10）</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 2 章 · 古典密碼" aria-label="第 11 張：換位密碼：字母不變，位置打亂">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 2 章 · 古典密碼</p><h2>換位密碼：字母不變，位置打亂</h2><p class="lead">替換是換「字母」，換位是換「位置」</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>把明文每 t 個字母分成一組，每組都用同一個順序重新排列</li><li>金鑰就是排列順序，t 個位置共有 t! 種排法</li><li>例：CAESAR 依 6 4 1 3 5 2 的順序取字母，變成 RSCEAA</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>換位密碼</dt><dd>字母本身不變，只依規則重新排列位置</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="tp">
+    <div class="tp-row"><span class="tp-h">位置</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+    <div class="tp-row"><span class="tp-h">明文</span><span>C</span><span>A</span><span>E</span><span>S</span><span>A</span><span class="h">R</span></div>
+    <div class="tp-row k"><span class="tp-h">依序取</span><span>6</span><span>4</span><span>1</span><span>3</span><span>5</span><span>2</span></div>
+    <div class="tp-row ct"><span class="tp-h">密文</span><span class="h">R</span><span>S</span><span>C</span><span>E</span><span>A</span><span>A</span></div>
+  </div>
+  <p class="vnote">字母還是 C、A、E、S、A、R，只是位置換了</p>
+<figcaption class="figname">圖：換位密碼範例</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 2 章 · 古典密碼" aria-label="第 12 張：古典密碼怎麼被破解？">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 2 章 · 古典密碼</p><h2>古典密碼怎麼被破解？</h2><p class="lead">金鑰太少，或藏不住語言的規律</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>Caesar 只有 26 種金鑰，暴力破解一下就試完</li><li>替換密碼保留字母次數：英文最常見的 E，對到密文最常見的字母</li><li>多表替換：先找出金鑰長度，再分組做頻率分析</li><li>所以古典密碼今天只用在教學，不適合實際使用</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>頻率分析</dt><dd>統計密文每個字母出現幾次，對照語言的常見字母來猜</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="break">
+    <div class="bk"><b>Caesar</b><span>金鑰只有 26 種</span><em>→ 暴力破解：全部試一遍</em></div>
+    <div class="bk"><b>替換密碼</b><span>字母出現次數不變</span><em>→ 頻率分析：最常見的多半是 E</em></div>
+    <div class="bk"><b>多表替換</b><span>金鑰長度固定、重複使用</span><em>→ 先找長度，再分組做頻率分析</em></div>
+  </div>
+<figcaption class="figname">圖：三種古典密碼各自的弱點</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide divider" data-topic="第 3 章 · 對稱式加密" aria-label="第 13 張：第 3 章：對稱式加密">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 3 章 · 對稱式加密</p><h2><span class="chno">3</span>第 3 章：對稱式加密</h2></header>
+    <div class="slide-body div3">
+      <div class="recap"><p class="dh">剛剛學到</p><ul class="points"><li>古典密碼的金鑰太少，暴力破解一下就試完</li><li>就算金鑰很多，字母出現的次數也會洩漏，被頻率分析破解</li><li>所以古典密碼今天只用在教學</li></ul></div>
+      <div class="turn"><p class="dh">但是……</p><p class="q">古典密碼都被破解了。現代電腦要怎麼加密，才不會犯同樣的錯？</p><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>對稱式加密</dt><dd>本章主角：加密和解密用同一把金鑰</dd></dl></div></div>
+      <div class="next" data-glossary-skip><p class="dh">這一章會看到</p><ol><li>對稱式加密的原理</li><li>它的好處與難題</li><li>區塊加密與串流加密</li><li>電腦裡的資料：位元與位元組</li><li>現代標準 AES：概觀、四個步驟、逐步實例、解密與應用</li></ol></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 3 章 · 對稱式加密" aria-label="第 14 張：對稱式加密：同一把金鑰鎖上也打開">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 3 章 · 對稱式加密</p><h2>對稱式加密：同一把金鑰鎖上也打開</h2><p class="lead">前面看過的古典密碼，其實都是對稱式加密</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>Alice 和 Bob 事先共用一把祕密金鑰，加密和解密都用它</li><li>所以金鑰一定要保密，金鑰被偷，資料就全部曝光</li><li>Caesar、替換、換位密碼都屬於對稱式加密</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>對稱式加密</dt><dd>加密和解密用同一把金鑰的加密方式</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="sym">
+    <div class="actor"><span>Alice</span><span class="keychip">金鑰 K</span></div>
+    <div class="wire"><span>密文</span></div>
+    <div class="actor"><span>Bob</span><span class="keychip">金鑰 K</span></div>
+  </div>
+  <p class="samekey">同一把金鑰 K</p>
+  <ol class="roundtrip">
+    <li><b>加密</b>明文 <span class="mono">HELLO</span> ＋ 金鑰 K（位移 3）→ 密文 <span class="mono ct">KHOOR</span></li>
+    <li><b>解密</b>密文 <span class="mono ct">KHOOR</span> ＋ 同一把 K → 明文 <span class="mono">HELLO</span></li>
+  </ol>
+<figcaption class="figname">圖：同一把金鑰的加密與解密</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 3 章 · 對稱式加密" aria-label="第 15 張：對稱式加密的好處與難題">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 3 章 · 對稱式加密</p><h2>對稱式加密的好處與難題</h2><p class="lead">速度快，但雙方要先拿到同一把金鑰</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>好處：運算快，適合加密大量資料</li><li>難題一：金鑰要先用安全的方式交給對方（金鑰分配問題）</li><li>難題二：人一多金鑰暴增，1,000 人兩兩通訊需要 499,500 把</li></ul><div class="formula"><p class="fx-h">公式與符號</p><div class="fx" data-expr="N = n × (n − 1) ÷ 2" role="math" aria-label="N = n × (n − 1) ÷ 2"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>N</mi><mo>&#x0003D;</mo><mfrac><mrow><mi>n</mi><mo stretchy="false">&#x00028;</mo><mi>n</mi><mo>&#x02212;</mo><mn>1</mn><mo stretchy="false">&#x00029;</mo></mrow><mrow><mn>2</mn></mrow></mfrac></mrow></math></div><dl class="syms"><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>n</mi></mrow></math></dt><dd>要互相通訊的人數</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>N</mi></mrow></math></dt><dd>需要的金鑰數量（每兩個人一把）</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <table class="tbl">
+    <thead><tr><th>通訊人數 n</th><th class="num">需要的金鑰數 N</th></tr></thead>
+    <tbody><tr><td>4 人</td><td class="num">6</td></tr><tr><td>1,000 人</td><td class="num">499,500</td></tr></tbody>
+  </table>
+  <div class="pc"><div class="pro">✔ 好處：快，適合大量資料</div><div class="con">✘ 難題：金鑰要先安全送到、數量暴增</div></div>
+<figcaption class="figname">圖：人數與需要的金鑰數量</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 3 章 · 對稱式加密" aria-label="第 16 張：兩種做法：區塊加密與串流加密">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 3 章 · 對稱式加密</p><h2>兩種做法：區塊加密與串流加密</h2><p class="lead">資料要一塊一塊加密，還是一個一個加密？</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>大多數知名的對稱式加密都是區塊加密</li><li>串流加密逐個符號處理，傳輸容易出錯時錯誤不會擴散</li><li>區塊加密碰到很長的訊息，要決定區塊之間怎麼串（第 4 章）</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>區塊加密</dt><dd>把資料切成固定長度的區塊，一次加密一塊</dd><dt>串流加密</dt><dd>一個符號一個符號加密，每個符號搭配不同的金鑰串流</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="bs">
+    <p class="vt">區塊加密</p>
+    <div class="bs-row"><span class="blkc">HELL</span><span class="blkc">OWOR</span><span class="blkc">LD..</span></div>
+    <div class="bs-row arrows"><span>↓ 加密</span><span>↓ 加密</span><span>↓ 加密</span></div>
+    <div class="bs-row"><span class="blkc ct">9F2A</span><span class="blkc ct">C70E</span><span class="blkc ct">51BD</span></div>
+    <p class="vt">串流加密</p>
+    <div class="bs-row st"><span>H⊕k₁</span><span>E⊕k₂</span><span>L⊕k₃</span><span>L⊕k₄</span><span>O⊕k₅</span></div>
+    <p class="vnote">k₁、k₂、k₃… 是金鑰產生的一串值（金鑰串流）；右上方的密文只是示意</p>
+  </div>
+<figcaption class="figname">圖：區塊加密與串流加密的差別</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 3 章 · 對稱式加密" aria-label="第 17 張：電腦裡的資料：位元、位元組、十六進位">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 3 章 · 對稱式加密</p><h2>電腦裡的資料：位元、位元組、十六進位</h2><p class="lead">看懂下一個演算法之前，先看懂電腦怎麼寫資料</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>例：位元組 10100011 用十六進位寫成 a3</li><li>128 個位元 = 16 個位元組，剛好排成 4 × 4 的方格</li><li>XOR 也是一個位元一個位元做：0011 ⊕ 0101 = 0110</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>位元</dt><dd>一個 0 或 1 的數字</dd><dt>位元組</dt><dd>8 個位元排在一起</dd><dt>十六進位</dt><dd>用 0–9、a–f 寫數字，一個字元代表 4 個位元</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="bytes">
+    <div class="bitrow"><span>1</span><span>0</span><span>1</span><span>0</span><span class="sep"></span><span>0</span><span>0</span><span>1</span><span>1</span></div>
+    <div class="bitlab"><span>前 4 個位元 1010 → a</span><span>後 4 個位元 0011 → 3</span></div>
+    <p class="bigx mono">10100011 = a3</p>
+    <div class="by-grid" aria-label="16 個位元組排成 4×4">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <p class="vnote">16 個位元組 = 128 個位元，排成 4 × 4</p>
+  </div>
+<figcaption class="figname">圖：一個位元組的三種寫法</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 3 章 · 對稱式加密" aria-label="第 18 張：現實中的對稱式加密：AES">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 3 章 · 對稱式加密</p><h2>現實中的對稱式加密：AES</h2><p class="lead">公開徵選出來、用來取代舊標準 DES 的區塊加密</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>美國 NIST 1997 年公開徵求，2000 年選出 Rijndael 成為 AES</li><li>區塊固定 128 位元；金鑰可為 128、192 或 256 位元</li><li>DES 因電腦變快、強度不夠，2005 年被撤銷；AES 是新產品首選</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>AES</dt><dd>Advanced Encryption Standard，NIST 的區塊加密標準</dd><dt>DES</dt><dd>1977 年核准的舊加密標準，已撤銷</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <ol class="tl3"><li><b>1977</b>DES 核准</li><li><b>2000</b>選出 AES</li><li><b>2005</b>DES 撤銷</li></ol>
+  <table class="tbl">
+    <thead><tr><th>版本</th><th class="num">金鑰長度</th><th class="num">區塊大小</th></tr></thead>
+    <tbody>
+      <tr><td>AES-128</td><td class="num">128 位元</td><td class="num">128 位元</td></tr>
+      <tr><td>AES-192</td><td class="num">192 位元</td><td class="num">128 位元</td></tr>
+      <tr><td>AES-256</td><td class="num">256 位元</td><td class="num">128 位元</td></tr>
+    </tbody>
+  </table>
+<figcaption class="figname">圖：AES 的三個版本</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 3 章 · 對稱式加密" aria-label="第 19 張：AES 每一輪的四個步驟">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 3 章 · 對稱式加密</p><h2>AES 每一輪的四個步驟</h2><p class="lead">同樣四個步驟重複很多次，把資料徹底打亂</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>SubBytes：每一格查 S-box 換掉（替換）</li><li>ShiftRows：第 r 列往左循環移 r 格（換位置）</li><li>MixColumns：每一直欄的 4 個位元組混在一起</li><li>AddRoundKey：和這一輪的 round key 做 XOR</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>state</dt><dd>AES 把 16 個位元組排成的 4 × 4 方格</dd><dt>輪</dt><dd>四個步驟做完一次叫一輪，AES-128 做 10 輪</dd><dt>S-box</dt><dd>固定的替換表，每個位元組查表換成另一個</dd><dt>round key</dt><dd>每一輪從金鑰算出來的一把小金鑰</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="s4">
+    <div class="s4c"><b>① SubBytes</b><span class="mono">19 → d4</span><small>查 S-box 替換</small></div>
+    <div class="s4c"><b>② ShiftRows</b><span class="mono">27 bf b4 41 → bf b4 41 27</span><small>第 2 列左移 1 格</small></div>
+    <div class="s4c"><b>③ MixColumns</b><span class="mono">d4 bf 5d 30 → 04 66 81 e5</span><small>一直欄混在一起</small></div>
+    <div class="s4c key"><b>④ AddRoundKey</b><span class="mono">04 ⊕ a0 = a4</span><small>和 round key 做 XOR</small></div>
+  </div>
+  <p class="vnote">↻ 重複做：AES-128 做 10 輪、AES-192 做 12 輪、AES-256 做 14 輪</p>
+<figcaption class="figname">圖：AES 一輪的四個步驟</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 3 章 · 對稱式加密" aria-label="第 20 張：AES 實例：一步一步看資料怎麼變">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 3 章 · 對稱式加密</p><h2>AES 實例：一步一步看資料怎麼變</h2><p class="lead">用 AES 標準文件裡的官方範例數字，點按鈕逐步播放</p></header>
+    <div class="slide-body aes-body">
+      <div class="textcol"><ul class="points"><li>輸入 16 個位元組，先和金鑰做 XOR（初始 AddRoundKey）</li><li>接著依序 SubBytes → ShiftRows → MixColumns → AddRoundKey</li><li>金色格是這一步要注意的位元組，可以對照前後的變化</li></ul></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="aes-steps" role="group" aria-label="AES 第 1 輪逐步圖解">
+    <span class="aes-dir">加密（第 1 輪）</span>
+    <button type="button" class="aes-step" data-step="0">輸入</button>
+    <button type="button" class="aes-step key" data-step="1">⊕ 金鑰</button>
+    <button type="button" class="aes-step" data-step="2">① SubBytes</button>
+    <button type="button" class="aes-step" data-step="3">② ShiftRows</button>
+    <button type="button" class="aes-step" data-step="4">③ MixColumns</button>
+    <button type="button" class="aes-step key" data-step="5">④ AddRoundKey</button>
+    <span class="aes-dir dec">解密（倒著走回去）</span>
+    <button type="button" class="aes-step key dec" data-step="6">AddRoundKey</button>
+    <button type="button" class="aes-step dec" data-step="7">InvMixColumns</button>
+    <button type="button" class="aes-step dec" data-step="8">InvShiftRows</button>
+    <button type="button" class="aes-step dec" data-step="9">InvSubBytes</button>
+  </div>
+  <div class="aes-stage">
+    <div class="gwrap"><span class="glabel" id="aes-before-label">之前</span><div class="grid" id="aes-before"></div></div>
+    <div class="aes-op"><span id="aes-op">→</span><div class="grid mini" id="aes-with" aria-label="金鑰"></div></div>
+    <div class="gwrap"><span class="glabel" id="aes-after-label">之後</span><div class="grid" id="aes-after"></div></div>
+  </div>
+  <p class="aes-explain" id="aes-explain" aria-live="polite"></p>
+<figcaption class="figname">圖：AES-128 第 1 輪逐步圖解</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 3 章 · 對稱式加密" aria-label="第 21 張：AES 怎麼解密？現在用在哪裡？">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 3 章 · 對稱式加密</p><h2>AES 怎麼解密？現在用在哪裡？</h2><p class="lead">解密就是把每一步倒著做回去</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>解密：四個步驟換成各自的反運算，依相反順序執行</li><li>AddRoundKey 倒回去，就是再 XOR 一次同一把 round key</li><li>AES 是 NIST 建議新產品使用的區塊加密</li></ul></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="dir">
+    <p class="vt">加密（每一輪）</p>
+    <div class="dir-row"><span>SubBytes</span><i>→</i><span>ShiftRows</span><i>→</i><span>MixColumns</span><i>→</i><span class="key">AddRoundKey</span></div>
+    <p class="vt dec">解密（倒著做回去）</p>
+    <div class="dir-row dec"><span class="key">AddRoundKey</span><i>→</i><span>InvMixColumns</span><i>→</i><span>InvShiftRows</span><i>→</i><span>InvSubBytes</span></div>
+  </div>
+<figcaption class="figname">圖：AES 加密與解密的方向</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide divider" data-topic="第 4 章 · 操作模式" aria-label="第 22 張：第 4 章：操作模式">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 4 章 · 操作模式</p><h2><span class="chno">4</span>第 4 章：操作模式</h2></header>
+    <div class="slide-body div3">
+      <div class="recap"><p class="dh">剛剛學到</p><ul class="points"><li>AES 取代了 DES，是新產品首選的區塊加密</li><li>但 AES 一次只能加密 128 位元，也就是 16 個位元組</li></ul></div>
+      <div class="turn"><p class="dh">但是……</p><p class="q">一張約 1 MB（1,048,576 個位元組）的照片，要切成 65,536 塊。每一塊怎麼加密？塊跟塊之間要怎麼處理？</p><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>操作模式</dt><dd>本章主角：長訊息切成很多塊時，塊跟塊之間怎麼處理的規則</dd></dl></div></div>
+      <div class="next" data-glossary-skip><p class="dh">這一章會看到</p><ol><li>ECB：最簡單，卻會洩漏圖樣</li><li>CBC：把區塊一個接一個串起來</li><li>CTR 與 GCM：現在網路上用的模式</li></ol></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 4 章 · 操作模式" aria-label="第 23 張：為什麼需要操作模式？先看 ECB 的問題">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 4 章 · 操作模式</p><h2>為什麼需要操作模式？先看 ECB 的問題</h2><p class="lead">區塊加密一次只處理一塊，長訊息要決定區塊之間怎麼處理</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>ECB 最簡單：每一塊各自加密，相同明文區塊永遠變成相同密文</li><li>所以圖片的輪廓、重複的資料都會被看出來</li><li>NIST：這個性質不可接受時，就不應該使用 ECB</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>操作模式</dt><dd>區塊加密處理長訊息時，區塊之間怎麼處理的規則</dd><dt>ECB</dt><dd>最簡單的模式：每一塊各自加密</dd><dt>填充</dt><dd>最後一塊不夠長時補上的位元</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="canvases two">
+    <figure><canvas id="ecb-orig" width="96" height="64" aria-label="原圖：一個鎖頭圖案"></canvas><figcaption>原圖</figcaption></figure>
+    <figure><canvas id="ecb-ecb" width="96" height="64" aria-label="ECB 加密後仍看得出鎖頭輪廓"></canvas><figcaption class="bad">ECB 加密後</figcaption></figure>
+  </div>
+  <p class="vnote">每個 4 × 4 的小方塊是一個區塊；相同的區塊加密後顏色也相同</p>
+<figcaption class="figname">圖：同一張圖用 ECB 加密的結果（示意用簡化加密）</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 4 章 · 操作模式" aria-label="第 24 張：CBC：把區塊一個接一個串起來">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 4 章 · 操作模式</p><h2>CBC：把區塊一個接一個串起來</h2><p class="lead">讓每一塊都和前一塊有關，相同的明文就不會產生相同的密文</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>加密：明文區塊先和前一塊密文 XOR 再加密，第一塊和 IV XOR</li><li>同樣的明文，只要 IV 不同，密文就完全不同</li><li>解密：先解開再 XOR 前一塊密文；加密不能平行，解密可以</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>CBC</dt><dd>每一塊先和前一塊的密文 XOR 再加密</dd><dt>IV</dt><dd>初始向量：第一塊用來 XOR 的值，不必保密但要無法預測</dd></dl></div><div class="formula"><p class="fx-h">公式與符號</p><div class="fx" data-expr="Cⱼ = E_K(Pⱼ ⊕ Cⱼ₋₁)，Pⱼ = D_K(Cⱼ) ⊕ Cⱼ₋₁" role="math" aria-label="Cⱼ = E_K(Pⱼ ⊕ Cⱼ₋₁)，Pⱼ = D_K(Cⱼ) ⊕ Cⱼ₋₁"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>C</mi><mi>j</mi></msub><mo>&#x0003D;</mo><msub><mi>E</mi><mi>K</mi></msub><mo stretchy="false">&#x00028;</mo><msub><mi>P</mi><mi>j</mi></msub><mo>&#x02295;</mo><msub><mi>C</mi><mrow><mi>j</mi><mo>&#x02212;</mo><mn>1</mn></mrow></msub><mo stretchy="false">&#x00029;</mo><mo>&#x0002C;</mo><mspace width="2em" /><msub><mi>P</mi><mi>j</mi></msub><mo>&#x0003D;</mo><msub><mi>D</mi><mi>K</mi></msub><mo stretchy="false">&#x00028;</mo><msub><mi>C</mi><mi>j</mi></msub><mo stretchy="false">&#x00029;</mo><mo>&#x02295;</mo><msub><mi>C</mi><mrow><mi>j</mi><mo>&#x02212;</mo><mn>1</mn></mrow></msub></mrow></math></div><dl class="syms"><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>P</mi><mi>j</mi></msub></mrow></math></dt><dd>第 j 塊明文</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>C</mi><mi>j</mi></msub></mrow></math></dt><dd>第 j 塊密文（第 0 塊就是 IV）</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>E</mi><mi>K</mi></msub></mrow></math></dt><dd>用金鑰 K 做區塊加密</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>D</mi><mi>K</mi></msub></mrow></math></dt><dd>用金鑰 K 做區塊解密</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="mode-tabs" role="tablist" aria-label="CBC 圖解">
+    <button type="button" class="mode-tab" role="tab" data-tab="0" aria-selected="true">效果</button>
+    <button type="button" class="mode-tab" role="tab" data-tab="1" aria-selected="false">加密流程</button>
+    <button type="button" class="mode-tab" role="tab" data-tab="2" aria-selected="false">解密流程</button>
+  </div>
+  <div class="mode-panel" role="tabpanel" data-panel="0">
+    <div class="canvases one"><figure><canvas id="ecb-cbc" width="96" height="64" aria-label="CBC 加密後看起來像雜訊"></canvas><figcaption class="good">同一張鎖頭圖，CBC 加密後</figcaption></figure></div>
+    <p class="pcap">每一塊都受前一塊影響，看不出原圖輪廓</p>
+  </div>
+  <div class="mode-panel" role="tabpanel" data-panel="1" hidden>
+    <div class="chain">
+      <div class="blk"><span class="b pt">P₁</span><i>↓</i><span class="b x">⊕ IV</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b ct">C₁</span></div>
+      <div class="link">C₁ →</div>
+      <div class="blk"><span class="b pt">P₂</span><i>↓</i><span class="b x">⊕ C₁</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b ct">C₂</span></div>
+      <div class="link">C₂ →</div>
+      <div class="blk"><span class="b pt">P₃</span><i>↓</i><span class="b x">⊕ C₂</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b ct">C₃</span></div>
+    </div>
+    <p class="pcap">每一塊要等前一塊加密完才能算，所以加密只能一塊接一塊</p>
+  </div>
+  <div class="mode-panel" role="tabpanel" data-panel="2" hidden>
+    <div class="chain">
+      <div class="blk"><span class="b ct">C₁</span><i>↓</i><span class="b k">D<sub>K</sub></span><i>↓</i><span class="b x">⊕ IV</span><i>↓</i><span class="b pt">P₁</span></div>
+      <div class="link">C₁ →</div>
+      <div class="blk"><span class="b ct">C₂</span><i>↓</i><span class="b k">D<sub>K</sub></span><i>↓</i><span class="b x">⊕ C₁</span><i>↓</i><span class="b pt">P₂</span></div>
+      <div class="link">C₂ →</div>
+      <div class="blk"><span class="b ct">C₃</span><i>↓</i><span class="b k">D<sub>K</sub></span><i>↓</i><span class="b x">⊕ C₂</span><i>↓</i><span class="b pt">P₃</span></div>
+    </div>
+    <p class="pcap">密文全部都拿到了，所以每一塊可以同時解密</p>
+  </div>
+<figcaption class="figname">圖：CBC 的效果、加密流程與解密流程</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 4 章 · 操作模式" aria-label="第 25 張：CTR 與 GCM：現在網路上用的模式">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 4 章 · 操作模式</p><h2>CTR 與 GCM：現在網路上用的模式</h2><p class="lead">加密「計數器」得到一串亂碼，再和明文 XOR</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>CTR 每一塊可以同時計算（平行），也不需要填充</li><li>同一把金鑰下，計數器絕對不能重複</li><li>GCM 同時保護機密性與完整性，解密前先檢查認證標籤</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>計數器</dt><dd>每一塊都不一樣的編號，例如 1、2、3…</dd><dt>CTR</dt><dd>加密計數器得到一串亂碼，再和明文 XOR</dd><dt>GCM</dt><dd>以 CTR 加密，再加上認證標籤</dd><dt>認證標籤</dt><dd>一小段檢查碼，資料被改過就對不上</dd></dl></div><div class="formula"><p class="fx-h">公式與符號</p><div class="fx" data-expr="Cⱼ = Pⱼ ⊕ E_K(Tⱼ)" role="math" aria-label="Cⱼ = Pⱼ ⊕ E_K(Tⱼ)"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>C</mi><mi>j</mi></msub><mo>&#x0003D;</mo><msub><mi>P</mi><mi>j</mi></msub><mo>&#x02295;</mo><msub><mi>E</mi><mi>K</mi></msub><mo stretchy="false">&#x00028;</mo><msub><mi>T</mi><mi>j</mi></msub><mo stretchy="false">&#x00029;</mo></mrow></math></div><dl class="syms"><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>T</mi><mi>j</mi></msub></mrow></math></dt><dd>第 j 塊的計數器</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>E</mi><mi>K</mi></msub></mrow></math></dt><dd>用金鑰 K 做區塊加密</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>P</mi><mi>j</mi></msub></mrow></math></dt><dd>第 j 塊明文</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>C</mi><mi>j</mi></msub></mrow></math></dt><dd>第 j 塊密文</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="chain three">
+    <div class="blk"><span class="b cnt">T₁</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b x">⊕ P₁</span><i>↓</i><span class="b ct">C₁</span></div>
+    <div class="link sep"></div>
+    <div class="blk"><span class="b cnt">T₂</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b x">⊕ P₂</span><i>↓</i><span class="b ct">C₂</span></div>
+    <div class="link sep"></div>
+    <div class="blk"><span class="b cnt">T₃</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b x">⊕ P₃</span><i>↓</i><span class="b ct">C₃</span></div>
+  </div>
+  <div class="gcm"><b>GCM</b> = CTR 加密 ＋ 認證標籤 <span class="tagbox">標籤對得上 ✔ 才解密</span></div>
+<figcaption class="figname">圖：CTR 加密流程與 GCM</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide divider" data-topic="第 5 章 · 公開金鑰加密" aria-label="第 26 張：第 5 章：公開金鑰加密">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 5 章 · 公開金鑰加密</p><h2><span class="chno">5</span>第 5 章：公開金鑰加密</h2></header>
+    <div class="slide-body div3">
+      <div class="recap"><p class="dh">剛剛學到</p><ul class="points"><li>AES 搭配 GCM 模式，可以同時防偷看和防竄改</li><li>可是雙方必須先有同一把金鑰，這就是金鑰分配問題</li></ul></div>
+      <div class="turn"><p class="dh">但是……</p><p class="q">兩個從沒見過面的人，第一次在網路上連線，要怎麼先拿到同一把金鑰？</p><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>公開金鑰加密</dt><dd>本章主角：用一對金鑰，一把公開、一把保密</dd></dl></div></div>
+      <div class="next" data-glossary-skip><p class="dh">這一章會看到</p><ol><li>為什麼需要公開金鑰加密</li><li>Diffie–Hellman：在公開場合約定金鑰</li><li>RSA：產生金鑰、加密與解密</li><li>數位簽章：證明是誰寫的</li></ol></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 5 章 · 公開金鑰加密" aria-label="第 27 張：為什麼需要公開金鑰加密？">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 5 章 · 公開金鑰加密</p><h2>為什麼需要公開金鑰加密？</h2><p class="lead">對稱式加密的難題：金鑰要怎麼先交給對方？</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>1976 年 Diffie 與 Hellman 提出：加密用的金鑰可以公開</li><li>別人用你的公鑰加密，只有你的私鑰能解開</li><li>從公鑰算不出私鑰，所以公鑰可以放心公開</li><li>缺點：運算比對稱式加密慢很多，不適合大量資料</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>公開金鑰加密</dt><dd>又稱非對稱式加密：用一對金鑰，一把公開、一把保密</dd><dt>公鑰</dt><dd>可以公開給所有人的那一把</dd><dt>私鑰</dt><dd>只有自己知道的那一把</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="mb">
+    <div class="mbc pub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a4 4 0 0 1 8 0v9H4z"/><path d="M12 10h8v9h-8"/><path d="M6 14h4"/></svg><b>公鑰 ＝ 投信口</b><span>誰都可以把信投進去（加密）</span></div>
+    <div class="mbc key"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M21 12v2"/></svg><b>私鑰 ＝ 信箱鑰匙</b><span>只有主人能打開取信（解密）</span></div>
+  </div>
+<figcaption class="figname">圖：信箱比喻</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 5 章 · 公開金鑰加密" aria-label="第 28 張：Diffie–Hellman：在公開場合約定同一把金鑰">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 5 章 · 公開金鑰加密</p><h2>Diffie–Hellman：在公開場合約定同一把金鑰</h2><p class="lead">兩個人在大家都聽得到的地方喊數字，最後卻得到只有彼此知道的金鑰</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>雙方各挑一個祕密數字 X，只把算出來的 Y 公開</li><li>各自用「對方的 Y」和「自己的 X」計算，得到同一把 K</li><li>偷聽的人只看到 Y，要算回 X 非常困難（離散對數問題）</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>金鑰交換</dt><dd>雙方在公開通道上傳數字，最後算出同一把祕密金鑰</dd><dt>質數</dt><dd>只能被 1 和自己整除的數，例如 23</dd></dl></div><div class="formula"><p class="fx-h">公式與符號</p><div class="fx" data-expr="Y = α^X mod q，K = (對方的 Y)^X mod q" role="math" aria-label="Y = α^X mod q，K = (對方的 Y)^X mod q"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>Y</mi><mo>&#x0003D;</mo><msup><mi>&#x003B1;</mi><mrow><mi>X</mi></mrow></msup><mo>mod</mo><mi>q</mi><mo>&#x0002C;</mo><mspace width="2em" /><mi>K</mi><mo>&#x0003D;</mo><mo stretchy="false">&#x00028;</mo><msub><mi>Y</mi><mrow><mtext>對方</mtext></mrow></msub><msup><mo stretchy="false">&#x00029;</mo><mrow><mi>X</mi></mrow></msup><mo>mod</mo><mi>q</mi></mrow></math></div><dl class="syms"><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>q</mi></mrow></math></dt><dd>公開的質數</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>&#x003B1;</mi></mrow></math></dt><dd>公開的底數</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>X</mi></mrow></math></dt><dd>自己挑的祕密數字，不公開</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>Y</mi></mrow></math></dt><dd>算出來公開給對方的數字</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>K</mi></mrow></math></dt><dd>雙方算出的同一把金鑰</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <table class="tbl dh">
+    <thead><tr><th></th><th>Alice</th><th>Bob</th></tr></thead>
+    <tbody>
+      <tr><td>公開的 q、α</td><td colspan="2" class="mono">q = 23，α = 5</td></tr>
+      <tr><td>祕密數字 X</td><td class="mono secret">X = 4</td><td class="mono secret">X = 3</td></tr>
+      <tr><td>公開 Y = α<sup>X</sup> mod q</td><td class="mono pub">5<sup>4</sup> mod 23 = 4</td><td class="mono pub">5<sup>3</sup> mod 23 = 10</td></tr>
+      <tr class="shared"><td>算出 K</td><td class="mono">10<sup>4</sup> mod 23 → <span class="nowrap">K = 18</span></td><td class="mono">4<sup>3</sup> mod 23 → <span class="nowrap">K = 18</span></td></tr>
+    </tbody>
+  </table>
+  <p class="vnote">偷聽的人只看到 23、5、4、10；真正的 q 要非常大</p>
+<figcaption class="figname">圖：Diffie–Hellman 小數字範例</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 5 章 · 公開金鑰加密" aria-label="第 29 張：RSA（一）：怎麼產生一對金鑰">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 5 章 · 公開金鑰加密</p><h2>RSA（一）：怎麼產生一對金鑰</h2><p class="lead">安全性來自「把一個大數分解回兩個質數非常困難」</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>選兩個很大的質數 p、q，算出 n = p × q</li><li>公鑰是 (e, n)，可以公開；私鑰是 (d, n)，自己保管</li><li>n 公開，但要分解回 p、q 非常困難，所以算不出 d</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>RSA</dt><dd>1978 年提出的第一個實用公開金鑰加密方法</dd><dt>互質</dt><dd>兩個數除了 1 以外沒有共同的因數</dd></dl></div><div class="formula"><p class="fx-h">公式與符號</p><div class="fx" data-expr="n = p × q，φ = (p − 1) × (q − 1)，e × d mod φ = 1" role="math" aria-label="n = p × q，φ = (p − 1) × (q − 1)，e × d mod φ = 1"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>n</mi><mo>&#x0003D;</mo><mi>p</mi><mo>&#x000D7;</mo><mi>q</mi><mo>&#x0002C;</mo><mspace width="2em" /><mi>&#x003C6;</mi><mo>&#x0003D;</mo><mo stretchy="false">&#x00028;</mo><mi>p</mi><mo>&#x02212;</mo><mn>1</mn><mo stretchy="false">&#x00029;</mo><mo stretchy="false">&#x00028;</mo><mi>q</mi><mo>&#x02212;</mo><mn>1</mn><mo stretchy="false">&#x00029;</mo><mo>&#x0002C;</mo><mspace width="2em" /><mi>e</mi><mo>&#x000D7;</mo><mi>d</mi><mo>mod</mo><mi>&#x003C6;</mi><mo>&#x0003D;</mo><mn>1</mn></mrow></math></div><dl class="syms"><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>p</mi></mrow></math></dt><dd>祕密的大質數之一</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>q</mi></mrow></math></dt><dd>祕密的大質數之二</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>n</mi></mrow></math></dt><dd>p 乘 q 的結果（模數），公開</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>&#x003C6;</mi></mrow></math></dt><dd>算金鑰用的中間值，保密</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>d</mi></mrow></math></dt><dd>私鑰指數：和 φ 互質的數</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>e</mi></mrow></math></dt><dd>公鑰指數：讓 e × d 除以 φ 餘 1</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <ol class="rk">
+    <li><span>選質數</span><span class="mono">p = 47，q = 59</span></li>
+    <li><span>算 n</span><span class="mono">n = 47 × 59 = 2773</span></li>
+    <li><span>算 φ</span><span class="mono">φ = 46 × 58 = 2668</span></li>
+    <li class="key"><span>選 d</span><span class="mono">d = 157（和 2668 互質）</span></li>
+    <li class="pub"><span>算 e</span><span class="mono">e = 17（17 × 157 mod 2668 = 1）</span></li>
+  </ol>
+  <p class="rkey"><span class="pubk">公鑰 (17, 2773)</span><span class="privk">私鑰 (157, 2773)</span></p>
+<figcaption class="figname">圖：RSA 產生金鑰的例子</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 5 章 · 公開金鑰加密" aria-label="第 30 張：RSA（二）：加密與解密">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 5 章 · 公開金鑰加密</p><h2>RSA（二）：加密與解密</h2><p class="lead">加密和解密都是「次方，再取餘數」</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>加密：明文數字 M 做 e 次方，再除以 n 取餘數</li><li>解密：密文 C 做 d 次方，再除以 n 取餘數，就還原 M</li><li>論文例子：920 用公鑰 (17, 2773) 加密，得到 948</li><li>實務上 n 至少 2048 位元，且先用 OAEP 處理明文</li></ul><div class="formula"><p class="fx-h">公式與符號</p><div class="fx" data-expr="C = M^e mod n，M = C^d mod n" role="math" aria-label="C = M^e mod n，M = C^d mod n"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>C</mi><mo>&#x0003D;</mo><msup><mi>M</mi><mrow><mi>e</mi></mrow></msup><mo>mod</mo><mi>n</mi><mo>&#x0002C;</mo><mspace width="2em" /><mi>M</mi><mo>&#x0003D;</mo><msup><mi>C</mi><mrow><mi>d</mi></mrow></msup><mo>mod</mo><mi>n</mi></mrow></math></div><dl class="syms"><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>M</mi></mrow></math></dt><dd>明文（先轉成小於 n 的數字）</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>C</mi></mrow></math></dt><dd>密文（數字）</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>e</mi></mrow></math></dt><dd>公鑰指數，公開</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>d</mi></mrow></math></dt><dd>私鑰指數，保密</dd><dt><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>n</mi></mrow></math></dt><dd>模數 n = p × q，公開</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="rsa-flow">
+    <div class="party"><b>Alice（傳送者）</b><span>明文 <span class="mono">M = 920</span></span><span class="tag pubk">用 Bob 的公鑰 (17, 2773)</span><span class="mono">920<sup>17</sup> mod 2773 = 948</span></div>
+    <div class="send"><span class="mono ct">C = 948</span><span class="arrow" aria-hidden="true">→</span><small>偷聽的人看到也沒用</small></div>
+    <div class="party"><b>Bob（接收者）</b><span class="tag privk">用自己的私鑰 (157, 2773)</span><span class="mono">948<sup>157</sup> mod 2773 = 920</span><span>得回 <span class="mono">M = 920</span></span></div>
+  </div>
+<figcaption class="figname">圖：Alice 用 RSA 傳加密訊息給 Bob</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 5 章 · 公開金鑰加密" aria-label="第 31 張：數位簽章：私鑰簽、公鑰驗">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 5 章 · 公開金鑰加密</p><h2>數位簽章：私鑰簽、公鑰驗</h2><p class="lead">公開金鑰也能反過來用：證明「這真的是我寫的」</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>方向和加密相反：用私鑰簽章，任何人用公鑰驗證</li><li>簽章同時綁定訊息和簽署者，訊息被改就驗證不過</li><li>用途：確認身分、確認內容沒被改，簽署者也不能否認</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>數位簽章</dt><dd>用私鑰對訊息算出的一段資料，任何人都能用公鑰檢查</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="sig">
+    <div class="party"><b>Bob 簽章</b><span>訊息 M</span><span class="tag privk">用 Bob 的私鑰算出簽章 S</span></div>
+    <div class="send"><span class="mono">(M, S)</span><span class="arrow" aria-hidden="true">→</span></div>
+    <div class="party"><b>任何人驗證</b><span class="tag pubk">用 Bob 的公鑰檢查 S</span><span class="okv">✔ 是 Bob 簽的、M 沒被改</span></div>
+  </div>
+<figcaption class="figname">圖：數位簽章的簽與驗</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide divider" data-topic="第 6 章 · 綜合應用" aria-label="第 32 張：第 6 章：綜合應用">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 6 章 · 綜合應用</p><h2><span class="chno">6</span>第 6 章：綜合應用</h2></header>
+    <div class="slide-body div3">
+      <div class="recap"><p class="dh">剛剛學到</p><ul class="points"><li>對稱式加密速度快，適合保護大量資料</li><li>公開金鑰加密解決金鑰分配，數位簽章可以證明身分</li></ul></div>
+      <div class="turn"><p class="dh">但是……</p><p class="q">打開一個 https:// 開頭的網站的那一瞬間，這些技術是怎麼一起合作的？</p></div>
+      <div class="next" data-glossary-skip><p class="dh">這一章會看到</p><ol><li>HTTPS 與 TLS 1.3：全部組合起來</li><li>總結：每一章解決了什麼問題</li><li>參考資料</li></ol></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="第 6 章 · 綜合應用" aria-label="第 33 張：全部組合起來：HTTPS 與 TLS 1.3">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">第 6 章 · 綜合應用</p><h2>全部組合起來：HTTPS 與 TLS 1.3</h2><p class="lead">公開金鑰負責建立金鑰和確認身分，對稱式加密負責保護資料</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>交握：用 Diffie–Hellman（(EC)DHE）算出共用的金鑰</li><li>憑證＋數位簽章：確認連到的是真的網站</li><li>之後的資料用 AES-GCM 加密，同時防偷看與防竄改</li><li>TLS 1.3 不再用 RSA 傳送金鑰，RSA 只用在簽章</li></ul><div class="defs"><p class="defs-h">名詞小卡</p><dl><dt>HTTPS</dt><dd>網址前面有鎖頭的安全網頁連線</dd><dt>TLS</dt><dd>HTTPS 用來保護連線的協定，目前最新是 1.3 版</dd><dt>交握</dt><dd>連線一開始，雙方協商演算法並建立金鑰的步驟</dd><dt>憑證</dt><dd>網站證明身分用的電子文件，裡面有網站的公鑰</dd></dl></div></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="tls">
+    <div class="end">瀏覽器</div>
+    <div class="msg key">① 打招呼 ＋ Diffie–Hellman 公開值 →</div>
+    <div class="end">網站</div>
+    <div class="msg r key">← ② 回應 ＋ Diffie–Hellman 公開值</div>
+    <div class="msg r">← ③ 憑證 ＋ 數位簽章</div>
+    <div class="msg data">⇄ ④ 網頁資料：AES-GCM 加密</div>
+  </div>
+  <p class="vnote">①② 算出同一把金鑰（交握）；③ 確認是真的網站；④ 之後的資料都受保護</p>
+<figcaption class="figname">圖：瀏覽器連上 HTTPS 網站的過程</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="結尾" aria-label="第 34 張：總結：從古典密碼到現代密碼學">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">結尾</p><h2>總結：從古典密碼到現代密碼學</h2><p class="lead">每一章都在解決上一章留下的問題</p></header>
+    <div class="slide-body">
+      <div class="textcol"><ul class="points"><li>古典密碼：金鑰太少、藏不住字母規律，所以容易破解</li><li>對稱式加密（AES）：速度快，但要先安全地分配金鑰</li><li>操作模式很重要：避免 ECB，網路上用 GCM</li><li>公開金鑰（DH、RSA）：解決金鑰分配，也能做數位簽章</li><li>HTTPS：公開金鑰建立金鑰，對稱式加密保護資料</li></ul></div>
+      <div class="rightcol"><figure class="visual panel">
+  <div class="chain2">
+    <div class="c2"><span class="pb">古典密碼：金鑰太少、藏不住字母規律</span><i>→</i><span class="sol">AES<small>第 3 章 對稱式加密</small></span></div>
+    <div class="c2"><span class="pb">AES 一次只能加密一個區塊</span><i>→</i><span class="sol">CBC、CTR、GCM<small>第 4 章 操作模式</small></span></div>
+    <div class="c2"><span class="pb">金鑰要怎麼先交給對方？</span><i>→</i><span class="sol">Diffie–Hellman、RSA<small>第 5 章 公開金鑰加密</small></span></div>
+    <div class="c2"><span class="pb">怎麼確認對方是真的？</span><i>→</i><span class="sol">數位簽章與憑證<small>第 5、6 章</small></span></div>
+    <div class="c2"><span class="pb">全部要一起運作</span><i>→</i><span class="sol">HTTPS／TLS 1.3<small>第 6 章 綜合應用</small></span></div>
+  </div>
+  <p class="principle">不變的原則：安全來自 <span class="k">金鑰</span>，而不是隱藏演算法。</p>
+<figcaption class="figname">圖：每一章解決了什麼問題</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-topic="結尾" aria-label="第 35 張：參考資料">
+  <div class="slide-inner">
+    <header class="slide-head"><p class="eyebrow">結尾</p><h2>參考資料</h2>
+      <p class="lead">本簡報的內容都整理自以下 15 份資料（NIST 標準、IETF RFC、大學教材、原始論文與入門教材）</p></header>
+    <div class="slide-body single"><ol class="refs"><li><span class="sid">S01</span><span><a href="https://www.rfc-editor.org/rfc/rfc4949.txt" target="_blank" rel="noopener">RFC 4949: Internet Security Glossary, Version 2</a><br><small>R. Shirey (IETF)，2007</small></span></li><li><span class="sid">S02</span><span><a href="https://cacr.uwaterloo.ca/hac/about/chap1.pdf" target="_blank" rel="noopener">Handbook of Applied Cryptography, Chapter 1: Overview of Cryptography</a><br><small>A. Menezes, P. van Oorschot, S. Vanstone (CRC Press; hosted by University of Waterloo CACR)，1996</small></span></li><li><span class="sid">S03</span><span><a href="https://cacr.uwaterloo.ca/hac/about/chap7.pdf" target="_blank" rel="noopener">Handbook of Applied Cryptography, Chapter 7: Block Ciphers</a><br><small>A. Menezes, P. van Oorschot, S. Vanstone (CRC Press; hosted by University of Waterloo CACR)，1996</small></span></li><li><span class="sid">S04</span><span><a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf" target="_blank" rel="noopener">FIPS 197 (Update 1): Advanced Encryption Standard (AES)</a><br><small>NIST，2023</small></span></li><li><span class="sid">S05</span><span><a href="https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf" target="_blank" rel="noopener">NIST SP 800-38A: Recommendation for Block Cipher Modes of Operation: Methods and Techniques</a><br><small>M. Dworkin (NIST)，2001</small></span></li><li><span class="sid">S06</span><span><a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-175Br1.pdf" target="_blank" rel="noopener">NIST SP 800-175B Rev. 1: Guideline for Using Cryptographic Standards in the Federal Government: Cryptographic Mechanisms</a><br><small>E. Barker (NIST)，2020</small></span></li><li><span class="sid">S07</span><span><a href="https://ee.stanford.edu/~hellman/publications/24.pdf" target="_blank" rel="noopener">New Directions in Cryptography</a><br><small>W. Diffie, M. E. Hellman (IEEE Trans. Information Theory; hosted by Stanford)，1976</small></span></li><li><span class="sid">S08</span><span><a href="https://people.csail.mit.edu/rivest/Rsapaper.pdf" target="_blank" rel="noopener">A Method for Obtaining Digital Signatures and Public-Key Cryptosystems</a><br><small>R. L. Rivest, A. Shamir, L. Adleman (Communications of the ACM; hosted by MIT)，1978</small></span></li><li><span class="sid">S09</span><span><a href="https://www.rfc-editor.org/rfc/rfc8017.txt" target="_blank" rel="noopener">RFC 8017: PKCS #1: RSA Cryptography Specifications Version 2.2</a><br><small>K. Moriarty, B. Kaliski, J. Jonsson, A. Rusch (IETF)，2016</small></span></li><li><span class="sid">S10</span><span><a href="https://www.rfc-editor.org/rfc/rfc8446.txt" target="_blank" rel="noopener">RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3</a><br><small>E. Rescorla (IETF)，2018</small></span></li><li><span class="sid">S11</span><span><a href="https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf" target="_blank" rel="noopener">NIST SP 800-38D: Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC</a><br><small>M. Dworkin (NIST)，2007</small></span></li><li><span class="sid">S12</span><span><a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57pt1r5.pdf" target="_blank" rel="noopener">NIST SP 800-57 Part 1 Rev. 5: Recommendation for Key Management: Part 1 – General</a><br><small>E. Barker (NIST)，2020</small></span></li><li><span class="sid">S13</span><span><a href="https://joyofcryptography.com/pdf/book.pdf" target="_blank" rel="noopener">The Joy of Cryptography</a><br><small>Mike Rosulek (Oregon State University)，2021</small></span></li><li><span class="sid">S14</span><span><a href="https://www.crypto101.io/Crypto101.pdf" target="_blank" rel="noopener">Crypto 101</a><br><small>Laurens Van Houtven，2017</small></span></li><li><span class="sid">S15</span><span><a href="https://www.cloudflare.com/learning/ssl/what-is-encryption/" target="_blank" rel="noopener">What is encryption? | Cloudflare Learning Center</a><br><small>Cloudflare，2024</small></span></li></ol></div>
+  </div>
+</section>
+</main>
+
+<nav class="controls" aria-label="投影片控制">
+  <button class="btn" id="prev" type="button" aria-label="上一頁">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span class="txt">上一頁</span>
+  </button>
+  <span id="counter" aria-live="polite">1 / 35</span>
+  <div class="track" aria-hidden="true"><div id="progress-bar"></div></div>
+  <button class="btn" id="next" type="button" aria-label="下一頁">
+    <span class="txt">下一頁</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
+  <button class="btn" id="fullscreen" type="button" aria-label="全螢幕（F）">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+  </button>
+</nav>
+
+<script>
+(() => {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const n = slides.length;
+  const counter = document.getElementById('counter');
+  const bar = document.getElementById('progress-bar');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+  const fsBtn = document.getElementById('fullscreen');
+  const topic = document.getElementById('topic-label');
+  let cur = 0;
+
+  function goTo(i) {
+    i = Math.max(0, Math.min(n - 1, i | 0));
+    slides.forEach((s, k) => {
+      const on = k === i;
+      s.classList.toggle('active', on);
+      s.setAttribute('aria-hidden', on ? 'false' : 'true');
+      if (on) s.removeAttribute('inert'); else s.setAttribute('inert', '');
+    });
+    cur = i;
+    counter.textContent = (i + 1) + ' / ' + n;
+    bar.style.width = ((i + 1) / n * 100) + '%';
+    prevBtn.disabled = i === 0;
+    nextBtn.disabled = i === n - 1;
+    topic.textContent = slides[i].dataset.topic || '';
+    const inner = slides[i].querySelector('.slide-inner');
+    if (inner) inner.scrollTop = 0;
+    try { history.replaceState(null, '', '#s' + (i + 1)); } catch (e) { /* 某些環境不允許改網址 */ }
+  }
+  window.goTo = goTo;
+
+  prevBtn.addEventListener('click', () => goTo(cur - 1));
+  nextBtn.addEventListener('click', () => goTo(cur + 1));
+
+  function toggleFullscreen() {
+    try {
+      if (!document.fullscreenElement) {
+        const r = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+        if (r && r.catch) r.catch(() => {});
+      } else if (document.exitFullscreen) {
+        const r = document.exitFullscreen();
+        if (r && r.catch) r.catch(() => {});
+      }
+    } catch (e) { /* 不支援全螢幕的環境（例如部分手機） */ }
+  }
+  fsBtn.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', () => {
+    fsBtn.setAttribute('aria-label', document.fullscreenElement ? '離開全螢幕（F）' : '全螢幕（F）');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const t = e.target;
+    const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+    if (typing && t.type !== 'range') return;
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'PageDown': goTo(cur + 1); e.preventDefault(); break;
+      case 'ArrowLeft': case 'PageUp': goTo(cur - 1); e.preventDefault(); break;
+      case 'Home': goTo(0); e.preventDefault(); break;
+      case 'End': goTo(n - 1); e.preventDefault(); break;
+      case 'f': case 'F': toggleFullscreen(); break;
+    }
+  });
+
+  // 手機滑動切換
+  let sx = null, sy = null;
+  document.getElementById('deck').addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  document.getElementById('deck').addEventListener('touchend', (e) => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) goTo(cur + (dx < 0 ? 1 : -1));
+    sx = sy = null;
+  });
+
+  // ---------- Caesar 互動示範 ----------
+  const cIn = document.getElementById('caesar-input');
+  const cShift = document.getElementById('caesar-shift');
+  const cOut = document.getElementById('caesar-output');
+  const cK = document.getElementById('caesar-k');
+  const alpha = document.getElementById('caesar-alpha');
+  const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  function caesar(text, k) {
+    return text.toUpperCase().replace(/[A-Z]/g, ch => A[(ch.charCodeAt(0) - 65 + k) % 26]);
+  }
+  let caesarDec = false;                 // false = 加密 c = m + k；true = 解密 m = c − k
+  const encBtn = document.getElementById('caesar-mode-enc');
+  const decBtn = document.getElementById('caesar-mode-dec');
+  function renderCaesar() {
+    const k = parseInt(cShift.value, 10) || 0;
+    const shift = caesarDec ? (26 - k) % 26 : k;
+    cK.textContent = k;
+    cOut.textContent = caesar(cIn.value, shift);
+    document.getElementById('caesar-in-label').textContent = caesarDec ? '密文' : '明文';
+    document.getElementById('caesar-out-label').textContent = caesarDec ? '明文' : '密文';
+    const used = new Set(cIn.value.toUpperCase().replace(/[^A-Z]/g, ''));
+    let html = '';
+    for (const ch of A) html += '<span class="top' + (used.has(ch) ? ' hit' : '') + '">' + ch + '</span>';
+    for (const ch of A) html += '<span class="bot' + (used.has(ch) ? ' hit' : '') + '">' + A[(ch.charCodeAt(0) - 65 + shift) % 26] + '</span>';
+    alpha.innerHTML = html;
+  }
+  function setCaesarMode(dec) {
+    if (dec !== caesarDec) cIn.value = cOut.textContent;   // 把剛才的結果帶過去，示範「解回來」
+    caesarDec = dec;
+    encBtn.setAttribute('aria-pressed', String(!dec));
+    decBtn.setAttribute('aria-pressed', String(dec));
+    renderCaesar();
+  }
+  encBtn.addEventListener('click', () => setCaesarMode(false));
+  decBtn.addEventListener('click', () => setCaesarMode(true));
+  cIn.addEventListener('input', renderCaesar);
+  cShift.addEventListener('input', renderCaesar);
+  renderCaesar();
+
+  // ---------- AES 第 1 輪逐步圖解（數值來自 slide_content.json，已由 Content Validation 重算） ----------
+  const AES = {"input": "3243f6a8885a308d313198a2e0370734", "key_rows": ["2b 28 ab 09", "7e ae f7 cf", "15 d2 15 4f", "16 a6 88 3c"], "roundkey_rows": ["a0 88 23 2a", "fa 54 a3 6c", "fe 2c 39 76", "17 b1 39 05"], "frames": [{"id": "input", "label": "輸入排成 state", "op": "排列", "before": null, "with": null, "explain": "16 個位元組依「欄」填入 4×4：32 43 f6 a8 成為第 1 欄", "hl": [[0, 0], [1, 0], [2, 0], [3, 0]], "rows": ["32 88 31 e0", "43 5a 31 37", "f6 30 98 07", "a8 8d a2 34"]}, {"id": "start", "label": "初始 AddRoundKey", "op": "⊕ 金鑰", "before": "input", "with": "key", "explain": "每一格和金鑰同位置的位元組做 XOR：32 ⊕ 2b = 19", "hl": [[0, 0]], "rows": ["19 a0 9a e9", "3d f4 c6 f8", "e3 e2 8d 48", "be 2b 2a 08"]}, {"id": "sub", "label": "① SubBytes", "op": "查 S-box", "before": "start", "with": null, "explain": "每個位元組查 S-box 表替換：19 → 看第 1 列、第 9 欄 → d4", "hl": [[0, 0]], "rows": ["d4 e0 b8 1e", "27 bf b4 41", "11 98 5d 52", "ae f1 e5 30"]}, {"id": "shift", "label": "② ShiftRows", "op": "列位移", "before": "sub", "with": null, "explain": "第 r 列往左循環移 r 格：第 2 列 27 bf b4 41 → bf b4 41 27", "hl": [[1, 0], [1, 1], [1, 2], [1, 3]], "rows": ["d4 e0 b8 1e", "bf b4 41 27", "5d 52 11 98", "30 ae f1 e5"]}, {"id": "mix", "label": "③ MixColumns", "op": "欄混合", "before": "shift", "with": null, "explain": "每一欄乘上固定矩陣：d4 bf 5d 30 → 04 66 81 e5（04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30）", "hl": [[0, 0], [1, 0], [2, 0], [3, 0]], "rows": ["04 e0 48 28", "66 cb f8 06", "81 19 d3 26", "e5 9a 7a 4c"]}, {"id": "end", "label": "④ AddRoundKey", "op": "⊕ round key", "before": "mix", "with": "roundkey", "explain": "和第 1 輪的 round key 做 XOR：04 ⊕ a0 = a4，第 1 輪完成", "hl": [[0, 0]], "rows": ["a4 68 6b 02", "9c 9f 5b 6a", "7f 35 ea 50", "f2 2b 43 49"]}, {"id": "dec_addkey", "label": "AddRoundKey", "op": "⊕ round key", "before": "end", "with": "roundkey", "explain": "再 XOR 同一把 round key：a4 ⊕ a0 = 04，變回 MixColumns 的結果", "hl": [[0, 0]], "rows": ["04 e0 48 28", "66 cb f8 06", "81 19 d3 26", "e5 9a 7a 4c"]}, {"id": "dec_invmix", "label": "InvMixColumns", "op": "反矩陣", "before": "dec_addkey", "with": null, "explain": "每一欄乘上反矩陣：04 66 81 e5 → d4 bf 5d 30", "hl": [[0, 0], [1, 0], [2, 0], [3, 0]], "rows": ["d4 e0 b8 1e", "bf b4 41 27", "5d 52 11 98", "30 ae f1 e5"]}, {"id": "dec_invshift", "label": "InvShiftRows", "op": "列移回", "before": "dec_invmix", "with": null, "explain": "每一列往右移回去：bf b4 41 27 → 27 bf b4 41", "hl": [[1, 0], [1, 1], [1, 2], [1, 3]], "rows": ["d4 e0 b8 1e", "27 bf b4 41", "11 98 5d 52", "ae f1 e5 30"]}, {"id": "dec_invsub", "label": "InvSubBytes", "op": "反查 S-box", "before": "dec_invshift", "with": null, "explain": "反查 S-box：d4 → 19，回到這一輪開始時的 state", "hl": [[0, 0]], "rows": ["19 a0 9a e9", "3d f4 c6 f8", "e3 e2 8d 48", "be 2b 2a 08"]}]};
+  const aesBefore = document.getElementById('aes-before');
+  const aesAfter = document.getElementById('aes-after');
+  const aesWith = document.getElementById('aes-with');
+  const aesBtns = Array.from(document.querySelectorAll('.aes-step'));
+  function fillGrid(el, rows, hl) {
+    const isHl = (r, c) => (hl || []).some(h => h[0] === r && h[1] === c);
+    el.innerHTML = rows.map((row, r) => row.split(' ').map((v, c) =>
+      '<span class="cell' + (isHl(r, c) ? ' hl' : '') + '">' + v + '</span>').join('')).join('');
+  }
+  function showAes(k) {
+    const f = AES.frames[k];
+    const prev = f.before ? AES.frames.find(x => x.id === f.before) : null;
+    if (prev) {
+      fillGrid(aesBefore, prev.rows, f.hl);
+      document.getElementById('aes-before-label').textContent = prev.label;
+    } else {   // 輸入：原始 16 個位元組依序每 4 個一行，對照右邊「依欄」排好的 state
+      const b = AES.input.match(/../g);
+      fillGrid(aesBefore, [0, 1, 2, 3].map(i => b.slice(4 * i, 4 * i + 4).join(' ')), [[0, 0], [0, 1], [0, 2], [0, 3]]);
+      document.getElementById('aes-before-label').textContent = '輸入位元組（依序）';
+    }
+    fillGrid(aesAfter, f.rows, f.hl);
+    document.getElementById('aes-after-label').textContent = f.label;
+    document.getElementById('aes-op').textContent = f.op;
+    if (f.with) { fillGrid(aesWith, AES[f.with + '_rows'], f.hl); aesWith.hidden = false; }
+    else { aesWith.innerHTML = ''; aesWith.hidden = true; }
+    document.getElementById('aes-explain').textContent = f.explain;
+    aesBtns.forEach((b, i) => { b.classList.toggle('on', i === k); b.setAttribute('aria-pressed', String(i === k)); });
+  }
+  aesBtns.forEach(b => b.addEventListener('click', () => showAes(parseInt(b.dataset.step, 10))));
+  showAes(0);
+
+  // ---------- 操作模式分頁 ----------
+  const modeTabs = Array.from(document.querySelectorAll('.mode-tab'));
+  const modePanels = Array.from(document.querySelectorAll('.mode-panel'));
+  function showModeTab(j) {
+    modeTabs.forEach((t, i) => t.setAttribute('aria-selected', String(i === j)));
+    modePanels.forEach((p, i) => { p.hidden = i !== j; });
+  }
+  modeTabs.forEach(t => t.addEventListener('click', () => showModeTab(parseInt(t.dataset.tab, 10))));
+
+  // ---------- ECB vs CBC 示範（玩具 32 位元區塊加密，非 AES）----------
+  // 圖案以 24×16 個「區塊」設計，每個區塊 4×4 像素；每區塊 16 像素 × 2 位元 = 32 位元。
+  const ART = [
+    '........................',
+    '........................',
+    '.........######.........',
+    '........##....##........',
+    '.......##......##.......',
+    '.......##......##.......',
+    '.....##############.....',
+    '.....##############.....',
+    '.....######..######.....',
+    '.....######..######.....',
+    '.....#######.######.....',
+    '.....#######.######.....',
+    '.....##############.....',
+    '.....##############.....',
+    '........................',
+    '........................'
+  ];
+  function toyEncrypt(x) {               // 可逆的玩具置換：加金鑰、旋轉、乘奇數、xorshift
+    const K = [0xA5C3F00D, 0x1B873593, 0xCC9E2D51, 0x7FEB352D];
+    x >>>= 0;
+    for (let r = 0; r < 4; r++) {
+      x = (x + K[r]) >>> 0;
+      x = ((x << 7) | (x >>> 25)) >>> 0;
+      x = Math.imul(x, 0x2C1B3C6D) >>> 0;
+      x = (x ^ (x >>> 15)) >>> 0;
+    }
+    return x;
+  }
+  function tokens() {
+    const cs = getComputedStyle(document.documentElement);
+    return { bg: cs.getPropertyValue('--surface').trim(), fg: cs.getPropertyValue('--accent').trim(), hole: cs.getPropertyValue('--key').trim() };
+  }
+  function cipherColor(c) {
+    // 把密文最高位元組畫成明暗（12%～92%），色相固定：密文值不同 → 明暗明顯不同
+    const l = 12 + ((c >>> 24) / 255) * 80;
+    return 'hsl(222 28% ' + l.toFixed(1) + '%)';
+  }
+  function drawModes() {
+    const tk = tokens();
+    const ids = ['ecb-orig', 'ecb-ecb', 'ecb-cbc'];
+    const ctx = ids.map(id => document.getElementById(id).getContext('2d'));
+    let prev = 0x6A09E667;                // CBC 的 IV（示意用固定值）
+    for (let by = 0; by < 16; by++) {
+      for (let bx = 0; bx < 24; bx++) {
+        const v = ART[by][bx] === '#' ? 3 : 0;   // 2 位元墨色：00 = 空白、11 = 滿墨
+        // 區塊內 16 個像素都相同顏色 → 32 位元區塊值
+        let block = 0;
+        for (let p = 0; p < 16; p++) block = ((block << 2) | v) >>> 0;
+        ctx[0].fillStyle = v ? tk.fg : tk.bg;
+        ctx[0].fillRect(bx * 4, by * 4, 4, 4);
+        ctx[1].fillStyle = cipherColor(toyEncrypt(block));            // ECB：E(P)
+        ctx[1].fillRect(bx * 4, by * 4, 4, 4);
+        prev = toyEncrypt((block ^ prev) >>> 0);                      // CBC：E(P ⊕ 前一塊密文)
+        ctx[2].fillStyle = cipherColor(prev);
+        ctx[2].fillRect(bx * 4, by * 4, 4, 4);
+      }
+    }
+  }
+  drawModes();
+  try {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawModes);
+    new MutationObserver(drawModes).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  } catch (e) { /* 舊瀏覽器 */ }
+
+  // 起始頁：網址 #sN
+  const m = /^#s(\d+)$/.exec(location.hash || '');
+  goTo(m ? parseInt(m[1], 10) - 1 : 0);
+})();
+</script>
+</body>
+</html>

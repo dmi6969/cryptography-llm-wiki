@@ -1,0 +1,98 @@
+{
+  "_comment": "Wiki Validation 的必要概念清單：每個主題的頁面（合併）必須出現這些英文術語（不分大小寫）。在寫 Wiki 內容之前訂定。",
+  "required_terms": {
+    "T1": [
+      "cryptography",
+      "plaintext",
+      "ciphertext",
+      "encryption",
+      "decryption",
+      "key",
+      "confidentiality",
+      "integrity",
+      "authentication",
+      "non-repudiation",
+      "Kerckhoffs"
+    ],
+    "T2": [
+      "Caesar",
+      "substitution",
+      "transposition",
+      "key space",
+      "frequency",
+      "Vigen"
+    ],
+    "T3": [
+      "symmetric",
+      "secret key",
+      "key distribution",
+      "block cipher",
+      "stream cipher",
+      "AES",
+      "Rijndael",
+      "128",
+      "192",
+      "256",
+      "round",
+      "SubBytes",
+      "ShiftRows",
+      "MixColumns",
+      "AddRoundKey"
+    ],
+    "T4": [
+      "mode",
+      "ECB",
+      "CBC",
+      "CTR",
+      "IV",
+      "counter",
+      "padding",
+      "parallel",
+      "GCM",
+      "authenticated"
+    ],
+    "T5": [
+      "public key",
+      "private key",
+      "Diffie",
+      "Hellman",
+      "key exchange",
+      "RSA",
+      "modulus",
+      "prime",
+      "OAEP",
+      "signature",
+      "PSS",
+      "TLS 1.3",
+      "forward secrecy",
+      "certificate"
+    ],
+    "T6": [
+      "bit",
+      "byte",
+      "hexadecimal",
+      "XOR",
+      "mod",
+      "remainder"
+    ]
+  },
+  "allowed_relation_types": [
+    "prerequisite",
+    "instance-of",
+    "part-of",
+    "limitation-motivates",
+    "contrasts-with",
+    "used-by",
+    "builds-on",
+    "related"
+  ],
+  "required_sections": [
+    "## 定義",
+    "## 重點",
+    "## 關聯",
+    "## 來源引文"
+  ],
+  "min_quote_chars": 20,
+  "near_duplicate_error": 0.8,
+  "near_duplicate_warn": 0.6
+}

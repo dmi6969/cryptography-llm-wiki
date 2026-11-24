@@ -1,0 +1,119 @@
+{
+  "passed": false,
+  "n_errors": 5,
+  "n_warnings": 0,
+  "by_check": {
+    "H1": {
+      "error": 0,
+      "warn": 0
+    },
+    "H2": {
+      "error": 0,
+      "warn": 0
+    },
+    "H3": {
+      "error": 0,
+      "warn": 0
+    },
+    "H4": {
+      "error": 0,
+      "warn": 0
+    },
+    "H5": {
+      "error": 0,
+      "warn": 0
+    },
+    "H6": {
+      "error": 4,
+      "warn": 0
+    },
+    "H7": {
+      "error": 0,
+      "warn": 0
+    },
+    "H8": {
+      "error": 1,
+      "warn": 0
+    }
+  },
+  "issues": [
+    {
+      "check": "H8",
+      "severity": "error",
+      "where": "slide 5",
+      "msg": "畫面上第一次出現「公開金鑰加密」，但之前沒有解釋"
+    },
+    {
+      "check": "H6",
+      "severity": "error",
+      "where": "slide 6",
+      "msg": "1280×720 內容溢出（scrollHeight 673 > 618）：['DIV.rightcol:公式與符號a mod na被除的數n除數（正整數）mod取餘', 'FIGURE.visual panel:mod 7 時鐘\\n      \\n        012345', 'DIV.tools:mod 7 時鐘\\n      \\n        012345']"
+    },
+    {
+      "check": "H6",
+      "severity": "error",
+      "where": "slide 21",
+      "msg": "1280×720 內容溢出（scrollHeight 700 > 618）：['DIV.rightcol:公式與符號Cⱼ = E_K(Pⱼ ⊕ Cⱼ₋₁)，Pⱼ = ', 'FIGURE.visual panel:效果\\n    加密流程\\n    解密流程\\n  \\n  \\n   ', 'DIV.mode-panel:同一張鎖頭圖，CBC 加密後\\n    每一塊都受前一塊影響，']"
+    },
+    {
+      "check": "H6",
+      "severity": "error",
+      "where": "slide 24",
+      "msg": "1280×720 內容溢出（scrollHeight 633 > 618）：['DIV.rightcol:公式與符號Y = α^X mod q，K = (對方的 Y)', 'FIGURE.visual panel:AliceBob\\n    \\n      公開的 q、αq =']"
+    },
+    {
+      "check": "H6",
+      "severity": "error",
+      "where": "slide 25",
+      "msg": "1280×720 內容溢出（scrollHeight 677 > 618）：['DIV.rightcol:公式與符號n = p × q，φ = (p − 1) × (', 'FIGURE.visual panel:選質數p = 47，q = 59\\n    算 nn = 47', 'P.rkey:公鑰 (17, 2773)私鑰 (157, 2773)']"
+    }
+  ],
+  "stats": {
+    "file": "Slides\\index.html",
+    "bytes": 106768,
+    "external_requests": [
+      "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+    ],
+    "slides_in_dom": 30,
+    "navigation": {
+      "初始": true,
+      "第 1 頁按 ←": true,
+      "→": true,
+      "下一頁按鈕": true,
+      "上一頁按鈕": true,
+      "←": true,
+      "連按 → 到最後": true,
+      "最後一頁按 ←": true
+    },
+    "fullscreen": {
+      "requestFullscreen_calls": 1,
+      "fullscreenElement_after_click": true
+    },
+    "desktop_overflow_slides": [
+      6,
+      21,
+      24,
+      25
+    ],
+    "demos": {
+      "caesar HELLO+3": "KHOOR",
+      "caesar HAL+1": "IBM",
+      "caesar ABC+0": "ABC",
+      "ecb": {
+        "distinct": [
+          2,
+          2,
+          170
+        ],
+        "ecbStructure": 1,
+        "cbcStructure": 0.0036779730281977932,
+        "ecbContrast": 9.034152677929736
+      },
+      "aes_steps_ok": "10/10",
+      "caesar decrypt KHOOR-3": "HELLO",
+      "mode_tabs": 3
+    },
+    "mobile_hscroll_slides": []
+  },
+  "decision": "retry"
+}

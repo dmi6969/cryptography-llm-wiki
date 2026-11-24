@@ -1,0 +1,6460 @@
+# Execution Log（實際執行紀錄）
+
+> 本檔由 `python Workflow/graph.py report` 從 `Workflow/logs/events.jsonl` 自動產生，每一筆都是 Graph 執行當下寫入的事件；檢查節點的完整結果在 `Workflow/logs/*_validation_*.json`、`html_test_*.json`。
+
+## 總覽
+
+| # | 時間 | Run | 節點 | 嘗試 | 檢查結果 | 路由決策 |
+|---|---|---|---|---|---|---|
+| 1 | 2026-11-24 19:12:52 | run-01 | Graph 控制：start |  |  |  |
+| 2 | 2026-11-24 19:13:20 | run-01 | ① 資料取得 |  | ✅ 通過 |  |
+| 3 | 2026-11-24 19:13:35 | run-01 | ② 資料 Ingestion |  | ✅ 通過 |  |
+| 4 | 2026-11-24 19:13:35 | run-01 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 5 | 2026-11-24 19:35:30 | run-01 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 6 | 2026-11-24 19:35:30 | run-01 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 7 | 2026-11-24 19:37:46 | run-01 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 8 | 2026-11-24 19:37:46 | run-01 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 9 | 2026-11-24 19:43:41 | run-01 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 10 | 2026-11-24 19:43:41 | run-01 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 11 | 2026-11-24 19:46:51 | run-01 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 12 | 2026-11-24 19:46:51 | run-01 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 13 | 2026-11-24 19:53:30 | run-01 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 14 | 2026-11-24 19:53:31 | run-01 | ④ Wiki Validation | 1 | ❌ 未通過（errors=1） | retry |
+| 15 | 2026-11-24 19:53:31 | run-01 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 16 | 2026-11-24 19:53:53 | run-01 | ③ Wiki 知識整理（agent） | 1 |  |  |
+| 17 | 2026-11-24 19:53:53 | run-01 | ④ Wiki Validation | 2 | ✅ 通過 | pass |
+| 18 | 2026-11-24 19:53:53 | run-01 | ⑤ 查詢 Wiki |  | ✅ 通過 |  |
+| 19 | 2026-11-24 19:53:53 | run-01 | Graph 控制：暫停於 ['draft_content'] |  |  |  |
+| 20 | 2026-11-24 19:55:57 | run-01 | ⑥ 整理教學內容（agent） | 0 |  |  |
+| 21 | 2026-11-24 19:55:57 | run-01 | ⑦ Content Validation | 1 | ✅ 通過 | pass |
+| 22 | 2026-11-24 19:55:57 | run-01 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 23 | 2026-11-24 20:02:27 | run-01 | ⑧ 產生 HTML 簡報（agent） | 0 |  |  |
+| 24 | 2026-11-24 20:02:52 | run-01 | ⑨ HTML Validation | 1 | ✅ 通過 | pass |
+| 25 | 2026-11-24 20:02:52 | run-01 | ⑩ 完成 |  |  |  |
+| 26 | 2026-11-24 20:05:03 | run-01 | ★ 截圖人工檢查（Graph 外） |  |  |  |
+| 27 | 2026-11-24 20:05:09 | run-02 | Graph 控制：start |  |  |  |
+| 28 | 2026-11-24 20:05:09 | run-02 | ① 資料取得 |  | ✅ 通過 |  |
+| 29 | 2026-11-24 20:05:26 | run-02 | ② 資料 Ingestion |  | ✅ 通過 |  |
+| 30 | 2026-11-24 20:05:26 | run-02 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 31 | 2026-11-24 20:05:33 | run-02 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 32 | 2026-11-24 20:05:34 | run-02 | ④ Wiki Validation | 1 | ✅ 通過 | pass |
+| 33 | 2026-11-24 20:05:34 | run-02 | ⑤ 查詢 Wiki |  | ✅ 通過 |  |
+| 34 | 2026-11-24 20:05:34 | run-02 | Graph 控制：暫停於 ['draft_content'] |  |  |  |
+| 35 | 2026-11-24 20:05:41 | run-02 | ⑥ 整理教學內容（agent） | 0 |  |  |
+| 36 | 2026-11-24 20:05:41 | run-02 | ⑦ Content Validation | 1 | ✅ 通過 | pass |
+| 37 | 2026-11-24 20:05:41 | run-02 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 38 | 2026-11-24 20:05:43 | run-02 | ⑧ 產生 HTML 簡報（agent） | 0 |  |  |
+| 39 | 2026-11-24 20:06:04 | run-02 | ⑨ HTML Validation | 1 | ❌ 未通過（errors=1） | retry |
+| 40 | 2026-11-24 20:06:04 | run-02 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 41 | 2026-11-24 20:06:44 | run-02 | ⑧ 產生 HTML 簡報（agent） | 1 |  |  |
+| 42 | 2026-11-24 20:07:06 | run-02 | ⑨ HTML Validation | 2 | ❌ 未通過（errors=1） | retry |
+| 43 | 2026-11-24 20:07:06 | run-02 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 44 | 2026-11-24 20:07:41 | run-02 | ⑧ 產生 HTML 簡報（agent） | 2 |  |  |
+| 45 | 2026-11-24 20:08:02 | run-02 | ⑨ HTML Validation | 3 | ✅ 通過 | pass |
+| 46 | 2026-11-24 20:08:02 | run-02 | ⑩ 完成 |  |  |  |
+| 47 | 2026-11-24 20:10:53 | run-02 | ★ Validator 自我測試（注入錯誤） |  |  |  |
+| 48 | 2026-11-24 20:10:54 | run-02 | ★ Validator 自我測試（注入錯誤） |  |  |  |
+| 49 | 2026-11-24 20:11:46 | run-02 | ③b Batch 快速檢查（v2） |  |  |  |
+| 50 | 2026-11-24 20:33:23 | run-03 | Graph 控制：start |  |  |  |
+| 51 | 2026-11-24 20:33:23 | run-03 | ① 資料取得 |  | ✅ 通過 |  |
+| 52 | 2026-11-24 20:33:35 | run-03 | ② 資料 Ingestion |  | ✅ 通過 |  |
+| 53 | 2026-11-24 20:33:35 | run-03 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 54 | 2026-11-24 20:33:36 | run-03 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 55 | 2026-11-24 20:33:37 | run-03 | ④ Wiki Validation | 1 | ✅ 通過 | pass |
+| 56 | 2026-11-24 20:33:37 | run-03 | ⑤ 查詢 Wiki |  | ✅ 通過 |  |
+| 57 | 2026-11-24 20:33:37 | run-03 | Graph 控制：暫停於 ['draft_content'] |  |  |  |
+| 58 | 2026-11-24 20:33:38 | run-03 | ⑥ 整理教學內容（agent） | 0 |  |  |
+| 59 | 2026-11-24 20:33:38 | run-03 | ⑦ Content Validation | 1 | ✅ 通過 | pass |
+| 60 | 2026-11-24 20:33:38 | run-03 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 61 | 2026-11-24 20:33:39 | run-03 | ⑧ 產生 HTML 簡報（agent） | 0 |  |  |
+| 62 | 2026-11-24 20:33:59 | run-03 | ⑨ HTML Validation | 1 | ✅ 通過 | pass |
+| 63 | 2026-11-24 20:33:59 | run-03 | ⑩ 完成 |  |  |  |
+| 64 | 2026-11-24 20:40:24 | run-04 | Graph 控制：start |  |  |  |
+| 65 | 2026-11-24 20:40:24 | run-04 | ① 資料取得 |  | ✅ 通過 |  |
+| 66 | 2026-11-24 20:40:35 | run-04 | ② 資料 Ingestion |  | ✅ 通過 |  |
+| 67 | 2026-11-24 20:40:35 | run-04 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 68 | 2026-11-24 20:42:04 | run-04 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 69 | 2026-11-24 20:42:05 | run-04 | ④ Wiki Validation | 1 | ✅ 通過 | pass |
+| 70 | 2026-11-24 20:42:05 | run-04 | ⑤ 查詢 Wiki |  | ✅ 通過 |  |
+| 71 | 2026-11-24 20:42:05 | run-04 | Graph 控制：暫停於 ['draft_content'] |  |  |  |
+| 72 | 2026-11-24 20:43:41 | run-04 | ⑥ 整理教學內容（agent） | 0 |  |  |
+| 73 | 2026-11-24 20:43:41 | run-04 | ⑦ Content Validation | 1 | ❌ 未通過（errors=2） | retry |
+| 74 | 2026-11-24 20:43:41 | run-04 | Graph 控制：暫停於 ['draft_content'] |  |  |  |
+| 75 | 2026-11-24 20:45:54 | run-04 | ⑥ 整理教學內容（agent） | 1 |  |  |
+| 76 | 2026-11-24 20:45:54 | run-04 | ⑦ Content Validation | 2 | ✅ 通過 | pass |
+| 77 | 2026-11-24 20:45:54 | run-04 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 78 | 2026-11-24 20:48:31 | run-04 | ⑧ 產生 HTML 簡報（agent） | 0 |  |  |
+| 79 | 2026-11-24 20:48:54 | run-04 | ⑨ HTML Validation | 1 | ❌ 未通過（errors=1） | retry |
+| 80 | 2026-11-24 20:48:54 | run-04 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 81 | 2026-11-24 20:49:13 | run-04 | ⑧ 產生 HTML 簡報（agent） | 1 |  |  |
+| 82 | 2026-11-24 20:49:37 | run-04 | ⑨ HTML Validation | 2 | ✅ 通過 | pass |
+| 83 | 2026-11-24 20:49:37 | run-04 | ⑩ 完成 |  |  |  |
+| 84 | 2026-11-24 20:50:53 | run-04 | ★ 截圖人工檢查（Graph 外） |  |  |  |
+| 85 | 2026-11-24 20:50:54 | run-05 | Graph 控制：start |  |  |  |
+| 86 | 2026-11-24 20:50:54 | run-05 | ① 資料取得 |  | ✅ 通過 |  |
+| 87 | 2026-11-24 20:51:05 | run-05 | ② 資料 Ingestion |  | ✅ 通過 |  |
+| 88 | 2026-11-24 20:51:05 | run-05 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 89 | 2026-11-24 20:51:06 | run-05 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 90 | 2026-11-24 20:51:07 | run-05 | ④ Wiki Validation | 1 | ✅ 通過 | pass |
+| 91 | 2026-11-24 20:51:07 | run-05 | ⑤ 查詢 Wiki |  | ✅ 通過 |  |
+| 92 | 2026-11-24 20:51:07 | run-05 | Graph 控制：暫停於 ['draft_content'] |  |  |  |
+| 93 | 2026-11-24 20:51:08 | run-05 | ⑥ 整理教學內容（agent） | 0 |  |  |
+| 94 | 2026-11-24 20:51:08 | run-05 | ⑦ Content Validation | 1 | ✅ 通過 | pass |
+| 95 | 2026-11-24 20:51:08 | run-05 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 96 | 2026-11-24 20:51:10 | run-05 | ⑧ 產生 HTML 簡報（agent） | 0 |  |  |
+| 97 | 2026-11-24 20:51:33 | run-05 | ⑨ HTML Validation | 1 | ❌ 未通過（errors=10） | retry |
+| 98 | 2026-11-24 20:51:33 | run-05 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 99 | 2026-11-24 20:51:53 | run-05 | ⑧ 產生 HTML 簡報（agent） | 1 |  |  |
+| 100 | 2026-11-24 20:52:17 | run-05 | ⑨ HTML Validation | 2 | ✅ 通過 | pass |
+| 101 | 2026-11-24 20:52:17 | run-05 | ⑩ 完成 |  |  |  |
+| 102 | 2026-11-24 20:53:43 | run-05 | ★ Validator 自我測試（注入錯誤） |  |  |  |
+| 103 | 2026-11-24 21:05:34 | run-06 | Graph 控制：start |  |  |  |
+| 104 | 2026-11-24 21:05:52 | run-06 | ① 資料取得 |  | ❌ 未通過（errors=1） |  |
+| 105 | 2026-11-24 21:06:10 | run-06 | ② 資料 Ingestion |  | ❌ 未通過（errors=1） |  |
+| 106 | 2026-11-24 21:06:10 | run-06 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 107 | 2026-11-24 21:06:34 | run-06 | Graph 控制： |  |  |  |
+| 108 | 2026-11-24 21:06:35 | run-07 | Graph 控制：start |  |  |  |
+| 109 | 2026-11-24 21:06:49 | run-07 | ① 資料取得 |  | ✅ 通過 |  |
+| 110 | 2026-11-24 21:07:07 | run-07 | ② 資料 Ingestion |  | ✅ 通過 |  |
+| 111 | 2026-11-24 21:07:07 | run-07 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 112 | 2026-11-24 21:09:46 | run-07 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 113 | 2026-11-24 21:09:47 | run-07 | ③b Batch 快速檢查（v2） | 1 | ❌ 未通過（errors=3） | redo-batch |
+| 114 | 2026-11-24 21:09:47 | run-07 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 115 | 2026-11-24 21:10:16 | run-07 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 116 | 2026-11-24 21:10:16 | run-07 | ③b Batch 快速檢查（v2） | 2 | ✅ 通過 | next-batch |
+| 117 | 2026-11-24 21:10:17 | run-07 | ④ Wiki Validation | 1 | ✅ 通過 | pass |
+| 118 | 2026-11-24 21:10:17 | run-07 | ⑤ 查詢 Wiki |  | ✅ 通過 |  |
+| 119 | 2026-11-24 21:10:17 | run-07 | Graph 控制：暫停於 ['draft_content'] |  |  |  |
+| 120 | 2026-11-24 21:12:26 | run-07 | ⑤ 查詢 Wiki |  |  |  |
+| 121 | 2026-11-24 21:18:52 | run-07 | ⑥ 整理教學內容（agent） | 0 |  |  |
+| 122 | 2026-11-24 21:18:52 | run-07 | ⑦ Content Validation | 1 | ❌ 未通過（errors=3） | retry |
+| 123 | 2026-11-24 21:18:52 | run-07 | Graph 控制：暫停於 ['draft_content'] |  |  |  |
+| 124 | 2026-11-24 21:19:03 | run-07 | ⑥ 整理教學內容（agent） | 1 |  |  |
+| 125 | 2026-11-24 21:19:03 | run-07 | ⑦ Content Validation | 2 | ✅ 通過 | pass |
+| 126 | 2026-11-24 21:19:03 | run-07 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 127 | 2026-11-24 21:22:05 | run-07 | ⑧ 產生 HTML 簡報（agent） | 0 |  |  |
+| 128 | 2026-11-24 21:22:44 | run-07 | ⑨ HTML Validation | 1 | ❌ 未通過（errors=5） | retry |
+| 129 | 2026-11-24 21:22:44 | run-07 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 130 | 2026-11-24 21:23:20 | run-07 | ⑧ 產生 HTML 簡報（agent） | 1 |  |  |
+| 131 | 2026-11-24 21:24:00 | run-07 | ⑨ HTML Validation | 2 | ✅ 通過 | pass |
+| 132 | 2026-11-24 21:24:00 | run-07 | ⑩ 完成 |  |  |  |
+| 133 | 2026-11-24 21:26:53 | run-07 | ★ Validator 自我測試（注入錯誤） |  |  |  |
+| 134 | 2026-11-24 21:34:16 | run-08 | Graph 控制：start |  |  |  |
+| 135 | 2026-11-24 21:34:16 | run-08 | ① 資料取得 |  | ✅ 通過 |  |
+| 136 | 2026-11-24 21:35:33 | run-08 | ② 資料 Ingestion |  | ✅ 通過 |  |
+| 137 | 2026-11-24 21:35:34 | run-08 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 138 | 2026-11-24 21:35:35 | run-08 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 139 | 2026-11-24 21:35:36 | run-08 | ④ Wiki Validation | 1 | ✅ 通過 | pass |
+| 140 | 2026-11-24 21:35:36 | run-08 | ⑤ 查詢 Wiki |  | ✅ 通過 |  |
+| 141 | 2026-11-24 21:35:36 | run-08 | Graph 控制：暫停於 ['draft_content'] |  |  |  |
+| 142 | 2026-11-24 21:36:33 | run-08 | ⑥ 整理教學內容（agent） | 0 |  |  |
+| 143 | 2026-11-24 21:36:33 | run-08 | ⑦ Content Validation | 1 | ✅ 通過 | pass |
+| 144 | 2026-11-24 21:36:34 | run-08 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 145 | 2026-11-24 21:36:41 | run-08 | ⑧ 產生 HTML 簡報（agent） | 0 |  |  |
+| 146 | 2026-11-24 21:37:26 | run-08 | ⑨ HTML Validation | 1 | ❌ 未通過（errors=15） | retry |
+| 147 | 2026-11-24 21:37:26 | run-08 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 148 | 2026-11-24 21:37:34 | run-08 | ⑧ 產生 HTML 簡報（agent） | 1 |  |  |
+| 149 | 2026-11-24 21:38:19 | run-08 | ⑨ HTML Validation | 2 | ✅ 通過 | pass |
+| 150 | 2026-11-24 21:38:19 | run-08 | ⑩ 完成 |  |  |  |
+| 151 | 2026-11-24 21:39:34 | run-08 | ⑨ HTML Validation |  |  |  |
+| 152 | 2026-11-24 21:42:52 | run-08 | ★ Validator 自我測試（注入錯誤） |  |  |  |
+| 153 | 2026-11-24 21:46:09 | run-09 | Graph 控制：start |  |  |  |
+| 154 | 2026-11-24 21:46:09 | run-09 | ① 資料取得 |  | ✅ 通過 |  |
+| 155 | 2026-11-24 21:46:27 | run-09 | ② 資料 Ingestion |  | ✅ 通過 |  |
+| 156 | 2026-11-24 21:46:27 | run-09 | Graph 控制：暫停於 ['organize_wiki'] |  |  |  |
+| 157 | 2026-11-24 21:46:28 | run-09 | ③ Wiki 知識整理（agent） | 0 |  |  |
+| 158 | 2026-11-24 21:46:29 | run-09 | ④ Wiki Validation | 1 | ✅ 通過 | pass |
+| 159 | 2026-11-24 21:46:29 | run-09 | ⑤ 查詢 Wiki |  | ✅ 通過 |  |
+| 160 | 2026-11-24 21:46:29 | run-09 | Graph 控制：暫停於 ['draft_content'] |  |  |  |
+| 161 | 2026-11-24 21:47:17 | run-09 | ⑥ 整理教學內容（agent） | 0 |  |  |
+| 162 | 2026-11-24 21:47:17 | run-09 | ⑦ Content Validation | 1 | ❌ 未通過（errors=3） | retry |
+| 163 | 2026-11-24 21:47:17 | run-09 | Graph 控制：暫停於 ['draft_content'] |  |  |  |
+| 164 | 2026-11-24 21:47:31 | run-09 | ⑥ 整理教學內容（agent） | 1 |  |  |
+| 165 | 2026-11-24 21:47:31 | run-09 | ⑦ Content Validation | 2 | ✅ 通過 | pass |
+| 166 | 2026-11-24 21:47:31 | run-09 | Graph 控制：暫停於 ['build_html'] |  |  |  |
+| 167 | 2026-11-24 21:48:00 | run-09 | ⑧ 產生 HTML 簡報（agent） | 0 |  |  |
+| 168 | 2026-11-24 21:48:44 | run-09 | ⑨ HTML Validation | 1 | ✅ 通過 | pass |
+| 169 | 2026-11-24 21:48:44 | run-09 | ⑩ 完成 |  |  |  |
+| 170 | 2026-11-24 21:49:47 | run-09 | ★ 截圖人工檢查（Graph 外） |  |  |  |
+| 171 | 2026-11-24 21:50:43 | run-09 | ★ 截圖人工檢查（Graph 外） |  |  |  |
+| 172 | 2026-11-24 21:57:20 | run-09 | ★ Validator 自我測試（注入錯誤） |  |  |  |
+
+## 各節點詳細紀錄（輸入 / 輸出 / 檢查 / 修正）
+
+### #2 ① 資料取得 — 2026-11-24 19:13:20
+
+- **輸入**：
+
+```json
+{
+ "sources": [
+  "S01",
+  "S02",
+  "S03",
+  "S04",
+  "S05",
+  "S06",
+  "S07",
+  "S08",
+  "S09",
+  "S10",
+  "S11",
+  "S12"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "status": 200,
+  "bytes": 867626,
+  "sha256": "32d1e3837ae5a7d2e99a63f43c6fea3dd350ffc6ac55b3aaadad250546ad7f87",
+  "cached": false,
+  "tries": 1
+ },
+ "S02": {
+  "status": 200,
+  "bytes": 343046,
+  "sha256": "5de3d24deb279f5bc7669a90742876d2807200eabc9195bb6e8714b400b0532a",
+  "cached": false,
+  "tries": 1
+ },
+ "S03": {
+  "status": 200,
+  "bytes": 491864,
+  "sha256": "d8eb02f9aeb407f9fddf8bc9df00bc556b62b981e05a5fceb3d380eb9c3c6fed",
+  "cached": false,
+  "tries": 1
+ },
+ "S04": {
+  "status": 200,
+  "bytes": 1184436,
+  "sha256": "62c86eb567f13edb8f71826e985da870b04ef6381634f303cdb16e84d47becd1",
+  "cached": false,
+  "tries": 1
+ },
+ "S05": {
+  "status": 200,
+  "bytes": 378266,
+  "sha256": "66821162de1e7130c5fb5eedb22140d8d6d013ec51af4550bb095c2a9481a00e",
+  "cached": false,
+  "tries": 1
+ },
+ "S06": {
+  "status": 200,
+  "bytes": 1379086,
+  "sha256": "715d140154622ff08b895c735fa69e94aa6ace271dd50fef46c03f92cab42d84",
+  "cached": false,
+  "tries": 1
+ },
+ "S07": {
+  "status": 200,
+  "bytes": 2216632,
+  "sha256": "03fa2f493a1448a309586b9cf9e5c3a4dfd14735e0786cc94674519570b890ff",
+  "cached": false,
+  "tries": 1
+ },
+ "S08": {
+  "status": 200,
+  "bytes": 182059,
+  "sha256": "f7b1f78d9a7cbeb85e32b8c563a6db60771a5cc4bdc55580645f7cb778a4966b",
+  "cached": false,
+  "tries": 1
+ },
+ "S09": {
+  "status": 200,
+  "bytes": 154696,
+  "sha256": "1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11",
+  "cached": false,
+  "tries": 1
+ },
+ "S10": {
+  "status": 200,
+  "bytes": 337736,
+  "sha256": "47871bc8820a2c3b6ea89f061055577058862cf543686b82d10131239702b3bd",
+  "cached":
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "ok": 12,
+ "failed": {}
+}
+```
+
+### #3 ② 資料 Ingestion — 2026-11-24 19:13:35
+
+- **輸入**：
+
+```json
+{
+ "files": [
+  "S01.txt",
+  "S02.pdf",
+  "S03.pdf",
+  "S04.pdf",
+  "S05.pdf",
+  "S06.pdf",
+  "S07.pdf",
+  "S08.pdf",
+  "S09.txt",
+  "S10.txt",
+  "S11.pdf",
+  "S12.pdf"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "ok": true,
+  "pages": 366,
+  "chars": 867261,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "extracted": "S01.extracted.txt"
+ },
+ "S02": {
+  "ok": true,
+  "pages": 49,
+  "chars": 135580,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "extracted": "S02.extracted.txt"
+ },
+ "S03": {
+  "ok": true,
+  "pages": 61,
+  "chars": 184660,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "extracted": "S03.extracted.txt"
+ },
+ "S04": {
+  "ok": true,
+  "pages": 46,
+  "chars": 69838,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "extracted": "S04.extracted.txt"
+ },
+ "S05": {
+  "ok": true,
+  "pages": 66,
+  "chars": 120932,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "extracted": "S05.extracted.txt"
+ },
+ "S06": {
+  "ok": true,
+  "pages": 91,
+  "chars": 238077,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "extracted": "S06.extracted.txt"
+ },
+ "S07": {
+  "ok": true,
+  "pages": 11,
+  "chars": 66174,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "extracted": "S07.extracted.txt"
+ },
+ "S08": {
+  "ok": true,
+  "pages": 15,
+  "chars": 34868,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "extracted": "S08.extracted.txt"
+ },
+ "S09": {
+  "ok": true,
+  "pages": 79,
+  "chars": 154618,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "extracted": "S09.extracted.txt"
+ },
+ "S10": {
+  "ok": true,
+  "pages": 161,
+  "chars": 337576,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "extracted": "S10.extracted.txt"
+ },
+ "S11": {
+  "ok": true,
+  "pages": 39,
+  "chars": 77276,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "extracte
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "failed": []
+}
+```
+
+### #5 ③ Wiki 知識整理（agent） — 2026-11-24 19:35:30（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "build",
+ "batch": {
+  "batch": 1,
+  "topic": "T1",
+  "name": "Introduction to Cryptography",
+  "sources": [
+   "S01",
+   "S02"
+  ],
+  "nodes": [
+   "intro-what-is-crypto",
+   "intro-terminology",
+   "intro-kerckhoffs"
+  ]
+ }
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [
+   "Wiki/concepts/intro-kerckhoffs.md",
+   "Wiki/concepts/intro-terminology.md",
+   "Wiki/concepts/intro-what-is-crypto.md",
+   "Wiki/facts.json",
+   "Wiki/knowledge_map.md",
+   "Wiki/sources/S01-rfc4949.md",
+   "Wiki/sources/S02-hac-ch1.md"
+  ],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：Batch 1（T1 Introduction）：讀 S01 RFC 4949 條目（cryptography/encryption/key/key space/cipher/brute force/security by obscurity 等）與 S02 HAC §1.1–1.4；建立 intro-what-is-crypto、intro-terminology、intro-kerckhoffs、來源頁 S01/S02、facts.json 初版、knowledge_map 初版。決策：HAC 稱 DES 仍為標準（1996）已過時，以 RFC 4949（AES 取代 DES）為準並加時效註記；HAC 的 key pair (e,d) 與公鑰私鑰對區分說明；authentication 譯為「鑑別」、攻擊者用 Adversary（來源無 Eve）。使用者指示後續由 agent 自行完成，不再逐批確認。
+
+### #7 ③ Wiki 知識整理（agent） — 2026-11-24 19:37:46（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "build",
+ "batch": {
+  "batch": 2,
+  "topic": "T2",
+  "name": "Classical Cryptography",
+  "sources": [
+   "S02",
+   "S03"
+  ],
+  "nodes": [
+   "classical-caesar",
+   "classical-substitution",
+   "classical-transposition",
+   "classical-limitations"
+  ]
+ }
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [
+   "Wiki/concepts/classical-caesar.md",
+   "Wiki/concepts/classical-limitations.md",
+   "Wiki/concepts/classical-substitution.md",
+   "Wiki/concepts/classical-transposition.md",
+   "Wiki/sources/S03-hac-ch7.md"
+  ],
+  "modified": [
+   "Wiki/facts.json",
+   "Wiki/log.md",
+   "Wiki/sources/S02-hac-ch1.md"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：Batch 2（T2 Classical）：讀 S02 HAC §1.5.1–1.5.3 與 S03 HAC §7.3.1–7.3.5；建立 classical-caesar、classical-substitution（含 homophonic、Vigenère、Kasiski）、classical-transposition、classical-limitations 與來源頁 S03，更新 S02 來源頁，facts.json 新增 caesar.key_count=26、caesar.julius_key=3、substitution.key_count_english=26!。發現 PDF 把 Vigenère 的重音拆成獨立符號（Vigen+重音+ere），在 textnorm 加入去重音正規化，避免引文比對誤判。
+
+### #9 ③ Wiki 知識整理（agent） — 2026-11-24 19:43:41（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "build",
+ "batch": {
+  "batch": 3,
+  "topic": "T3",
+  "name": "Symmetric Encryption",
+  "sources": [
+   "S02",
+   "S04",
+   "S06",
+   "S12"
+  ],
+  "nodes": [
+   "sym-concept",
+   "sym-block-vs-stream",
+   "sym-aes"
+  ]
+ }
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [
+   "Wiki/concepts/sym-aes.md",
+   "Wiki/concepts/sym-block-vs-stream.md",
+   "Wiki/concepts/sym-concept.md",
+   "Wiki/sources/S04-fips197.md",
+   "Wiki/sources/S06-sp800-175b.md",
+   "Wiki/sources/S12-sp800-57pt1.md"
+  ],
+  "modified": [
+   "Wiki/concepts/classical-limitations.md",
+   "Wiki/concepts/intro-what-is-crypto.md",
+   "Wiki/facts.json",
+   "Wiki/log.md"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：Batch 3（T3 Symmetric）：讀 S02 HAC §1.5.1/1.5.4/1.5.5、S04 FIPS 197（Abstract、§1、Table 3、§5.1–5.1.4）、S06 SP 800-175B §3.2–3.2.1.4、S12 SP 800-57 Table 2；建立 sym-concept（含金鑰分配問題、1000 人需 499,500 把金鑰）、sym-block-vs-stream、sym-aes；來源頁 S04/S06/S12；facts 新增 aes.block_bits/key_bits/rounds/selected_year、des.withdrawn_year；misconceptions 新增 AES 區塊大小、DES 仍是標準。S06 指出 DES 於 2005 撤銷，進一步證實 batch 1 的時效判斷。本批發現並處理 S04 的 fi 連字遺失（詳見 log.md ingest-fix）。另將 intro-what-is-crypto 的時效註記移到『常見誤解』段落，避免與誤解規則衝突。
+
+### #11 ③ Wiki 知識整理（agent） — 2026-11-24 19:46:51（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "build",
+ "batch": {
+  "batch": 4,
+  "topic": "T4",
+  "name": "Block Cipher Modes",
+  "sources": [
+   "S03",
+   "S05",
+   "S11"
+  ],
+  "nodes": [
+   "mode-overview",
+   "mode-ecb",
+   "mode-cbc",
+   "mode-ctr",
+   "mode-gcm-aead"
+  ]
+ }
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [
+   "Wiki/concepts/mode-cbc.md",
+   "Wiki/concepts/mode-ctr.md",
+   "Wiki/concepts/mode-ecb.md",
+   "Wiki/concepts/mode-gcm-aead.md",
+   "Wiki/concepts/mode-overview.md",
+   "Wiki/sources/S05-sp800-38a.md",
+   "Wiki/sources/S11-sp800-38d.md"
+  ],
+  "modified": [
+   "Wiki/facts.json",
+   "Wiki/log.md",
+   "Wiki/sources/S03-hac-ch7.md"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：Batch 4（T4 Modes）：讀 S05 SP 800-38A（Abstract、§5.3 IV、§6.1 ECB、§6.2 CBC、§6.5 CTR、App.A 填充、App.B.2 計數器唯一性）、S03 HAC §7.2.2（ECB／CBC 性質、Remark 7.12）、S11 SP 800-38D（§1、§5.2、§8 IV 唯一性）；建立 mode-overview、mode-ecb、mode-cbc、mode-ctr、mode-gcm-aead 與來源頁 S05/S11，更新 S03；facts 新增 modes.sp800_38a、gcm.block_bits；misconceptions 新增 ECB 安全、IV 必須保密（用否定字排除避免誤判）。自我檢查時發現 mode-gcm-aead 內文引用 S05 但 frontmatter 未列，已補上來源與引文。
+
+### #13 ③ Wiki 知識整理（agent） — 2026-11-24 19:53:30（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "build",
+ "batch": {
+  "batch": 5,
+  "topic": "T5",
+  "name": "Asymmetric Cryptography & Applications",
+  "sources": [
+   "S06",
+   "S07",
+   "S08",
+   "S09",
+   "S10",
+   "S12"
+  ],
+  "nodes": [
+   "asym-public-key",
+   "asym-key-exchange",
+   "asym-rsa",
+   "asym-signature",
+   "app-hybrid-tls"
+  ]
+ }
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [
+   "Wiki/concepts/app-hybrid-tls.md",
+   "Wiki/concepts/asym-key-exchange.md",
+   "Wiki/concepts/asym-public-key.md",
+   "Wiki/concepts/asym-rsa.md",
+   "Wiki/concepts/asym-signature.md",
+   "Wiki/sources/S07-diffie-hellman-1976.md",
+   "Wiki/sources/S08-rsa-1978.md",
+   "Wiki/sources/S09-rfc8017.md",
+   "Wiki/sources/S10-rfc8446.md"
+  ],
+  "modified": [
+   "Wiki/facts.json",
+   "Wiki/knowledge_map.md",
+   "Wiki/log.md",
+   "Wiki/sources/S06-sp800-175b.md",
+   "Wiki/sources/S12-sp800-57pt1.md"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：Batch 5（T5 Asymmetric & Apps）：讀 S07 Diffie–Hellman §I/§III、S08 RSA（Abstract、§IV、§V、§VII、§VIII 範例）、S09 RFC 8017 §3.1/§7/§7.1/§8、S10 RFC 8446 §1/§1.2/§2/§4.4.3/§9.1/App.E.1、S06 §3.3、S12 Table 2；建立 asym-public-key、asym-key-exchange、asym-rsa、asym-signature、app-hybrid-tls 與來源頁 S07–S10，更新 S06/S12；facts 新增 rsa.example（論文 p=47,q=59）、rsa.paper_recommended_digits=200、rsa.k_for_112bit=2048、rsa.k_for_128bit=3072、tls13.*；misconception 新增 TLS1.3 RSA 金鑰傳輸。DH 小數字範例為自行計算，不放進 facts（無原文可引），改由 Content Validation 重算。完成 knowledge_map（索引 + Mermaid + 簡報對應）。另先寫好 query.py、slide_outline.json、content_check.py（在生成內容之前訂好檢查規則）。
+
+### #14 ④ Wiki Validation — 2026-11-24 19:53:31（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "pages": {
+  "concept_pages": 20,
+  "source_pages": 12,
+  "quotes": 236,
+  "facts": 17
+ }
+}
+```
+- **檢查結果**：❌ 未通過，errors=1，warnings=0
+  - 各檢查項：W1: 0E/0W，W2: 0E/0W，W3: 0E/0W，W4: 0E/0W，W5: 1E/0W，W6: 0E/0W，W7: 0E/0W，W8: 0E/0W
+  - `[W5]` app-hybrid-tls.md：引文在 S06 原文中找不到（可能是改寫或虛構）：there are methods that combine the use of symmetric and asymmetric alg
+- **路由決策**：retry
+
+### #16 ③ Wiki 知識整理（agent） — 2026-11-24 19:53:53（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 1,
+ "mode": "fix"
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Wiki/concepts/app-hybrid-tls.md",
+   "Wiki/log.md"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：Wiki 修正 retry 1：W5 引文比對失敗——app-hybrid-tls 引用 S06 的一句話橫跨 p.34–35，中間夾著 NIST 的頁首（NIST SP 800-175B REV. 1 … This publication is available …），所以無法逐字比對。修正：把引文拆成 p.34 與 p.35 兩條逐字引文，內文標註改為 [S06 p.34–35]。
+
+### #17 ④ Wiki Validation — 2026-11-24 19:53:53（attempt 2）
+
+- **輸入**：
+
+```json
+{
+ "pages": {
+  "concept_pages": 20,
+  "source_pages": 12,
+  "quotes": 237,
+  "facts": 17
+ }
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：W1: 0E/0W，W2: 0E/0W，W3: 0E/0W，W4: 0E/0W，W5: 0E/0W，W6: 0E/0W，W7: 0E/0W，W8: 0E/0W
+- **路由決策**：pass
+
+### #18 ⑤ 查詢 Wiki — 2026-11-24 19:53:53
+
+- **輸入**：
+
+```json
+{
+ "queries": [
+  {
+   "slide": 1,
+   "terms": []
+  },
+  {
+   "slide": 2,
+   "terms": [
+    "information security",
+    "資訊安全",
+    "confidentiality",
+    "integrity",
+    "non-repudiation"
+   ]
+  },
+  {
+   "slide": 3,
+   "terms": [
+    "plaintext",
+    "ciphertext",
+    "加密",
+    "Kerckhoffs",
+    "金鑰"
+   ]
+  },
+  {
+   "slide": 4,
+   "terms": [
+    "Caesar cipher",
+    "shift cipher",
+    "凱撒密碼"
+   ]
+  },
+  {
+   "slide": 5,
+   "terms": [
+    "frequency analysis",
+    "頻率分析",
+    "substitution cipher",
+    "transposition cipher",
+    "Vigenère"
+   ]
+  },
+  {
+   "slide": 6,
+   "terms": [
+    "symmetric encryption",
+    "secret key",
+    "key distribution problem",
+    "block cipher"
+   ]
+  },
+  {
+   "slide": 7,
+   "terms": [
+    "AES",
+    "Rijndael",
+    "AES-128"
+   ]
+  },
+  {
+   "slide": 8,
+   "terms": [
+    "mode of operation",
+    "ECB",
+    "CBC",
+    "CTR",
+    "IV"
+   ]
+  },
+  {
+   "slide": 9,
+   "terms": [
+    "public-key cryptography",
+    "public key",
+    "private key",
+    "Diffie-Hellman",
+    "key exchange"
+   ]
+  },
+  {
+   "slide": 10,
+   "terms": [
+    "RSA",
+    "RSA modulus",
+    "OAEP"
+   ]
+  },
+  {
+   "slide": 11,
+   "terms": [
+    "TLS 1.3",
+    "HTTPS",
+    "digital signature",
+    "AES-GCM",
+    "forward secrecy"
+   ]
+  },
+  {
+   "slide": 12,
+   "terms": [
+    "classical cipher weaknesses",
+    "AES",
+    "public-key cryptography",
+    "TLS 1.3"
+   ]
+  }
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "1": [],
+ "2": [
+  "intro-what-is-crypto",
+  "app-hybrid-tls"
+ ],
+ "3": [
+  "intro-terminology",
+  "sym-block-vs-stream",
+  "classical-limitations",
+  "asym-public-key",
+  "intro-kerckhoffs"
+ ],
+ "4": [
+  "classical-caesar"
+ ],
+ "5": [
+  "classical-substitution",
+  "classical-limitations",
+  "classical-transposition"
+ ],
+ "6": [
+  "sym-concept",
+  "sym-block-vs-stream"
+ ],
+ "7": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead",
+  "app-hybrid-tls"
+ ],
+ "8": [
+  "mode-overview",
+  "mode-ecb",
+  "mode-cbc",
+  "mode-ctr",
+  "mode-gcm-aead"
+ ],
+ "9": [
+  "asym-public-key",
+  "asym-key-exchange"
+ ],
+ "10": [
+  "asym-rsa",
+  "asym-signature"
+ ],
+ "11": [
+  "app-hybrid-tls",
+  "asym-signature",
+  "mode-gcm-aead"
+ ],
+ "12": [
+  "app-hybrid-tls",
+  "mode-gcm-aead",
+  "asym-rsa",
+  "sym-aes",
+  "classical-caesar"
+ ]
+}
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "slides_without_hits": []
+}
+```
+
+### #20 ⑥ 整理教學內容（agent） — 2026-11-24 19:55:57（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [
+   "Workflow/artifacts/slide_content.json"
+  ],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：draft_content：依 query_results.json 撰寫 12 張投影片的教學內容（每個重點標註 Wiki 節點與 [Sxx p.N] 引用、facts 數值、visual 描述），範例 caesar/rsa/dh 放在 examples 供驗證重算。教學順序：動機 → 術語 → 古典 → 古典限制 → 對稱 → AES → 模式 → 公鑰 → RSA → TLS → 總結。
+
+### #21 ⑦ Content Validation — 2026-11-24 19:55:57（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "slides": 12,
+ "points": 45,
+ "nodes_used": 20,
+ "wiki_nodes": 20
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：C1: 0E/0W，C2: 0E/0W，C3: 0E/0W，C4: 0E/0W，C5: 0E/0W，C6: 0E/0W
+- **路由決策**：pass
+
+### #23 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 20:02:27（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [
+   "Slides/index.html"
+  ],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：build_html：依 slide_content.json 手寫單一檔 Slides/index.html（HTML/CSS/JS，不需伺服器）。12 張投影片、上一頁／下一頁按鈕、←／→／Home／End 鍵、頁碼與進度條、全螢幕（按鈕與 F 鍵）、手機滑動、Caesar 滑桿互動、ECB/CBC 畫布示範（可逆玩具 32 位元區塊加密，標示非 AES）、DH／RSA 數值範例；每個重點後附頁碼標籤，每頁下方附來源連結；支援淺色／深色主題。
+
+### #24 ⑨ HTML Validation — 2026-11-24 20:02:52（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 52893,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 12,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    130
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0
+  }
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 0E/0W，H7: 0E/0W
+- **路由決策**：pass
+
+### #25 ⑩ 完成 — 2026-11-24 20:02:52
+
+- **輸出**：
+
+```json
+{
+ "attempts": {
+  "wiki": 2,
+  "content": 1,
+  "html": 1
+ },
+ "retries": {
+  "wiki": 1,
+  "content": 0,
+  "html": 0
+ }
+}
+```
+
+### #26 ★ 截圖人工檢查（Graph 外） — 2026-11-24 20:05:03
+
+- **修正／agent 說明**：Graph run-01 結束（status=done）後，agent 逐張檢視 HTML Validation 的截圖（screenshots/run-01_1）。發現 2 個自動測試沒抓到的問題：(1) 第 8 張 ECB 示範圖的兩個顏色（深藍背景與紫色鎖頭）對比太低，肉眼幾乎看不出鎖頭輪廓——自動測試只驗證『相同原色的像素在 ECB 圖中仍相同』（結構保留=1.00），沒有檢查人眼能否分辨；(2) 第 9 張 DH 表格最後一列把『K = 18』斷成兩行。結論：HTML Validation 漏掉『視覺可讀性』。處置：Workflow v2 在 H7 新增 ECB 對比度檢查（WCAG ≥ 3:1），並以 run-02 重新執行整個 Graph 驗證修正。
+
+### #28 ① 資料取得 — 2026-11-24 20:05:09
+
+- **輸入**：
+
+```json
+{
+ "sources": [
+  "S01",
+  "S02",
+  "S03",
+  "S04",
+  "S05",
+  "S06",
+  "S07",
+  "S08",
+  "S09",
+  "S10",
+  "S11",
+  "S12"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "status": 200,
+  "bytes": 867626,
+  "sha256": "32d1e3837ae5a7d2e99a63f43c6fea3dd350ffc6ac55b3aaadad250546ad7f87",
+  "cached": true,
+  "tries": 1
+ },
+ "S02": {
+  "status": 200,
+  "bytes": 343046,
+  "sha256": "5de3d24deb279f5bc7669a90742876d2807200eabc9195bb6e8714b400b0532a",
+  "cached": true,
+  "tries": 1
+ },
+ "S03": {
+  "status": 200,
+  "bytes": 491864,
+  "sha256": "d8eb02f9aeb407f9fddf8bc9df00bc556b62b981e05a5fceb3d380eb9c3c6fed",
+  "cached": true,
+  "tries": 1
+ },
+ "S04": {
+  "status": 200,
+  "bytes": 1184436,
+  "sha256": "62c86eb567f13edb8f71826e985da870b04ef6381634f303cdb16e84d47becd1",
+  "cached": true,
+  "tries": 1
+ },
+ "S05": {
+  "status": 200,
+  "bytes": 378266,
+  "sha256": "66821162de1e7130c5fb5eedb22140d8d6d013ec51af4550bb095c2a9481a00e",
+  "cached": true,
+  "tries": 1
+ },
+ "S06": {
+  "status": 200,
+  "bytes": 1379086,
+  "sha256": "715d140154622ff08b895c735fa69e94aa6ace271dd50fef46c03f92cab42d84",
+  "cached": true,
+  "tries": 1
+ },
+ "S07": {
+  "status": 200,
+  "bytes": 2216632,
+  "sha256": "03fa2f493a1448a309586b9cf9e5c3a4dfd14735e0786cc94674519570b890ff",
+  "cached": true,
+  "tries": 1
+ },
+ "S08": {
+  "status": 200,
+  "bytes": 182059,
+  "sha256": "f7b1f78d9a7cbeb85e32b8c563a6db60771a5cc4bdc55580645f7cb778a4966b",
+  "cached": true,
+  "tries": 1
+ },
+ "S09": {
+  "status": 200,
+  "bytes": 154696,
+  "sha256": "1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11",
+  "cached": true,
+  "tries": 1
+ },
+ "S10": {
+  "status": 200,
+  "bytes": 337736,
+  "sha256": "47871bc8820a2c3b6ea89f061055577058862cf543686b82d10131239702b3bd",
+  "cached": true,
+  
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "ok": 12,
+ "failed": {}
+}
+```
+
+### #29 ② 資料 Ingestion — 2026-11-24 20:05:26
+
+- **輸入**：
+
+```json
+{
+ "files": [
+  "S01.txt",
+  "S02.pdf",
+  "S03.pdf",
+  "S04.pdf",
+  "S05.pdf",
+  "S06.pdf",
+  "S07.pdf",
+  "S08.pdf",
+  "S09.txt",
+  "S10.txt",
+  "S11.pdf",
+  "S12.pdf"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "ok": true,
+  "pages": 366,
+  "chars": 867261,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S01.extracted.txt"
+ },
+ "S02": {
+  "ok": true,
+  "pages": 49,
+  "chars": 135580,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S02.extracted.txt"
+ },
+ "S03": {
+  "ok": true,
+  "pages": 61,
+  "chars": 184790,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S03.extracted.txt"
+ },
+ "S04": {
+  "ok": true,
+  "pages": 46,
+  "chars": 69838,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 77,
+  "warnings": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ],
+  "extracted": "S04.extracted.txt"
+ },
+ "S05": {
+  "ok": true,
+  "pages": 66,
+  "chars": 120932,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S05.extracted.txt"
+ },
+ "S06": {
+  "ok": true,
+  "pages": 91,
+  "chars": 238077,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S06.extracted.txt"
+ },
+ "S07": {
+  "ok": true,
+  "pages": 11,
+  "chars": 66174,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S07.extracted.txt"
+ },
+ "S08": {
+  "ok": true,
+  "pages": 15,
+  "chars": 34868,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "ext
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "failed": [],
+ "warnings": {
+  "S04": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ]
+ }
+}
+```
+
+### #31 ③ Wiki 知識整理（agent） — 2026-11-24 20:05:33（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "incremental"
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：增量模式：ingest 重新抽取文字，SHA-256 與 run-01 相同（來源未變），S04 連字遺失已由 ingest 警告並由 Lint 的 fi→f 摺疊處理；Wiki 頁面不需要更新。
+
+### #32 ④ Wiki Validation — 2026-11-24 20:05:34（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "pages": {
+  "concept_pages": 20,
+  "source_pages": 12,
+  "quotes": 237,
+  "facts": 17
+ }
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：W1: 0E/0W，W2: 0E/0W，W3: 0E/0W，W4: 0E/0W，W5: 0E/0W，W6: 0E/0W，W7: 0E/0W，W8: 0E/0W
+- **路由決策**：pass
+
+### #33 ⑤ 查詢 Wiki — 2026-11-24 20:05:34
+
+- **輸入**：
+
+```json
+{
+ "queries": [
+  {
+   "slide": 1,
+   "terms": []
+  },
+  {
+   "slide": 2,
+   "terms": [
+    "information security",
+    "資訊安全",
+    "confidentiality",
+    "integrity",
+    "non-repudiation"
+   ]
+  },
+  {
+   "slide": 3,
+   "terms": [
+    "plaintext",
+    "ciphertext",
+    "加密",
+    "Kerckhoffs",
+    "金鑰"
+   ]
+  },
+  {
+   "slide": 4,
+   "terms": [
+    "Caesar cipher",
+    "shift cipher",
+    "凱撒密碼"
+   ]
+  },
+  {
+   "slide": 5,
+   "terms": [
+    "frequency analysis",
+    "頻率分析",
+    "substitution cipher",
+    "transposition cipher",
+    "Vigenère"
+   ]
+  },
+  {
+   "slide": 6,
+   "terms": [
+    "symmetric encryption",
+    "secret key",
+    "key distribution problem",
+    "block cipher"
+   ]
+  },
+  {
+   "slide": 7,
+   "terms": [
+    "AES",
+    "Rijndael",
+    "AES-128"
+   ]
+  },
+  {
+   "slide": 8,
+   "terms": [
+    "mode of operation",
+    "ECB",
+    "CBC",
+    "CTR",
+    "IV"
+   ]
+  },
+  {
+   "slide": 9,
+   "terms": [
+    "public-key cryptography",
+    "public key",
+    "private key",
+    "Diffie-Hellman",
+    "key exchange"
+   ]
+  },
+  {
+   "slide": 10,
+   "terms": [
+    "RSA",
+    "RSA modulus",
+    "OAEP"
+   ]
+  },
+  {
+   "slide": 11,
+   "terms": [
+    "TLS 1.3",
+    "HTTPS",
+    "digital signature",
+    "AES-GCM",
+    "forward secrecy"
+   ]
+  },
+  {
+   "slide": 12,
+   "terms": [
+    "classical cipher weaknesses",
+    "AES",
+    "public-key cryptography",
+    "TLS 1.3"
+   ]
+  }
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "1": [],
+ "2": [
+  "intro-what-is-crypto",
+  "app-hybrid-tls"
+ ],
+ "3": [
+  "intro-terminology",
+  "sym-block-vs-stream",
+  "classical-limitations",
+  "asym-public-key",
+  "intro-kerckhoffs"
+ ],
+ "4": [
+  "classical-caesar"
+ ],
+ "5": [
+  "classical-substitution",
+  "classical-limitations",
+  "classical-transposition"
+ ],
+ "6": [
+  "sym-concept",
+  "sym-block-vs-stream"
+ ],
+ "7": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead",
+  "app-hybrid-tls"
+ ],
+ "8": [
+  "mode-overview",
+  "mode-ecb",
+  "mode-cbc",
+  "mode-ctr",
+  "mode-gcm-aead"
+ ],
+ "9": [
+  "asym-public-key",
+  "asym-key-exchange"
+ ],
+ "10": [
+  "asym-rsa",
+  "asym-signature"
+ ],
+ "11": [
+  "app-hybrid-tls",
+  "asym-signature",
+  "mode-gcm-aead"
+ ],
+ "12": [
+  "app-hybrid-tls",
+  "mode-gcm-aead",
+  "asym-rsa",
+  "sym-aes",
+  "classical-caesar"
+ ]
+}
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "slides_without_hits": []
+}
+```
+
+### #35 ⑥ 整理教學內容（agent） — 2026-11-24 20:05:41（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：教學內容沿用 run-01 已通過驗證的 slide_content.json，未修改。
+
+### #36 ⑦ Content Validation — 2026-11-24 20:05:41（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "slides": 12,
+ "points": 45,
+ "nodes_used": 20,
+ "wiki_nodes": 20
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：C1: 0E/0W，C2: 0E/0W，C3: 0E/0W，C4: 0E/0W，C5: 0E/0W，C6: 0E/0W
+- **路由決策**：pass
+
+### #38 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 20:05:43（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：【刻意驗證】HTML 維持 run-01 版本、不做任何修改就送測，目的是確認 v2 新增的 ECB 對比度檢查能自動抓到 run-01 只靠人工看截圖才發現的問題。
+
+### #39 ⑨ HTML Validation — 2026-11-24 20:06:04（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 52893,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 12,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    130
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0,
+   "ecbContrast": 1.0646410658929275
+  }
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：❌ 未通過，errors=1，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 0E/0W，H7: 1E/0W
+  - `[H7]` ecb-demo：ECB 圖兩個主要顏色對比度只有 1.06:1（< 3:1），初學者看不出輪廓
+- **路由決策**：retry
+
+### #41 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 20:06:44（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 1
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Slides/index.html"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：HTML 修正 retry 1：(1) H7 ECB 對比度 1.06:1——原本用密文最低位元組映射到窄範圍的 HSL 亮度（28–76%）且色相隨密文變動，藍紫色相的實際亮度差很小；改為用最高位元組映射亮度 12–92%、色相固定，把密文值直接畫成明暗。(2) 順便修正 run-01 截圖檢查發現的第 9 張 DH 表格『K = 18』斷行（加 nowrap）。
+
+### #42 ⑨ HTML Validation — 2026-11-24 20:07:06（attempt 2）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 53028,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 12,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    168
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.004086636697997548,
+   "ecbContrast": 1.9400169355490278
+  }
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：❌ 未通過，errors=1，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 0E/0W，H7: 1E/0W
+  - `[H7]` ecb-demo：ECB 圖兩個主要顏色對比度只有 1.94:1（< 3:1），初學者看不出輪廓
+- **路由決策**：retry
+
+### #44 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 20:07:41（attempt 2）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 1
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Slides/index.html"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：HTML 修正 retry 2：對比度只提升到 1.94:1。先用 Python 重算找出原因而不是盲改：鎖頭像素原本編碼為 2 位元值 01，區塊 = 0x55555555，其密文最高位元組 146（亮度 57.8%），與背景區塊密文（最高位元組 208，亮度 77.3%）太接近。改為 2 位元墨色編碼（背景 00、鎖頭 11 → 區塊 0xFFFFFFFF，密文最高位元組 4，亮度 13.3%），預先計算對比度 8.99:1。
+
+### #45 ⑨ HTML Validation — 2026-11-24 20:08:02（attempt 3）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 53076,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 12,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    170
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.0036779730281977932,
+   "ecbContrast": 9.034152677929736
+  }
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 0E/0W，H7: 0E/0W
+- **路由決策**：pass
+
+### #46 ⑩ 完成 — 2026-11-24 20:08:02
+
+- **輸出**：
+
+```json
+{
+ "attempts": {
+  "wiki": 1,
+  "content": 1,
+  "html": 3
+ },
+ "retries": {
+  "wiki": 0,
+  "content": 0,
+  "html": 2
+ }
+}
+```
+
+### #47 ★ Validator 自我測試（注入錯誤） — 2026-11-24 20:10:53
+
+- **修正／agent 說明**：Validator 自我測試第 1 次（注入 13 種已知錯誤到專案副本）：抓到 12/13。漏掉 C3-wrong-rounds——投影片寫『AES-128 做 12 輪』，但 C3 只檢查輪數是否屬於 {10,12,14}，12 是合法值（屬於 AES-192）所以放行。這代表 run-01/run-02 的 Content Validation『一次通過』並不保證技術正確。修正：C3 改為逐一比對 AES 版本與輪數。
+
+### #48 ★ Validator 自我測試（注入錯誤） — 2026-11-24 20:10:54
+
+- **修正／agent 說明**：Validator 自我測試第 2 次（C3 修正後）：13/13 全部抓到（W2、W5×2、W6、W8×2、C2–C6、H2、H5）；未注入錯誤的對照副本 wiki/content 皆通過；正式 slide_content.json 以新版 C3 重新檢查仍為 0 errors。完整結果：logs/validator_selftest.json。
+
+### #49 ③b Batch 快速檢查（v2） — 2026-11-24 20:11:46
+
+- **修正／agent 說明**：v2 batch 快速檢查（quick_lint）冒煙測試：對現有 5 個 batch 執行皆通過；在副本中還原 run-01 的跨頁引文錯誤後，batch 5 的 quick_lint 立即抓到（W5），證明這個錯誤在 v2 會於 batch 5 寫完當下被發現，而不是等 validate_wiki。註：run-02 因 Wiki 已存在走增量模式，Graph 內沒有實際跑到 batch lint，這是手動驗證。
+
+### #51 ① 資料取得 — 2026-11-24 20:33:23
+
+- **輸入**：
+
+```json
+{
+ "sources": [
+  "S01",
+  "S02",
+  "S03",
+  "S04",
+  "S05",
+  "S06",
+  "S07",
+  "S08",
+  "S09",
+  "S10",
+  "S11",
+  "S12"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "status": 200,
+  "bytes": 867626,
+  "sha256": "32d1e3837ae5a7d2e99a63f43c6fea3dd350ffc6ac55b3aaadad250546ad7f87",
+  "cached": true,
+  "tries": 1
+ },
+ "S02": {
+  "status": 200,
+  "bytes": 343046,
+  "sha256": "5de3d24deb279f5bc7669a90742876d2807200eabc9195bb6e8714b400b0532a",
+  "cached": true,
+  "tries": 1
+ },
+ "S03": {
+  "status": 200,
+  "bytes": 491864,
+  "sha256": "d8eb02f9aeb407f9fddf8bc9df00bc556b62b981e05a5fceb3d380eb9c3c6fed",
+  "cached": true,
+  "tries": 1
+ },
+ "S04": {
+  "status": 200,
+  "bytes": 1184436,
+  "sha256": "62c86eb567f13edb8f71826e985da870b04ef6381634f303cdb16e84d47becd1",
+  "cached": true,
+  "tries": 1
+ },
+ "S05": {
+  "status": 200,
+  "bytes": 378266,
+  "sha256": "66821162de1e7130c5fb5eedb22140d8d6d013ec51af4550bb095c2a9481a00e",
+  "cached": true,
+  "tries": 1
+ },
+ "S06": {
+  "status": 200,
+  "bytes": 1379086,
+  "sha256": "715d140154622ff08b895c735fa69e94aa6ace271dd50fef46c03f92cab42d84",
+  "cached": true,
+  "tries": 1
+ },
+ "S07": {
+  "status": 200,
+  "bytes": 2216632,
+  "sha256": "03fa2f493a1448a309586b9cf9e5c3a4dfd14735e0786cc94674519570b890ff",
+  "cached": true,
+  "tries": 1
+ },
+ "S08": {
+  "status": 200,
+  "bytes": 182059,
+  "sha256": "f7b1f78d9a7cbeb85e32b8c563a6db60771a5cc4bdc55580645f7cb778a4966b",
+  "cached": true,
+  "tries": 1
+ },
+ "S09": {
+  "status": 200,
+  "bytes": 154696,
+  "sha256": "1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11",
+  "cached": true,
+  "tries": 1
+ },
+ "S10": {
+  "status": 200,
+  "bytes": 337736,
+  "sha256": "47871bc8820a2c3b6ea89f061055577058862cf543686b82d10131239702b3bd",
+  "cached": true,
+  
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "ok": 12,
+ "failed": {}
+}
+```
+
+### #52 ② 資料 Ingestion — 2026-11-24 20:33:35
+
+- **輸入**：
+
+```json
+{
+ "files": [
+  "S01.txt",
+  "S02.pdf",
+  "S03.pdf",
+  "S04.pdf",
+  "S05.pdf",
+  "S06.pdf",
+  "S07.pdf",
+  "S08.pdf",
+  "S09.txt",
+  "S10.txt",
+  "S11.pdf",
+  "S12.pdf"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "ok": true,
+  "pages": 366,
+  "chars": 867261,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S01.extracted.txt"
+ },
+ "S02": {
+  "ok": true,
+  "pages": 49,
+  "chars": 135580,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S02.extracted.txt"
+ },
+ "S03": {
+  "ok": true,
+  "pages": 61,
+  "chars": 184790,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S03.extracted.txt"
+ },
+ "S04": {
+  "ok": true,
+  "pages": 46,
+  "chars": 69838,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 77,
+  "warnings": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ],
+  "extracted": "S04.extracted.txt"
+ },
+ "S05": {
+  "ok": true,
+  "pages": 66,
+  "chars": 120932,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S05.extracted.txt"
+ },
+ "S06": {
+  "ok": true,
+  "pages": 91,
+  "chars": 238077,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S06.extracted.txt"
+ },
+ "S07": {
+  "ok": true,
+  "pages": 11,
+  "chars": 66174,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S07.extracted.txt"
+ },
+ "S08": {
+  "ok": true,
+  "pages": 15,
+  "chars": 34868,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "ext
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "failed": [],
+ "warnings": {
+  "S04": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ]
+ }
+}
+```
+
+### #54 ③ Wiki 知識整理（agent） — 2026-11-24 20:33:36（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "incremental"
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：增量模式：Wiki 不需要更新（本次只改簡報外觀）。
+
+### #55 ④ Wiki Validation — 2026-11-24 20:33:37（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "pages": {
+  "concept_pages": 20,
+  "source_pages": 12,
+  "quotes": 237,
+  "facts": 17
+ }
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：W1: 0E/0W，W2: 0E/0W，W3: 0E/0W，W4: 0E/0W，W5: 0E/0W，W6: 0E/0W，W7: 0E/0W，W8: 0E/0W
+- **路由決策**：pass
+
+### #56 ⑤ 查詢 Wiki — 2026-11-24 20:33:37
+
+- **輸入**：
+
+```json
+{
+ "queries": [
+  {
+   "slide": 1,
+   "terms": []
+  },
+  {
+   "slide": 2,
+   "terms": [
+    "information security",
+    "資訊安全",
+    "confidentiality",
+    "integrity",
+    "non-repudiation"
+   ]
+  },
+  {
+   "slide": 3,
+   "terms": [
+    "plaintext",
+    "ciphertext",
+    "加密",
+    "Kerckhoffs",
+    "金鑰"
+   ]
+  },
+  {
+   "slide": 4,
+   "terms": [
+    "Caesar cipher",
+    "shift cipher",
+    "凱撒密碼"
+   ]
+  },
+  {
+   "slide": 5,
+   "terms": [
+    "frequency analysis",
+    "頻率分析",
+    "substitution cipher",
+    "transposition cipher",
+    "Vigenère"
+   ]
+  },
+  {
+   "slide": 6,
+   "terms": [
+    "symmetric encryption",
+    "secret key",
+    "key distribution problem",
+    "block cipher"
+   ]
+  },
+  {
+   "slide": 7,
+   "terms": [
+    "AES",
+    "Rijndael",
+    "AES-128"
+   ]
+  },
+  {
+   "slide": 8,
+   "terms": [
+    "mode of operation",
+    "ECB",
+    "CBC",
+    "CTR",
+    "IV"
+   ]
+  },
+  {
+   "slide": 9,
+   "terms": [
+    "public-key cryptography",
+    "public key",
+    "private key",
+    "Diffie-Hellman",
+    "key exchange"
+   ]
+  },
+  {
+   "slide": 10,
+   "terms": [
+    "RSA",
+    "RSA modulus",
+    "OAEP"
+   ]
+  },
+  {
+   "slide": 11,
+   "terms": [
+    "TLS 1.3",
+    "HTTPS",
+    "digital signature",
+    "AES-GCM",
+    "forward secrecy"
+   ]
+  },
+  {
+   "slide": 12,
+   "terms": [
+    "classical cipher weaknesses",
+    "AES",
+    "public-key cryptography",
+    "TLS 1.3"
+   ]
+  }
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "1": [],
+ "2": [
+  "intro-what-is-crypto",
+  "app-hybrid-tls"
+ ],
+ "3": [
+  "intro-terminology",
+  "sym-block-vs-stream",
+  "classical-limitations",
+  "asym-public-key",
+  "intro-kerckhoffs"
+ ],
+ "4": [
+  "classical-caesar"
+ ],
+ "5": [
+  "classical-substitution",
+  "classical-limitations",
+  "classical-transposition"
+ ],
+ "6": [
+  "sym-concept",
+  "sym-block-vs-stream"
+ ],
+ "7": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead",
+  "app-hybrid-tls"
+ ],
+ "8": [
+  "mode-overview",
+  "mode-ecb",
+  "mode-cbc",
+  "mode-ctr",
+  "mode-gcm-aead"
+ ],
+ "9": [
+  "asym-public-key",
+  "asym-key-exchange"
+ ],
+ "10": [
+  "asym-rsa",
+  "asym-signature"
+ ],
+ "11": [
+  "app-hybrid-tls",
+  "asym-signature",
+  "mode-gcm-aead"
+ ],
+ "12": [
+  "app-hybrid-tls",
+  "mode-gcm-aead",
+  "asym-rsa",
+  "sym-aes",
+  "classical-caesar"
+ ]
+}
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "slides_without_hits": []
+}
+```
+
+### #58 ⑥ 整理教學內容（agent） — 2026-11-24 20:33:38（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：教學內容不變：slide_content.json 仍保留每個重點的節點與頁碼 cite，供追溯；只有 HTML 不再顯示。
+
+### #59 ⑦ Content Validation — 2026-11-24 20:33:38（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "slides": 12,
+ "points": 45,
+ "nodes_used": 20,
+ "wiki_nodes": 20
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：C1: 0E/0W，C2: 0E/0W，C3: 0E/0W，C4: 0E/0W，C5: 0E/0W，C6: 0E/0W
+- **路由決策**：pass
+
+### #61 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 20:33:39（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：使用者要求：刪除投影片上每個重點後面的頁碼標籤（如『S02 p.2』），共 67 個 span.cite 與其 CSS；封面說明改為『每頁下方列出來源。』每頁底部的來源連結保留；頁碼對應仍保存在 slide_content.json 與 Wiki。
+
+### #62 ⑨ HTML Validation — 2026-11-24 20:33:59（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 51424,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 12,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    170
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.0036779730281977932,
+   "ecbContrast": 9.034152677929736
+  }
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 0E/0W，H7: 0E/0W
+- **路由決策**：pass
+
+### #63 ⑩ 完成 — 2026-11-24 20:33:59
+
+- **輸出**：
+
+```json
+{
+ "attempts": {
+  "wiki": 1,
+  "content": 1,
+  "html": 1
+ },
+ "retries": {
+  "wiki": 0,
+  "content": 0,
+  "html": 0
+ }
+}
+```
+
+### #65 ① 資料取得 — 2026-11-24 20:40:24
+
+- **輸入**：
+
+```json
+{
+ "sources": [
+  "S01",
+  "S02",
+  "S03",
+  "S04",
+  "S05",
+  "S06",
+  "S07",
+  "S08",
+  "S09",
+  "S10",
+  "S11",
+  "S12"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "status": 200,
+  "bytes": 867626,
+  "sha256": "32d1e3837ae5a7d2e99a63f43c6fea3dd350ffc6ac55b3aaadad250546ad7f87",
+  "cached": true,
+  "tries": 1
+ },
+ "S02": {
+  "status": 200,
+  "bytes": 343046,
+  "sha256": "5de3d24deb279f5bc7669a90742876d2807200eabc9195bb6e8714b400b0532a",
+  "cached": true,
+  "tries": 1
+ },
+ "S03": {
+  "status": 200,
+  "bytes": 491864,
+  "sha256": "d8eb02f9aeb407f9fddf8bc9df00bc556b62b981e05a5fceb3d380eb9c3c6fed",
+  "cached": true,
+  "tries": 1
+ },
+ "S04": {
+  "status": 200,
+  "bytes": 1184436,
+  "sha256": "62c86eb567f13edb8f71826e985da870b04ef6381634f303cdb16e84d47becd1",
+  "cached": true,
+  "tries": 1
+ },
+ "S05": {
+  "status": 200,
+  "bytes": 378266,
+  "sha256": "66821162de1e7130c5fb5eedb22140d8d6d013ec51af4550bb095c2a9481a00e",
+  "cached": true,
+  "tries": 1
+ },
+ "S06": {
+  "status": 200,
+  "bytes": 1379086,
+  "sha256": "715d140154622ff08b895c735fa69e94aa6ace271dd50fef46c03f92cab42d84",
+  "cached": true,
+  "tries": 1
+ },
+ "S07": {
+  "status": 200,
+  "bytes": 2216632,
+  "sha256": "03fa2f493a1448a309586b9cf9e5c3a4dfd14735e0786cc94674519570b890ff",
+  "cached": true,
+  "tries": 1
+ },
+ "S08": {
+  "status": 200,
+  "bytes": 182059,
+  "sha256": "f7b1f78d9a7cbeb85e32b8c563a6db60771a5cc4bdc55580645f7cb778a4966b",
+  "cached": true,
+  "tries": 1
+ },
+ "S09": {
+  "status": 200,
+  "bytes": 154696,
+  "sha256": "1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11",
+  "cached": true,
+  "tries": 1
+ },
+ "S10": {
+  "status": 200,
+  "bytes": 337736,
+  "sha256": "47871bc8820a2c3b6ea89f061055577058862cf543686b82d10131239702b3bd",
+  "cached": true,
+  
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "ok": 12,
+ "failed": {}
+}
+```
+
+### #66 ② 資料 Ingestion — 2026-11-24 20:40:35
+
+- **輸入**：
+
+```json
+{
+ "files": [
+  "S01.txt",
+  "S02.pdf",
+  "S03.pdf",
+  "S04.pdf",
+  "S05.pdf",
+  "S06.pdf",
+  "S07.pdf",
+  "S08.pdf",
+  "S09.txt",
+  "S10.txt",
+  "S11.pdf",
+  "S12.pdf"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "ok": true,
+  "pages": 366,
+  "chars": 867261,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S01.extracted.txt"
+ },
+ "S02": {
+  "ok": true,
+  "pages": 49,
+  "chars": 135580,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S02.extracted.txt"
+ },
+ "S03": {
+  "ok": true,
+  "pages": 61,
+  "chars": 184790,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S03.extracted.txt"
+ },
+ "S04": {
+  "ok": true,
+  "pages": 46,
+  "chars": 69838,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 77,
+  "warnings": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ],
+  "extracted": "S04.extracted.txt"
+ },
+ "S05": {
+  "ok": true,
+  "pages": 66,
+  "chars": 120932,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S05.extracted.txt"
+ },
+ "S06": {
+  "ok": true,
+  "pages": 91,
+  "chars": 238077,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S06.extracted.txt"
+ },
+ "S07": {
+  "ok": true,
+  "pages": 11,
+  "chars": 66174,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S07.extracted.txt"
+ },
+ "S08": {
+  "ok": true,
+  "pages": 15,
+  "chars": 34868,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "ext
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "failed": [],
+ "warnings": {
+  "S04": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ]
+ }
+}
+```
+
+### #68 ③ Wiki 知識整理（agent） — 2026-11-24 20:42:04（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "incremental"
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Wiki/concepts/mode-cbc.md",
+   "Wiki/concepts/mode-ctr.md",
+   "Wiki/concepts/sym-aes.md",
+   "Wiki/facts.json",
+   "Wiki/sources/S04-fips197.md"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：使用者回饋：加密／解密過程要有更多圖解，AES 四步要有具體實例。Wiki 更新：sym-aes 新增 FIPS 197 附錄 B（AES-128 第 1 輪）完整實例——初始 AddRoundKey、SubBytes、ShiftRows、MixColumns、AddRoundKey 各步的 4×4 state 與逐格說明（19→d4、列位移、04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30、04 ⊕ a0 = a4），以及解密方向（反運算、倒序，§5.3）；新增 13 條原文引文、facts aes.example_input / aes.example_key。數值先以獨立 AES 參考實作（validators/aes_ref.py）重算，與附錄 B 全部一致。mode-cbc 新增解密公式與 SP 800-38A §6.2 解密原文；mode-ctr 補上解密公式與完整原文。S04 來源頁補充 §5.3 與 Appendix B。
+
+### #69 ④ Wiki Validation — 2026-11-24 20:42:05（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "pages": {
+  "concept_pages": 20,
+  "source_pages": 12,
+  "quotes": 254,
+  "facts": 19
+ }
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：W1: 0E/0W，W2: 0E/0W，W3: 0E/0W，W4: 0E/0W，W5: 0E/0W，W6: 0E/0W，W7: 0E/0W，W8: 0E/0W
+- **路由決策**：pass
+
+### #70 ⑤ 查詢 Wiki — 2026-11-24 20:42:05
+
+- **輸入**：
+
+```json
+{
+ "queries": [
+  {
+   "slide": 1,
+   "terms": []
+  },
+  {
+   "slide": 2,
+   "terms": [
+    "information security",
+    "資訊安全",
+    "confidentiality",
+    "integrity",
+    "non-repudiation"
+   ]
+  },
+  {
+   "slide": 3,
+   "terms": [
+    "plaintext",
+    "ciphertext",
+    "加密",
+    "Kerckhoffs",
+    "金鑰"
+   ]
+  },
+  {
+   "slide": 4,
+   "terms": [
+    "Caesar cipher",
+    "shift cipher",
+    "凱撒密碼"
+   ]
+  },
+  {
+   "slide": 5,
+   "terms": [
+    "frequency analysis",
+    "頻率分析",
+    "substitution cipher",
+    "transposition cipher",
+    "Vigenère"
+   ]
+  },
+  {
+   "slide": 6,
+   "terms": [
+    "symmetric encryption",
+    "secret key",
+    "key distribution problem",
+    "block cipher"
+   ]
+  },
+  {
+   "slide": 7,
+   "terms": [
+    "AES",
+    "Rijndael",
+    "AES-128"
+   ]
+  },
+  {
+   "slide": 8,
+   "terms": [
+    "mode of operation",
+    "ECB",
+    "CBC",
+    "CTR",
+    "IV"
+   ]
+  },
+  {
+   "slide": 9,
+   "terms": [
+    "public-key cryptography",
+    "public key",
+    "private key",
+    "Diffie-Hellman",
+    "key exchange"
+   ]
+  },
+  {
+   "slide": 10,
+   "terms": [
+    "RSA",
+    "RSA modulus",
+    "OAEP"
+   ]
+  },
+  {
+   "slide": 11,
+   "terms": [
+    "TLS 1.3",
+    "HTTPS",
+    "digital signature",
+    "AES-GCM",
+    "forward secrecy"
+   ]
+  },
+  {
+   "slide": 12,
+   "terms": [
+    "classical cipher weaknesses",
+    "AES",
+    "public-key cryptography",
+    "TLS 1.3"
+   ]
+  }
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "1": [],
+ "2": [
+  "intro-what-is-crypto",
+  "app-hybrid-tls"
+ ],
+ "3": [
+  "intro-terminology",
+  "sym-block-vs-stream",
+  "classical-limitations",
+  "asym-public-key",
+  "intro-kerckhoffs"
+ ],
+ "4": [
+  "classical-caesar"
+ ],
+ "5": [
+  "classical-substitution",
+  "classical-limitations",
+  "classical-transposition"
+ ],
+ "6": [
+  "sym-concept",
+  "sym-block-vs-stream"
+ ],
+ "7": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead",
+  "app-hybrid-tls"
+ ],
+ "8": [
+  "mode-overview",
+  "mode-ecb",
+  "mode-cbc",
+  "mode-ctr",
+  "mode-gcm-aead"
+ ],
+ "9": [
+  "asym-public-key",
+  "asym-key-exchange"
+ ],
+ "10": [
+  "asym-rsa",
+  "asym-signature"
+ ],
+ "11": [
+  "app-hybrid-tls",
+  "asym-signature",
+  "mode-gcm-aead"
+ ],
+ "12": [
+  "app-hybrid-tls",
+  "mode-gcm-aead",
+  "asym-rsa",
+  "sym-aes",
+  "classical-caesar"
+ ]
+}
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "slides_without_hits": []
+}
+```
+
+### #72 ⑥ 整理教學內容（agent） — 2026-11-24 20:43:41（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Workflow/artifacts/slide_content.json"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：draft_content：依使用者回饋加入圖解內容——第 4 張 Caesar 加密／解密切換；第 6 張同一把金鑰的加密與解密流程；第 7 張改寫重點並加入 AES 逐步圖解（FIPS 197 附錄 B 第 1 輪：輸入、初始 AddRoundKey、SubBytes、ShiftRows、MixColumns、AddRoundKey 共 6 步，加上解密方向 4 步，每步含逐格說明與標示）；第 8 張加入分頁圖解（ECB vs CBC 圖、CBC 加密、CBC 解密、CTR 加／解密）；第 10 張 RSA 改為 Alice→Bob 加密／解密流程。張數維持 12 張。（註：送出前曾單獨執行 content_check 預覽到 2 個錯誤，刻意不先修正，讓 Graph 正式記錄這次失敗。）
+
+### #73 ⑦ Content Validation — 2026-11-24 20:43:41（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "slides": 12,
+ "points": 45,
+ "nodes_used": 20,
+ "wiki_nodes": 20
+}
+```
+- **檢查結果**：❌ 未通過，errors=2，warnings=0
+  - 各檢查項：C1: 0E/0W，C2: 0E/0W，C3: 2E/0W，C4: 0E/0W，C5: 0E/0W，C6: 0E/0W
+  - `[C3]` slide 7：AES 輪數 1 與 FIPS 197 不符：FIPS 197 附錄 B：AES-128 第 1 輪（每個數值都由獨立的 AES 實作重算驗證）
+  - `[C3]` slide 7：AES-128 應為 10 輪，內容寫 1 輪：FIPS 197 附錄 B：AES-128 第 1 輪（每個數值都由獨立的 AES 實作重算驗證）
+- **路由決策**：retry
+
+### #75 ⑥ 整理教學內容（agent） — 2026-11-24 20:45:54（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 2
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：Content 修正 retry 1：2 個 C3 錯誤都是驗證器誤判——圖說『AES-128 第 1 輪』的『第 1 輪』是序數（第幾輪），v2 加強後的 C3 卻把它當成『總共 1 輪』。內容正確，所以修正驗證器：輪數比對排除『第 N 輪』。修正後重跑 validator 自我測試仍為 13/13（『AES-128 做 12 輪』照樣抓到），對照組（已含『第 1 輪』字樣）通過，誤判消失。另修正 selftest 的 H2 注入案例（run-03 移除頁碼標籤後，原本的搜尋字串已不存在）。內容檔未修改。
+
+### #76 ⑦ Content Validation — 2026-11-24 20:45:54（attempt 2）
+
+- **輸入**：
+
+```json
+{
+ "slides": 12,
+ "points": 45,
+ "nodes_used": 20,
+ "wiki_nodes": 20
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：C1: 0E/0W，C2: 0E/0W，C3: 0E/0W，C4: 0E/0W，C5: 0E/0W，C6: 0E/0W
+- **路由決策**：pass
+
+### #78 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 20:48:31（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Slides/index.html"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：build_html：第 4 張加入加密／解密切換（#caesar-mode-enc/dec，解密時 m = c − k，並把上一個結果帶入示範解回來）；第 6 張加入同一把金鑰的加密→解密來回圖；第 7 張改為 AES 逐步圖解（10 個步驟按鈕：加密 6 步 + 解密 4 步；左右兩個 4×4 state、中間顯示運算與 round key，金色標出該步要看的位元組，下方逐步說明），資料由腳本從 slide_content.json 的 examples.aes 注入，避免手打數字；第 8 張改為 4 個分頁（ECB vs CBC 圖、CBC 加密、CBC 解密、CTR 加／解密）的區塊流程圖；第 10 張改為 Alice→Bob 的 RSA 加密／解密流程。
+
+### #79 ⑨ HTML Validation — 2026-11-24 20:48:54（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 67767,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 12,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [
+  8
+ ],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    170
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.0036779730281977932,
+   "ecbContrast": 9.034152677929736
+  },
+  "aes_steps_ok": "10/10",
+  "caesar decrypt KHOOR-3": "HELLO",
+  "mode_tabs": 4
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：❌ 未通過，errors=1，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 1E/0W，H7: 0E/0W
+  - `[H6]` slide 8：1280×720 內容溢出（scrollHeight 1098 > 618）：['UL.points:ECB：每塊各自加密，相同明文區塊產生相同密文，洩漏圖樣\n ', 'LI.:CTR：加密計數器再 XOR，可平行、免填充，計數器不可重複', 'LI.:為什麼需要模式？區塊加密要搭配模式，選錯就會洩漏資訊']
+- **路由決策**：retry
+
+### #81 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 20:49:13（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 1
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Slides/index.html"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：HTML 修正 retry 1：H6 第 8 張溢出（scrollHeight 1098 > 618）。原因：CSS 中 .mode-panel 的 display:flex 蓋過了瀏覽器對 [hidden] 的預設 display:none，4 個分頁同時顯示（AES 的 round key 小矩陣 .grid 也有同樣問題）。修正：加入 [hidden]{display:none!important}。同時發現測試漏洞：H7 分頁檢查只看 hidden 屬性、不看實際是否顯示，所以沒抓到；改為檢查 computed display 與高度。
+
+### #82 ⑨ HTML Validation — 2026-11-24 20:49:37（attempt 2）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 67887,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 12,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    170
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.0036779730281977932,
+   "ecbContrast": 9.034152677929736
+  },
+  "aes_steps_ok": "10/10",
+  "caesar decrypt KHOOR-3": "HELLO",
+  "mode_tabs": 4
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 0E/0W，H7: 0E/0W
+- **路由決策**：pass
+
+### #83 ⑩ 完成 — 2026-11-24 20:49:37
+
+- **輸出**：
+
+```json
+{
+ "attempts": {
+  "wiki": 1,
+  "content": 2,
+  "html": 2
+ },
+ "retries": {
+  "wiki": 0,
+  "content": 1,
+  "html": 1
+ }
+}
+```
+
+### #84 ★ 截圖人工檢查（Graph 外） — 2026-11-24 20:50:53
+
+- **修正／agent 說明**：run-04 結束（done）後逐一檢視新圖解的截圖（screenshots/run-04_review）。發現 3 個自動測試沒抓到的問題：(1) 手機版第 7 張 AES：內容比畫面高時 .slide-body 被壓縮，矩陣溢出、被下方來源欄蓋住——H6 手機只檢查水平捲動；(2) AES 步驟按鈕的 ①②③④ 在等寬字型中缺字，退回的字形看起來像 XOR 符號 ⊕，會誤導初學者；(3) 第 4 張 Caesar 字母對照列在 26 欄固定寬度下超出面板，X、Y、Z 被擠到右側看不到。處置：H6 新增『內容不得溢出、不得與來源欄重疊』檢查（桌機與手機），並以 run-05 重跑。
+
+### #86 ① 資料取得 — 2026-11-24 20:50:54
+
+- **輸入**：
+
+```json
+{
+ "sources": [
+  "S01",
+  "S02",
+  "S03",
+  "S04",
+  "S05",
+  "S06",
+  "S07",
+  "S08",
+  "S09",
+  "S10",
+  "S11",
+  "S12"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "status": 200,
+  "bytes": 867626,
+  "sha256": "32d1e3837ae5a7d2e99a63f43c6fea3dd350ffc6ac55b3aaadad250546ad7f87",
+  "cached": true,
+  "tries": 1
+ },
+ "S02": {
+  "status": 200,
+  "bytes": 343046,
+  "sha256": "5de3d24deb279f5bc7669a90742876d2807200eabc9195bb6e8714b400b0532a",
+  "cached": true,
+  "tries": 1
+ },
+ "S03": {
+  "status": 200,
+  "bytes": 491864,
+  "sha256": "d8eb02f9aeb407f9fddf8bc9df00bc556b62b981e05a5fceb3d380eb9c3c6fed",
+  "cached": true,
+  "tries": 1
+ },
+ "S04": {
+  "status": 200,
+  "bytes": 1184436,
+  "sha256": "62c86eb567f13edb8f71826e985da870b04ef6381634f303cdb16e84d47becd1",
+  "cached": true,
+  "tries": 1
+ },
+ "S05": {
+  "status": 200,
+  "bytes": 378266,
+  "sha256": "66821162de1e7130c5fb5eedb22140d8d6d013ec51af4550bb095c2a9481a00e",
+  "cached": true,
+  "tries": 1
+ },
+ "S06": {
+  "status": 200,
+  "bytes": 1379086,
+  "sha256": "715d140154622ff08b895c735fa69e94aa6ace271dd50fef46c03f92cab42d84",
+  "cached": true,
+  "tries": 1
+ },
+ "S07": {
+  "status": 200,
+  "bytes": 2216632,
+  "sha256": "03fa2f493a1448a309586b9cf9e5c3a4dfd14735e0786cc94674519570b890ff",
+  "cached": true,
+  "tries": 1
+ },
+ "S08": {
+  "status": 200,
+  "bytes": 182059,
+  "sha256": "f7b1f78d9a7cbeb85e32b8c563a6db60771a5cc4bdc55580645f7cb778a4966b",
+  "cached": true,
+  "tries": 1
+ },
+ "S09": {
+  "status": 200,
+  "bytes": 154696,
+  "sha256": "1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11",
+  "cached": true,
+  "tries": 1
+ },
+ "S10": {
+  "status": 200,
+  "bytes": 337736,
+  "sha256": "47871bc8820a2c3b6ea89f061055577058862cf543686b82d10131239702b3bd",
+  "cached": true,
+  
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "ok": 12,
+ "failed": {}
+}
+```
+
+### #87 ② 資料 Ingestion — 2026-11-24 20:51:05
+
+- **輸入**：
+
+```json
+{
+ "files": [
+  "S01.txt",
+  "S02.pdf",
+  "S03.pdf",
+  "S04.pdf",
+  "S05.pdf",
+  "S06.pdf",
+  "S07.pdf",
+  "S08.pdf",
+  "S09.txt",
+  "S10.txt",
+  "S11.pdf",
+  "S12.pdf"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "ok": true,
+  "pages": 366,
+  "chars": 867261,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S01.extracted.txt"
+ },
+ "S02": {
+  "ok": true,
+  "pages": 49,
+  "chars": 135580,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S02.extracted.txt"
+ },
+ "S03": {
+  "ok": true,
+  "pages": 61,
+  "chars": 184790,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S03.extracted.txt"
+ },
+ "S04": {
+  "ok": true,
+  "pages": 46,
+  "chars": 69838,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 77,
+  "warnings": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ],
+  "extracted": "S04.extracted.txt"
+ },
+ "S05": {
+  "ok": true,
+  "pages": 66,
+  "chars": 120932,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S05.extracted.txt"
+ },
+ "S06": {
+  "ok": true,
+  "pages": 91,
+  "chars": 238077,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S06.extracted.txt"
+ },
+ "S07": {
+  "ok": true,
+  "pages": 11,
+  "chars": 66174,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S07.extracted.txt"
+ },
+ "S08": {
+  "ok": true,
+  "pages": 15,
+  "chars": 34868,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "ext
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "failed": [],
+ "warnings": {
+  "S04": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ]
+ }
+}
+```
+
+### #89 ③ Wiki 知識整理（agent） — 2026-11-24 20:51:06（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "incremental"
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：增量模式：Wiki 不需更新。
+
+### #90 ④ Wiki Validation — 2026-11-24 20:51:07（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "pages": {
+  "concept_pages": 20,
+  "source_pages": 12,
+  "quotes": 254,
+  "facts": 19
+ }
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：W1: 0E/0W，W2: 0E/0W，W3: 0E/0W，W4: 0E/0W，W5: 0E/0W，W6: 0E/0W，W7: 0E/0W，W8: 0E/0W
+- **路由決策**：pass
+
+### #91 ⑤ 查詢 Wiki — 2026-11-24 20:51:07
+
+- **輸入**：
+
+```json
+{
+ "queries": [
+  {
+   "slide": 1,
+   "terms": []
+  },
+  {
+   "slide": 2,
+   "terms": [
+    "information security",
+    "資訊安全",
+    "confidentiality",
+    "integrity",
+    "non-repudiation"
+   ]
+  },
+  {
+   "slide": 3,
+   "terms": [
+    "plaintext",
+    "ciphertext",
+    "加密",
+    "Kerckhoffs",
+    "金鑰"
+   ]
+  },
+  {
+   "slide": 4,
+   "terms": [
+    "Caesar cipher",
+    "shift cipher",
+    "凱撒密碼"
+   ]
+  },
+  {
+   "slide": 5,
+   "terms": [
+    "frequency analysis",
+    "頻率分析",
+    "substitution cipher",
+    "transposition cipher",
+    "Vigenère"
+   ]
+  },
+  {
+   "slide": 6,
+   "terms": [
+    "symmetric encryption",
+    "secret key",
+    "key distribution problem",
+    "block cipher"
+   ]
+  },
+  {
+   "slide": 7,
+   "terms": [
+    "AES",
+    "Rijndael",
+    "AES-128"
+   ]
+  },
+  {
+   "slide": 8,
+   "terms": [
+    "mode of operation",
+    "ECB",
+    "CBC",
+    "CTR",
+    "IV"
+   ]
+  },
+  {
+   "slide": 9,
+   "terms": [
+    "public-key cryptography",
+    "public key",
+    "private key",
+    "Diffie-Hellman",
+    "key exchange"
+   ]
+  },
+  {
+   "slide": 10,
+   "terms": [
+    "RSA",
+    "RSA modulus",
+    "OAEP"
+   ]
+  },
+  {
+   "slide": 11,
+   "terms": [
+    "TLS 1.3",
+    "HTTPS",
+    "digital signature",
+    "AES-GCM",
+    "forward secrecy"
+   ]
+  },
+  {
+   "slide": 12,
+   "terms": [
+    "classical cipher weaknesses",
+    "AES",
+    "public-key cryptography",
+    "TLS 1.3"
+   ]
+  }
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "1": [],
+ "2": [
+  "intro-what-is-crypto",
+  "app-hybrid-tls"
+ ],
+ "3": [
+  "intro-terminology",
+  "sym-block-vs-stream",
+  "classical-limitations",
+  "asym-public-key",
+  "intro-kerckhoffs"
+ ],
+ "4": [
+  "classical-caesar"
+ ],
+ "5": [
+  "classical-substitution",
+  "classical-limitations",
+  "classical-transposition"
+ ],
+ "6": [
+  "sym-concept",
+  "sym-block-vs-stream"
+ ],
+ "7": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead",
+  "app-hybrid-tls"
+ ],
+ "8": [
+  "mode-overview",
+  "mode-ecb",
+  "mode-cbc",
+  "mode-ctr",
+  "mode-gcm-aead"
+ ],
+ "9": [
+  "asym-public-key",
+  "asym-key-exchange"
+ ],
+ "10": [
+  "asym-rsa",
+  "asym-signature"
+ ],
+ "11": [
+  "app-hybrid-tls",
+  "asym-signature",
+  "mode-gcm-aead"
+ ],
+ "12": [
+  "app-hybrid-tls",
+  "mode-gcm-aead",
+  "asym-rsa",
+  "sym-aes",
+  "classical-caesar"
+ ]
+}
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "slides_without_hits": []
+}
+```
+
+### #93 ⑥ 整理教學內容（agent） — 2026-11-24 20:51:08（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：教學內容沿用 run-04 已通過驗證的版本。
+
+### #94 ⑦ Content Validation — 2026-11-24 20:51:08（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "slides": 12,
+ "points": 45,
+ "nodes_used": 20,
+ "wiki_nodes": 20
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：C1: 0E/0W，C2: 0E/0W，C3: 0E/0W，C4: 0E/0W，C5: 0E/0W，C6: 0E/0W
+- **路由決策**：pass
+
+### #96 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 20:51:10（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：【刻意驗證】HTML 維持 run-04 版本、不做修改就送測，確認新增的『內容與來源欄重疊』檢查能自動抓到 run-04 只靠截圖才發現的手機版問題。
+
+### #97 ⑨ HTML Validation — 2026-11-24 20:51:33（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 67887,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 12,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    170
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.0036779730281977932,
+   "ecbContrast": 9.034152677929736
+  },
+  "aes_steps_ok": "10/10",
+  "caesar decrypt KHOOR-3": "HELLO",
+  "mode_tabs": 4
+ },
+ "mobile_hscroll_slides": [
+  2,
+  3,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12
+ ]
+}
+```
+- **檢查結果**：❌ 未通過，errors=10，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 10E/0W，H7: 0E/0W
+  - `[H6]` slide 2：390×844 內容與來源欄重疊（內容超出框 218px，來源欄與內容距離 -204px）
+  - `[H6]` slide 3：390×844 內容與來源欄重疊（內容超出框 112px，來源欄與內容距離 -98px）
+  - `[H6]` slide 5：390×844 內容與來源欄重疊（內容超出框 286px，來源欄與內容距離 -272px）
+  - `[H6]` slide 6：390×844 內容與來源欄重疊（內容超出框 191px，來源欄與內容距離 -177px）
+  - `[H6]` slide 7：390×844 內容與來源欄重疊（內容超出框 197px，來源欄與內容距離 -183px）
+  - `[H6]` slide 8：390×844 內容與來源欄重疊（內容超出框 39px，來源欄與內容距離 -25px）
+  - `[H6]` slide 9：390×844 內容與來源欄重疊（內容超出框 137px，來源欄與內容距離 -123px）
+  - `[H6]` slide 10：390×844 內容與來源欄重疊（內容超出框 277px，來源欄與內容距離 -263px）
+  - `[H6]` slide 11：390×844 內容與來源欄重疊（內容超出框 78px，來源欄與內容距離 -64px）
+  - `[H6]` slide 12：390×844 內容與來源欄重疊（內容超出框 213px，來源欄與內容距離 -199px）
+- **路由決策**：retry
+
+### #99 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 20:51:53（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 10
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Slides/index.html"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：HTML 修正 retry 1：新檢查抓到 10/12 張投影片在手機上內容與來源欄重疊（溢出 39–286px）——不只 AES 那張，這是 run-01 就存在的潛在問題（run-01 只截了 4 張手機圖，當時那幾張剛好沒重疊）。原因：.slide-body 的 flex:1 + min-height:0 在內容比畫面高時被壓縮。修正：窄螢幕下 .slide-body 改為 flex:none，內容維持原高、整頁往下捲。同時修正截圖發現的另外兩項：AES 步驟按鈕改用內文字型，①②③④ 正常顯示（不再像 ⊕）；Caesar 字母對照列改為隨面板寬度縮放的 26 欄，X、Y、Z 不再被擠出畫面。
+
+### #100 ⑨ HTML Validation — 2026-11-24 20:52:17（attempt 2）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 68009,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 12,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    170
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.0036779730281977932,
+   "ecbContrast": 9.034152677929736
+  },
+  "aes_steps_ok": "10/10",
+  "caesar decrypt KHOOR-3": "HELLO",
+  "mode_tabs": 4
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 0E/0W，H7: 0E/0W
+- **路由決策**：pass
+
+### #101 ⑩ 完成 — 2026-11-24 20:52:17
+
+- **輸出**：
+
+```json
+{
+ "attempts": {
+  "wiki": 1,
+  "content": 1,
+  "html": 2
+ },
+ "retries": {
+  "wiki": 0,
+  "content": 0,
+  "html": 1
+ }
+}
+```
+
+### #102 ★ Validator 自我測試（注入錯誤） — 2026-11-24 20:53:43
+
+- **修正／agent 說明**：run-04/05 修改驗證器後（C3 排除序數、H7 分頁改看實際顯示、H6 新增重疊檢查）重跑 validator 自我測試：13/13 仍全部抓到，未注入對照組通過。
+
+### #104 ① 資料取得 — 2026-11-24 21:05:52
+
+- **輸入**：
+
+```json
+{
+ "sources": [
+  "S01",
+  "S02",
+  "S03",
+  "S04",
+  "S05",
+  "S06",
+  "S07",
+  "S08",
+  "S09",
+  "S10",
+  "S11",
+  "S12",
+  "S13",
+  "S14",
+  "S15"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "status": 200,
+  "bytes": 867626,
+  "sha256": "32d1e3837ae5a7d2e99a63f43c6fea3dd350ffc6ac55b3aaadad250546ad7f87",
+  "cached": true,
+  "tries": 1
+ },
+ "S02": {
+  "status": 200,
+  "bytes": 343046,
+  "sha256": "5de3d24deb279f5bc7669a90742876d2807200eabc9195bb6e8714b400b0532a",
+  "cached": true,
+  "tries": 1
+ },
+ "S03": {
+  "status": 200,
+  "bytes": 491864,
+  "sha256": "d8eb02f9aeb407f9fddf8bc9df00bc556b62b981e05a5fceb3d380eb9c3c6fed",
+  "cached": true,
+  "tries": 1
+ },
+ "S04": {
+  "status": 200,
+  "bytes": 1184436,
+  "sha256": "62c86eb567f13edb8f71826e985da870b04ef6381634f303cdb16e84d47becd1",
+  "cached": true,
+  "tries": 1
+ },
+ "S05": {
+  "status": 200,
+  "bytes": 378266,
+  "sha256": "66821162de1e7130c5fb5eedb22140d8d6d013ec51af4550bb095c2a9481a00e",
+  "cached": true,
+  "tries": 1
+ },
+ "S06": {
+  "status": 200,
+  "bytes": 1379086,
+  "sha256": "715d140154622ff08b895c735fa69e94aa6ace271dd50fef46c03f92cab42d84",
+  "cached": true,
+  "tries": 1
+ },
+ "S07": {
+  "status": 200,
+  "bytes": 2216632,
+  "sha256": "03fa2f493a1448a309586b9cf9e5c3a4dfd14735e0786cc94674519570b890ff",
+  "cached": true,
+  "tries": 1
+ },
+ "S08": {
+  "status": 200,
+  "bytes": 182059,
+  "sha256": "f7b1f78d9a7cbeb85e32b8c563a6db60771a5cc4bdc55580645f7cb778a4966b",
+  "cached": true,
+  "tries": 1
+ },
+ "S09": {
+  "status": 200,
+  "bytes": 154696,
+  "sha256": "1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11",
+  "cached": true,
+  "tries": 1
+ },
+ "S10": {
+  "status": 200,
+  "bytes": 337736,
+  "sha256": "47871bc8820a2c3b6ea89f061055577058862cf543686b82d10131239702b3bd",
+  "cached": true,
+  
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": false,
+ "ok": 14,
+ "failed": {
+  "S15": "<HTTPError 403: 'Forbidden'>"
+ }
+}
+```
+
+### #105 ② 資料 Ingestion — 2026-11-24 21:06:10
+
+- **輸入**：
+
+```json
+{
+ "files": [
+  "S01.txt",
+  "S02.pdf",
+  "S03.pdf",
+  "S04.pdf",
+  "S05.pdf",
+  "S06.pdf",
+  "S07.pdf",
+  "S08.pdf",
+  "S09.txt",
+  "S10.txt",
+  "S11.pdf",
+  "S12.pdf",
+  "S13.pdf",
+  "S14.pdf",
+  "S15.html"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "ok": true,
+  "pages": 366,
+  "chars": 867261,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S01.extracted.txt"
+ },
+ "S02": {
+  "ok": true,
+  "pages": 49,
+  "chars": 135580,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S02.extracted.txt"
+ },
+ "S03": {
+  "ok": true,
+  "pages": 61,
+  "chars": 184790,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S03.extracted.txt"
+ },
+ "S04": {
+  "ok": true,
+  "pages": 46,
+  "chars": 69838,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 77,
+  "warnings": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ],
+  "extracted": "S04.extracted.txt"
+ },
+ "S05": {
+  "ok": true,
+  "pages": 66,
+  "chars": 120932,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S05.extracted.txt"
+ },
+ "S06": {
+  "ok": true,
+  "pages": 91,
+  "chars": 238077,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S06.extracted.txt"
+ },
+ "S07": {
+  "ok": true,
+  "pages": 11,
+  "chars": 66174,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S07.extracted.txt"
+ },
+ "S08": {
+  "ok": true,
+  "pages": 15,
+  "chars": 34868,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "ext
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": false,
+ "failed": [
+  "S15"
+ ],
+ "warnings": {
+  "S04": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ]
+ }
+}
+```
+
+### #109 ① 資料取得 — 2026-11-24 21:06:49
+
+- **輸入**：
+
+```json
+{
+ "sources": [
+  "S01",
+  "S02",
+  "S03",
+  "S04",
+  "S05",
+  "S06",
+  "S07",
+  "S08",
+  "S09",
+  "S10",
+  "S11",
+  "S12",
+  "S13",
+  "S14",
+  "S15"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "status": 200,
+  "bytes": 867626,
+  "sha256": "32d1e3837ae5a7d2e99a63f43c6fea3dd350ffc6ac55b3aaadad250546ad7f87",
+  "cached": true,
+  "tries": 1
+ },
+ "S02": {
+  "status": 200,
+  "bytes": 343046,
+  "sha256": "5de3d24deb279f5bc7669a90742876d2807200eabc9195bb6e8714b400b0532a",
+  "cached": true,
+  "tries": 1
+ },
+ "S03": {
+  "status": 200,
+  "bytes": 491864,
+  "sha256": "d8eb02f9aeb407f9fddf8bc9df00bc556b62b981e05a5fceb3d380eb9c3c6fed",
+  "cached": true,
+  "tries": 1
+ },
+ "S04": {
+  "status": 200,
+  "bytes": 1184436,
+  "sha256": "62c86eb567f13edb8f71826e985da870b04ef6381634f303cdb16e84d47becd1",
+  "cached": true,
+  "tries": 1
+ },
+ "S05": {
+  "status": 200,
+  "bytes": 378266,
+  "sha256": "66821162de1e7130c5fb5eedb22140d8d6d013ec51af4550bb095c2a9481a00e",
+  "cached": true,
+  "tries": 1
+ },
+ "S06": {
+  "status": 200,
+  "bytes": 1379086,
+  "sha256": "715d140154622ff08b895c735fa69e94aa6ace271dd50fef46c03f92cab42d84",
+  "cached": true,
+  "tries": 1
+ },
+ "S07": {
+  "status": 200,
+  "bytes": 2216632,
+  "sha256": "03fa2f493a1448a309586b9cf9e5c3a4dfd14735e0786cc94674519570b890ff",
+  "cached": true,
+  "tries": 1
+ },
+ "S08": {
+  "status": 200,
+  "bytes": 182059,
+  "sha256": "f7b1f78d9a7cbeb85e32b8c563a6db60771a5cc4bdc55580645f7cb778a4966b",
+  "cached": true,
+  "tries": 1
+ },
+ "S09": {
+  "status": 200,
+  "bytes": 154696,
+  "sha256": "1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11",
+  "cached": true,
+  "tries": 1
+ },
+ "S10": {
+  "status": 200,
+  "bytes": 337736,
+  "sha256": "47871bc8820a2c3b6ea89f061055577058862cf543686b82d10131239702b3bd",
+  "cached": true,
+  
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "ok": 15,
+ "failed": {}
+}
+```
+
+### #110 ② 資料 Ingestion — 2026-11-24 21:07:07
+
+- **輸入**：
+
+```json
+{
+ "files": [
+  "S01.txt",
+  "S02.pdf",
+  "S03.pdf",
+  "S04.pdf",
+  "S05.pdf",
+  "S06.pdf",
+  "S07.pdf",
+  "S08.pdf",
+  "S09.txt",
+  "S10.txt",
+  "S11.pdf",
+  "S12.pdf",
+  "S13.pdf",
+  "S14.pdf",
+  "S15.html"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "ok": true,
+  "pages": 366,
+  "chars": 867261,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S01.extracted.txt"
+ },
+ "S02": {
+  "ok": true,
+  "pages": 49,
+  "chars": 135580,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S02.extracted.txt"
+ },
+ "S03": {
+  "ok": true,
+  "pages": 61,
+  "chars": 184790,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S03.extracted.txt"
+ },
+ "S04": {
+  "ok": true,
+  "pages": 46,
+  "chars": 69838,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 77,
+  "warnings": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ],
+  "extracted": "S04.extracted.txt"
+ },
+ "S05": {
+  "ok": true,
+  "pages": 66,
+  "chars": 120932,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S05.extracted.txt"
+ },
+ "S06": {
+  "ok": true,
+  "pages": 91,
+  "chars": 238077,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S06.extracted.txt"
+ },
+ "S07": {
+  "ok": true,
+  "pages": 11,
+  "chars": 66174,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S07.extracted.txt"
+ },
+ "S08": {
+  "ok": true,
+  "pages": 15,
+  "chars": 34868,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "ext
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "failed": [],
+ "warnings": {
+  "S04": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ]
+ }
+}
+```
+
+### #112 ③ Wiki 知識整理（agent） — 2026-11-24 21:09:46（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "build",
+ "batch": {
+  "batch": 6,
+  "topic": "T6",
+  "name": "教學補充：基礎工具與別人怎麼教",
+  "sources": [
+   "S04",
+   "S08",
+   "S13",
+   "S14",
+   "S15"
+  ],
+  "nodes": [
+   "basics-bits-xor-mod",
+   "teaching-how-others-explain"
+  ]
+ },
+ "batch_lint_issues": []
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [
+   "Wiki/concepts/basics-bits-xor-mod.md",
+   "Wiki/concepts/teaching-how-others-explain.md",
+   "Wiki/sources/S13-joy-of-cryptography.md",
+   "Wiki/sources/S14-crypto101.md",
+   "Wiki/sources/S15-cloudflare-what-is-encryption.md"
+  ],
+  "modified": [
+   "Wiki/concepts/asym-key-exchange.md",
+   "Wiki/concepts/asym-rsa.md",
+   "Wiki/concepts/classical-caesar.md",
+   "Wiki/concepts/mode-cbc.md",
+   "Wiki/concepts/sym-aes.md",
+   "Wiki/knowledge_map.md"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：Batch 6（使用者回饋：名詞要先解釋、看別人怎麼介紹加密）：新增來源 S13 The Joy of Cryptography（Oregon State 大學部教科書）、S14 Crypto 101（入門書）、S15 Cloudflare What is encryption?（給大眾的說明）。新增節點 basics-bits-xor-mod（位元、位元組、十六進位、XOR、mod，含定義與例子）與 teaching-how-others-explain（比較三種教材的介紹順序，歸納本簡報的 5 條教學原則：先介紹工具與名詞、每個主題依『原理→為什麼／好處與限制→現實怎麼做』分頁講完、公式每個符號都要說明、從最簡單例子開始、用比喻再接回正式名詞）。classical-caesar、sym-aes、mode-cbc、asym-key-exchange、asym-rsa 的先備概念加入 basics-bits-xor-mod，讓 C5 會檢查『先介紹 mod／XOR 再使用』。knowledge_map 新增 T6。
+
+### #113 ③b Batch 快速檢查（v2） — 2026-11-24 21:09:47（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "batch": 6,
+ "nodes": [
+  "basics-bits-xor-mod",
+  "teaching-how-others-explain"
+ ]
+}
+```
+- **檢查結果**：❌ 未通過，errors=3，warnings=0
+  - `[W5]` basics-bits-xor-mod.md：引文太短，無法有效比對：Bit A binary digit: 0 or 1.
+  - `[W5]` basics-bits-xor-mod.md：引文太短，無法有效比對：20 % 7 = 6 because 20 = 2 · 7 + 6.
+  - `[W5]` teaching-how-others-explain.md：引文太短，無法有效比對：0.2 Modular Arithmetic
+- **路由決策**：redo-batch
+
+### #115 ③ Wiki 知識整理（agent） — 2026-11-24 21:10:16（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "build",
+ "batch": {
+  "batch": 6,
+  "topic": "T6",
+  "name": "教學補充：基礎工具與別人怎麼教",
+  "sources": [
+   "S04",
+   "S08",
+   "S13",
+   "S14",
+   "S15"
+  ],
+  "nodes": [
+   "basics-bits-xor-mod",
+   "teaching-how-others-explain"
+  ]
+ },
+ "batch_lint_issues": [
+  {
+   "check": "W5",
+   "severity": "error",
+   "where": "basics-bits-xor-mod.md",
+   "msg": "引文太短，無法有效比對：Bit A binary digit: 0 or 1."
+  },
+  {
+   "check": "W5",
+   "severity": "error",
+   "where": "basics-bits-xor-mod.md",
+   "msg": "引文太短，無法有效比對：20 % 7 = 6 because 20 = 2 · 7 + 6."
+  },
+  {
+   "check": "W5",
+   "severity": "error",
+   "where": "teaching-how-others-explain.md",
+   "msg": "引文太短，無法有效比對：0.2 Modular Arithmetic"
+  }
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Wiki/concepts/basics-bits-xor-mod.md",
+   "Wiki/concepts/teaching-how-others-explain.md",
+   "Wiki/log.md"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：Batch 6 重做（batch lint 第 1 次未過）：v2 的 batch 快速檢查第一次在實際執行中攔下問題——3 條引文太短（少於 20 字元，無法有效比對）：FIPS 197 的 'Bit A binary digit: 0 or 1.'（刪除，位元定義改由 p.13 的完整句子支撐）、Joy of Cryptography 的 mod 例子（擴充為含 21 % 7 的完整例句）、目錄的 '0.2 Modular Arithmetic'（與上一條合併成連續的目錄片段）。
+
+### #116 ③b Batch 快速檢查（v2） — 2026-11-24 21:10:16（attempt 2）
+
+- **輸入**：
+
+```json
+{
+ "batch": 6,
+ "nodes": [
+  "basics-bits-xor-mod",
+  "teaching-how-others-explain"
+ ]
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+- **路由決策**：next-batch
+
+### #117 ④ Wiki Validation — 2026-11-24 21:10:17（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "pages": {
+  "concept_pages": 22,
+  "source_pages": 15,
+  "quotes": 279,
+  "facts": 19
+ }
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：W1: 0E/0W，W2: 0E/0W，W3: 0E/0W，W4: 0E/0W，W5: 0E/0W，W6: 0E/0W，W7: 0E/0W，W8: 0E/0W
+- **路由決策**：pass
+
+### #118 ⑤ 查詢 Wiki — 2026-11-24 21:10:17
+
+- **輸入**：
+
+```json
+{
+ "queries": [
+  {
+   "slide": 1,
+   "terms": []
+  },
+  {
+   "slide": 2,
+   "terms": [
+    "information security",
+    "資訊安全",
+    "confidentiality",
+    "integrity",
+    "non-repudiation"
+   ]
+  },
+  {
+   "slide": 3,
+   "terms": [
+    "plaintext",
+    "ciphertext",
+    "加密",
+    "Kerckhoffs",
+    "金鑰"
+   ]
+  },
+  {
+   "slide": 4,
+   "terms": [
+    "Caesar cipher",
+    "shift cipher",
+    "凱撒密碼"
+   ]
+  },
+  {
+   "slide": 5,
+   "terms": [
+    "frequency analysis",
+    "頻率分析",
+    "substitution cipher",
+    "transposition cipher",
+    "Vigenère"
+   ]
+  },
+  {
+   "slide": 6,
+   "terms": [
+    "symmetric encryption",
+    "secret key",
+    "key distribution problem",
+    "block cipher"
+   ]
+  },
+  {
+   "slide": 7,
+   "terms": [
+    "AES",
+    "Rijndael",
+    "AES-128"
+   ]
+  },
+  {
+   "slide": 8,
+   "terms": [
+    "mode of operation",
+    "ECB",
+    "CBC",
+    "CTR",
+    "IV"
+   ]
+  },
+  {
+   "slide": 9,
+   "terms": [
+    "public-key cryptography",
+    "public key",
+    "private key",
+    "Diffie-Hellman",
+    "key exchange"
+   ]
+  },
+  {
+   "slide": 10,
+   "terms": [
+    "RSA",
+    "RSA modulus",
+    "OAEP"
+   ]
+  },
+  {
+   "slide": 11,
+   "terms": [
+    "TLS 1.3",
+    "HTTPS",
+    "digital signature",
+    "AES-GCM",
+    "forward secrecy"
+   ]
+  },
+  {
+   "slide": 12,
+   "terms": [
+    "classical cipher weaknesses",
+    "AES",
+    "public-key cryptography",
+    "TLS 1.3"
+   ]
+  }
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "1": [],
+ "2": [
+  "intro-what-is-crypto",
+  "app-hybrid-tls"
+ ],
+ "3": [
+  "intro-terminology",
+  "sym-block-vs-stream",
+  "classical-limitations",
+  "asym-public-key",
+  "intro-kerckhoffs"
+ ],
+ "4": [
+  "classical-caesar"
+ ],
+ "5": [
+  "classical-substitution",
+  "classical-limitations",
+  "classical-transposition"
+ ],
+ "6": [
+  "sym-concept",
+  "sym-block-vs-stream"
+ ],
+ "7": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead",
+  "app-hybrid-tls"
+ ],
+ "8": [
+  "mode-overview",
+  "mode-ecb",
+  "mode-cbc",
+  "mode-ctr",
+  "basics-bits-xor-mod"
+ ],
+ "9": [
+  "asym-public-key",
+  "asym-key-exchange"
+ ],
+ "10": [
+  "asym-rsa",
+  "asym-signature"
+ ],
+ "11": [
+  "app-hybrid-tls",
+  "asym-signature",
+  "mode-gcm-aead"
+ ],
+ "12": [
+  "app-hybrid-tls",
+  "mode-gcm-aead",
+  "asym-rsa",
+  "sym-aes",
+  "classical-caesar"
+ ]
+}
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "slides_without_hits": []
+}
+```
+
+### #120 ⑤ 查詢 Wiki — 2026-11-24 21:12:26
+
+- **修正／agent 說明**：流程順序錯誤的修正：Graph 的 query_wiki 節點在 Wiki 通過驗證後立刻執行，但當時 slide_outline.json 還是舊的 12 張大綱（我在 resume 前忘了先更新大綱）。更新為新的 30 張大綱（6 章，每章依原理→為什麼／好處與限制→現實應用）後，以同一支 validators/query.py 重新執行查詢並覆寫 artifacts/query_results.json。教訓：大綱屬於『規劃』，必須在 organize 結束前就定好。
+
+### #121 ⑥ 整理教學內容（agent） — 2026-11-24 21:18:52（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [
+   "Workflow/artifacts/slides_v2.json"
+  ],
+  "modified": [
+   "Workflow/artifacts/query_results.json",
+   "Workflow/artifacts/query_results.md",
+   "Workflow/artifacts/slide_content.json"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：draft_content（依使用者回饋重寫為 30 張）：6 章，每章依『原理 → 為什麼／好處與限制 → 現實應用』分頁；每張加入名詞小卡（defines）、公式符號表（formulas）、圖片名稱（visual.name，不寫來源）、教學角色（role）；來源只放最後一張參考資料。新增 Vigenère 專頁、mod/XOR 工具頁、位元/位元組/十六進位頁、AES 分成概觀／四步驟／實例／解密與應用 4 頁、RSA 分成產生金鑰／加解密 2 頁。（註：送出前曾單獨預覽到 3 個錯誤，刻意不先修，讓 Graph 正式記錄。）
+
+### #122 ⑦ Content Validation — 2026-11-24 21:18:52（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "slides": 30,
+ "points": 92,
+ "nodes_used": 22,
+ "wiki_nodes": 22
+}
+```
+- **檢查結果**：❌ 未通過，errors=3，warnings=0
+  - 各檢查項：C1: 0E/0W，C2: 1E/0W，C3: 0E/0W，C4: 0E/0W，C5: 0E/0W，C6: 0E/0W，C7: 2E/0W，C8: 0E/0W，C9: 0E/0W，C10: 0E/0W
+  - `[C2]` slide 8 重點2：節點 classical-caesar 不在 query_wiki 對本頁的檢索結果中（內容未經查詢取得）
+  - `[C7]` slide 9：名詞「輪」第一次出現，但之前和這一張都沒有解釋
+  - `[C7]` slide 10：名詞「AES」第一次出現，但之前和這一張都沒有解釋
+- **路由決策**：retry
+
+### #124 ⑥ 整理教學內容（agent） — 2026-11-24 21:19:03（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 3
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Workflow/artifacts/slide_content.json"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：Content 修正 retry 1：(1) 真的內容錯誤：第 8 張重點 2 標了 classical-caesar，但該頁查詢結果沒有它；改用已檢索到、且同樣支撐『Caesar 是替換密碼的特例』的 classical-substitution。(2)(3) 新檢查 C7 的誤判：第 9 張『輪流』被名詞表的『輪』比對到；第 10 張『CAESAR』含有字母 AES。修正名詞表 pattern（『輪』排除輪流／輪到；AES 前後不得是英文字母）。
+
+### #125 ⑦ Content Validation — 2026-11-24 21:19:03（attempt 2）
+
+- **輸入**：
+
+```json
+{
+ "slides": 30,
+ "points": 92,
+ "nodes_used": 22,
+ "wiki_nodes": 22
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：C1: 0E/0W，C2: 0E/0W，C3: 0E/0W，C4: 0E/0W，C5: 0E/0W，C6: 0E/0W，C7: 0E/0W，C8: 0E/0W，C9: 0E/0W，C10: 0E/0W
+- **路由決策**：pass
+
+### #127 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 21:22:05（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Slides/index.html"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：build_html：改用產生器 tools/render_slides.py——每張投影片的標題、重點、名詞小卡、公式與符號表、圖名都直接取自已驗證的 slide_content.json；每張圖的 HTML 放在 tools/visuals.html（28 個 template）；共用外殼（樣式、控制列、互動程式）取自 run-05 版存成 tools/slides_shell.html；參考資料頁由 sources.json 產生，各頁不再放來源欄。
+
+### #128 ⑨ HTML Validation — 2026-11-24 21:22:44（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 106768,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 30,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [
+  6,
+  21,
+  24,
+  25
+ ],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    170
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.0036779730281977932,
+   "ecbContrast": 9.034152677929736
+  },
+  "aes_steps_ok": "10/10",
+  "caesar decrypt KHOOR-3": "HELLO",
+  "mode_tabs": 3
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：❌ 未通過，errors=5，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 4E/0W，H7: 0E/0W，H8: 1E/0W
+  - `[H8]` slide 5：畫面上第一次出現「公開金鑰加密」，但之前沒有解釋
+  - `[H6]` slide 6：1280×720 內容溢出（scrollHeight 673 > 618）：['DIV.rightcol:公式與符號a mod na被除的數n除數（正整數）mod取餘', 'FIGURE.visual panel:mod 7 時鐘\n      \n        012345', 'DIV.tools:mod 7 時鐘\n      \n        012345']
+  - `[H6]` slide 21：1280×720 內容溢出（scrollHeight 700 > 618）：['DIV.rightcol:公式與符號Cⱼ = E_K(Pⱼ ⊕ Cⱼ₋₁)，Pⱼ = ', 'FIGURE.visual panel:效果\n    加密流程\n    解密流程\n  \n  \n   ', 'DIV.mode-panel:同一張鎖頭圖，CBC 加密後\n    每一塊都受前一塊影響，']
+  - `[H6]` slide 24：1280×720 內容溢出（scrollHeight 633 > 618）：['DIV.rightcol:公式與符號Y = α^X mod q，K = (對方的 Y)', 'FIGURE.visual panel:AliceBob\n    \n      公開的 q、αq =']
+  - `[H6]` slide 25：1280×720 內容溢出（scrollHeight 677 > 618）：['DIV.rightcol:公式與符號n = p × q，φ = (p − 1) × (', 'FIGURE.visual panel:選質數p = 47，q = 59\n    算 nn = 47', 'P.rkey:公鑰 (17, 2773)私鑰 (157, 2773)']
+- **路由決策**：retry
+
+### #130 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 21:23:20（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 5
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Slides/index.html"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：HTML 修正 retry 1：(1) H8 誤判：第 5 張相鄰的『演算法：公開』『金鑰：保密』兩個標籤，用 text_content() 取文字時黏成『…公開金鑰…』，被當成名詞『公開金鑰加密』。修正 H8：逐個文字節點以分隔符串接再比對（content_check 原本就有分隔，所以 C7 沒誤判）。(2) H6：第 6、21、24、25 張右欄同時放公式表和圖，高度超出 1280×720。修正產生器：公式與符號表移到左欄（接在名詞小卡後），並縮小間距與字級；EXTRA_CSS 改為產生時插入，不再烘焙進外殼。
+
+### #131 ⑨ HTML Validation — 2026-11-24 21:24:00（attempt 2）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 106852,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 30,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    170
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.0036779730281977932,
+   "ecbContrast": 9.034152677929736
+  },
+  "aes_steps_ok": "10/10",
+  "caesar decrypt KHOOR-3": "HELLO",
+  "mode_tabs": 3
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 0E/0W，H7: 0E/0W，H8: 0E/0W
+- **路由決策**：pass
+
+### #132 ⑩ 完成 — 2026-11-24 21:24:00
+
+- **輸出**：
+
+```json
+{
+ "attempts": {
+  "wiki": 1,
+  "content": 2,
+  "html": 2
+ },
+ "retries": {
+  "wiki": 0,
+  "content": 1,
+  "html": 1
+ }
+}
+```
+
+### #133 ★ Validator 自我測試（注入錯誤） — 2026-11-24 21:26:53
+
+- **修正／agent 說明**：run-07 依使用者回饋新增 C7（名詞先解釋）、C8（公式符號說明）、C9（圖名不寫來源）、C10（每章來龍去脈）、H8（畫面上名詞先解釋）後，自我測試新增 5 個注入案例，並把 H2 案例更新為新內容：18/18 全部抓到，未注入對照組通過。
+
+### #135 ① 資料取得 — 2026-11-24 21:34:16
+
+- **輸入**：
+
+```json
+{
+ "sources": [
+  "S01",
+  "S02",
+  "S03",
+  "S04",
+  "S05",
+  "S06",
+  "S07",
+  "S08",
+  "S09",
+  "S10",
+  "S11",
+  "S12",
+  "S13",
+  "S14",
+  "S15"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "status": 200,
+  "bytes": 867626,
+  "sha256": "32d1e3837ae5a7d2e99a63f43c6fea3dd350ffc6ac55b3aaadad250546ad7f87",
+  "cached": true,
+  "tries": 1
+ },
+ "S02": {
+  "status": 200,
+  "bytes": 343046,
+  "sha256": "5de3d24deb279f5bc7669a90742876d2807200eabc9195bb6e8714b400b0532a",
+  "cached": true,
+  "tries": 1
+ },
+ "S03": {
+  "status": 200,
+  "bytes": 491864,
+  "sha256": "d8eb02f9aeb407f9fddf8bc9df00bc556b62b981e05a5fceb3d380eb9c3c6fed",
+  "cached": true,
+  "tries": 1
+ },
+ "S04": {
+  "status": 200,
+  "bytes": 1184436,
+  "sha256": "62c86eb567f13edb8f71826e985da870b04ef6381634f303cdb16e84d47becd1",
+  "cached": true,
+  "tries": 1
+ },
+ "S05": {
+  "status": 200,
+  "bytes": 378266,
+  "sha256": "66821162de1e7130c5fb5eedb22140d8d6d013ec51af4550bb095c2a9481a00e",
+  "cached": true,
+  "tries": 1
+ },
+ "S06": {
+  "status": 200,
+  "bytes": 1379086,
+  "sha256": "715d140154622ff08b895c735fa69e94aa6ace271dd50fef46c03f92cab42d84",
+  "cached": true,
+  "tries": 1
+ },
+ "S07": {
+  "status": 200,
+  "bytes": 2216632,
+  "sha256": "03fa2f493a1448a309586b9cf9e5c3a4dfd14735e0786cc94674519570b890ff",
+  "cached": true,
+  "tries": 1
+ },
+ "S08": {
+  "status": 200,
+  "bytes": 182059,
+  "sha256": "f7b1f78d9a7cbeb85e32b8c563a6db60771a5cc4bdc55580645f7cb778a4966b",
+  "cached": true,
+  "tries": 1
+ },
+ "S09": {
+  "status": 200,
+  "bytes": 154696,
+  "sha256": "1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11",
+  "cached": true,
+  "tries": 1
+ },
+ "S10": {
+  "status": 200,
+  "bytes": 337736,
+  "sha256": "47871bc8820a2c3b6ea89f061055577058862cf543686b82d10131239702b3bd",
+  "cached": true,
+  
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "ok": 15,
+ "failed": {}
+}
+```
+
+### #136 ② 資料 Ingestion — 2026-11-24 21:35:33
+
+- **輸入**：
+
+```json
+{
+ "files": [
+  "S01.txt",
+  "S02.pdf",
+  "S03.pdf",
+  "S04.pdf",
+  "S05.pdf",
+  "S06.pdf",
+  "S07.pdf",
+  "S08.pdf",
+  "S09.txt",
+  "S10.txt",
+  "S11.pdf",
+  "S12.pdf",
+  "S13.pdf",
+  "S14.pdf",
+  "S15.html"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "ok": true,
+  "pages": 366,
+  "chars": 867261,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S01.extracted.txt"
+ },
+ "S02": {
+  "ok": true,
+  "pages": 49,
+  "chars": 135580,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S02.extracted.txt"
+ },
+ "S03": {
+  "ok": true,
+  "pages": 61,
+  "chars": 184790,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S03.extracted.txt"
+ },
+ "S04": {
+  "ok": true,
+  "pages": 46,
+  "chars": 69838,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 77,
+  "warnings": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ],
+  "extracted": "S04.extracted.txt"
+ },
+ "S05": {
+  "ok": true,
+  "pages": 66,
+  "chars": 120932,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S05.extracted.txt"
+ },
+ "S06": {
+  "ok": true,
+  "pages": 91,
+  "chars": 238077,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S06.extracted.txt"
+ },
+ "S07": {
+  "ok": true,
+  "pages": 11,
+  "chars": 66174,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S07.extracted.txt"
+ },
+ "S08": {
+  "ok": true,
+  "pages": 15,
+  "chars": 34868,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "ext
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "failed": [],
+ "warnings": {
+  "S04": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ]
+ }
+}
+```
+
+### #138 ③ Wiki 知識整理（agent） — 2026-11-24 21:35:35（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "incremental"
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：增量模式：使用者回饋『公式沒有用正常的數學排版』只影響簡報呈現，Wiki 不需更新。
+
+### #139 ④ Wiki Validation — 2026-11-24 21:35:36（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "pages": {
+  "concept_pages": 22,
+  "source_pages": 15,
+  "quotes": 279,
+  "facts": 19
+ }
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：W1: 0E/0W，W2: 0E/0W，W3: 0E/0W，W4: 0E/0W，W5: 0E/0W，W6: 0E/0W，W7: 0E/0W，W8: 0E/0W
+- **路由決策**：pass
+
+### #140 ⑤ 查詢 Wiki — 2026-11-24 21:35:36
+
+- **輸入**：
+
+```json
+{
+ "queries": [
+  {
+   "slide": 1,
+   "terms": []
+  },
+  {
+   "slide": 2,
+   "terms": [
+    "教學順序",
+    "teaching approach"
+   ]
+  },
+  {
+   "slide": 3,
+   "terms": [
+    "密碼學",
+    "information security",
+    "Cryptography"
+   ]
+  },
+  {
+   "slide": 4,
+   "terms": [
+    "明文",
+    "密文",
+    "金鑰",
+    "加密"
+   ]
+  },
+  {
+   "slide": 5,
+   "terms": [
+    "Kerckhoffs",
+    "暴力破解"
+   ]
+  },
+  {
+   "slide": 6,
+   "terms": [
+    "XOR",
+    "取餘數",
+    "模運算"
+   ]
+  },
+  {
+   "slide": 7,
+   "terms": [
+    "Caesar cipher",
+    "凱撒密碼",
+    "位移密碼"
+   ]
+  },
+  {
+   "slide": 8,
+   "terms": [
+    "替換密碼",
+    "substitution cipher"
+   ]
+  },
+  {
+   "slide": 9,
+   "terms": [
+    "Vigenère cipher",
+    "多表替換",
+    "polyalphabetic substitution"
+   ]
+  },
+  {
+   "slide": 10,
+   "terms": [
+    "換位密碼",
+    "transposition cipher"
+   ]
+  },
+  {
+   "slide": 11,
+   "terms": [
+    "頻率分析",
+    "frequency analysis",
+    "Kasiski"
+   ]
+  },
+  {
+   "slide": 12,
+   "terms": [
+    "對稱式加密",
+    "symmetric encryption"
+   ]
+  },
+  {
+   "slide": 13,
+   "terms": [
+    "金鑰分配問題",
+    "對稱式加密",
+    "public key"
+   ]
+  },
+  {
+   "slide": 14,
+   "terms": [
+    "區塊加密",
+    "串流加密"
+   ]
+  },
+  {
+   "slide": 15,
+   "terms": [
+    "位元組",
+    "十六進位",
+    "byte"
+   ]
+  },
+  {
+   "slide": 16,
+   "terms": [
+    "AES",
+    "Rijndael"
+   ]
+  },
+  {
+   "slide": 17,
+   "terms": [
+    "AES",
+    "AES-128"
+   ]
+  },
+  {
+   "slide": 18,
+   "terms": [
+    "AES",
+    "AES-128"
+   ]
+  },
+  {
+   "slide": 19,
+   "terms": [
+    "AES",
+    "AES-GCM"
+   ]
+  },
+  {
+   "slide": 20,
+   "terms": [
+    "操作模式",
+    "ECB"
+   ]
+  },
+  {
+   "slide": 2
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **輸出**：
+
+```json
+{
+ "1": [],
+ "2": [
+  "teaching-how-others-explain"
+ ],
+ "3": [
+  "intro-what-is-crypto",
+  "asym-public-key",
+  "app-hybrid-tls"
+ ],
+ "4": [
+  "intro-terminology",
+  "asym-public-key",
+  "sym-block-vs-stream",
+  "sym-concept",
+  "classical-limitations"
+ ],
+ "5": [
+  "intro-kerckhoffs"
+ ],
+ "6": [
+  "basics-bits-xor-mod",
+  "teaching-how-others-explain"
+ ],
+ "7": [
+  "classical-caesar"
+ ],
+ "8": [
+  "classical-substitution"
+ ],
+ "9": [
+  "classical-substitution"
+ ],
+ "10": [
+  "classical-transposition"
+ ],
+ "11": [
+  "classical-limitations",
+  "classical-substitution"
+ ],
+ "12": [
+  "sym-concept",
+  "asym-public-key"
+ ],
+ "13": [
+  "asym-public-key",
+  "sym-concept",
+  "asym-key-exchange"
+ ],
+ "14": [
+  "sym-block-vs-stream",
+  "teaching-how-others-explain",
+  "mode-ctr"
+ ],
+ "15": [
+  "basics-bits-xor-mod",
+  "sym-aes"
+ ],
+ "16": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead"
+ ],
+ "17": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead",
+  "app-hybrid-tls"
+ ],
+ "18": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead",
+  "app-hybrid-tls"
+ ],
+ "19": [
+  "mode-gcm-aead",
+  "asym-rsa",
+  "classical-caesar",
+  "sym-aes",
+  "app-hybrid-tls"
+ ],
+ "20": [
+  "mode-overview",
+  "mode-ecb"
+ ],
+ "21": [
+  "mode-overview",
+  "mode-cbc"
+ ],
+ "22": [
+  "mode-ctr",
+  "mode-gcm-aead",
+  "mode-ecb",
+  "mode-overview"
+ ],
+ "23": [
+  "asym-public-key",
+  "asym-key-exchange",
+  "sym-concept"
+ ],
+ "24": [
+  "asym-key-exchange",
+  "app-hybrid-tls"
+ ],
+ "25": [
+  "asym-rsa",
+  "asym-signature"
+ ],
+ "26": [
+  "asym-rsa",
+  "asym-signature"
+
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "slides_without_hits": []
+}
+```
+
+### #142 ⑥ 整理教學內容（agent） — 2026-11-24 21:36:33（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Workflow/artifacts/slide_content.json"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：draft_content（使用者回饋：公式沒有用正常的數學排版）：10 個公式各加上 LaTeX 寫法（tex），帶下標的符號另加 symbols_tex（例如 c_i、E_K、C_j、α、φ）；文字內容不變。
+
+### #143 ⑦ Content Validation — 2026-11-24 21:36:33（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "slides": 30,
+ "points": 92,
+ "nodes_used": 22,
+ "wiki_nodes": 22
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：C1: 0E/0W，C2: 0E/0W，C3: 0E/0W，C4: 0E/0W，C5: 0E/0W，C6: 0E/0W，C7: 0E/0W，C8: 0E/0W，C9: 0E/0W，C10: 0E/0W
+- **路由決策**：pass
+
+### #145 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 21:36:41（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：【刻意驗證】HTML 維持 run-07 版本（公式是純文字 c_i、M^e，圖中有 E_K、920^17）不做修改就送測，確認新增的 H2 公式排版檢查與 H9 未排版寫法檢查能抓到使用者指出的問題。
+
+### #146 ⑨ HTML Validation — 2026-11-24 21:37:26（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 106852,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 30,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    170
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.0036779730281977932,
+   "ecbContrast": 9.034152677929736
+  },
+  "aes_steps_ok": "10/10",
+  "caesar decrypt KHOOR-3": "HELLO",
+  "mode_tabs": 3
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：❌ 未通過，errors=15，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 10E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 0E/0W，H7: 0E/0W，H8: 0E/0W，H9: 5E/0W
+  - `[H2]` slide 6：公式沒有用數學排版顯示：a mod n
+  - `[H2]` slide 6：公式沒有用數學排版顯示：(P ⊕ K) ⊕ K = P
+  - `[H2]` slide 7：公式沒有用數學排版顯示：c = (m + k) mod 26，m = (c − k) mod 26
+  - `[H2]` slide 9：公式沒有用數學排版顯示：c_i = (m_i + k_i) mod 26
+  - `[H2]` slide 13：公式沒有用數學排版顯示：N = n × (n − 1) ÷ 2
+  - `[H2]` slide 21：公式沒有用數學排版顯示：Cⱼ = E_K(Pⱼ ⊕ Cⱼ₋₁)，Pⱼ = D_K(Cⱼ) ⊕ Cⱼ₋₁
+  - `[H2]` slide 22：公式沒有用數學排版顯示：Cⱼ = Pⱼ ⊕ E_K(Tⱼ)
+  - `[H2]` slide 24：公式沒有用數學排版顯示：Y = α^X mod q，K = (對方的 Y)^X mod q
+  - `[H2]` slide 25：公式沒有用數學排版顯示：n = p × q，φ = (p − 1) × (q − 1)，e × d mod φ = 1
+  - `[H2]` slide 26：公式沒有用數學排版顯示：C = M^e mod n，M = C^d mod n
+  - `[H9]` slide 9：出現沒有排版的數學寫法：…公式與符號 ｜ c_i = (m_i …
+  - `[H9]` slide 21：出現沒有排版的數學寫法：… ｜ Cⱼ = E_K(Pⱼ ⊕ Cⱼ…
+  - `[H9]` slide 22：出現沒有排版的數學寫法：… = Pⱼ ⊕ E_K(Tⱼ) ｜ T…
+  - `[H9]` slide 24：出現沒有排版的數學寫法：…號 ｜ Y = α^X mod q，…
+  - `[H9]` slide 26：出現沒有排版的數學寫法：…號 ｜ C = M^e mod n，…
+- **路由決策**：retry
+
+### #148 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 21:37:34（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 15
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Slides/index.html"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：HTML 修正 retry 1：產生器改為把每個公式的 LaTeX 轉成 MathML（瀏覽器原生的數學排版標準，不需外部函式庫、離線可用、在 Artifact 中也能顯示）；符號表中帶下標的符號同樣轉成 MathML；圖中的 E_K、D_K、α^X、5^4、920^17 等改成真正的上標／下標（<sub>/<sup>）。
+
+### #149 ⑨ HTML Validation — 2026-11-24 21:38:19（attempt 2）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 113399,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 30,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    170
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.0036779730281977932,
+   "ecbContrast": 9.034152677929736
+  },
+  "aes_steps_ok": "10/10",
+  "caesar decrypt KHOOR-3": "HELLO",
+  "mode_tabs": 3
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 0E/0W，H7: 0E/0W，H8: 0E/0W，H9: 0E/0W
+- **路由決策**：pass
+
+### #150 ⑩ 完成 — 2026-11-24 21:38:19
+
+- **輸出**：
+
+```json
+{
+ "attempts": {
+  "wiki": 1,
+  "content": 1,
+  "html": 2
+ },
+ "retries": {
+  "wiki": 0,
+  "content": 0,
+  "html": 1
+ }
+}
+```
+
+### #151 ⑨ HTML Validation — 2026-11-24 21:39:34
+
+- **修正／agent 說明**：run-08 結束後的小修：符號表中單一字母的符號（q、X、n…）原本是等寬字，與公式的斜體數學字不一致，改為同樣用 MathML 排版。改完後單獨重跑 HTML Validation（logs/html_test_run-08_3.json）：通過，0 errors。
+
+### #152 ★ Validator 自我測試（注入錯誤） — 2026-11-24 21:42:52
+
+- **修正／agent 說明**：run-08 新增 C8（公式需有 LaTeX）與 H9（畫面不得有未排版的 ^、_ 寫法）後，自我測試加入 2 個案例：20/20 全部抓到，未注入對照組通過。
+
+### #154 ① 資料取得 — 2026-11-24 21:46:09
+
+- **輸入**：
+
+```json
+{
+ "sources": [
+  "S01",
+  "S02",
+  "S03",
+  "S04",
+  "S05",
+  "S06",
+  "S07",
+  "S08",
+  "S09",
+  "S10",
+  "S11",
+  "S12",
+  "S13",
+  "S14",
+  "S15"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "status": 200,
+  "bytes": 867626,
+  "sha256": "32d1e3837ae5a7d2e99a63f43c6fea3dd350ffc6ac55b3aaadad250546ad7f87",
+  "cached": true,
+  "tries": 1
+ },
+ "S02": {
+  "status": 200,
+  "bytes": 343046,
+  "sha256": "5de3d24deb279f5bc7669a90742876d2807200eabc9195bb6e8714b400b0532a",
+  "cached": true,
+  "tries": 1
+ },
+ "S03": {
+  "status": 200,
+  "bytes": 491864,
+  "sha256": "d8eb02f9aeb407f9fddf8bc9df00bc556b62b981e05a5fceb3d380eb9c3c6fed",
+  "cached": true,
+  "tries": 1
+ },
+ "S04": {
+  "status": 200,
+  "bytes": 1184436,
+  "sha256": "62c86eb567f13edb8f71826e985da870b04ef6381634f303cdb16e84d47becd1",
+  "cached": true,
+  "tries": 1
+ },
+ "S05": {
+  "status": 200,
+  "bytes": 378266,
+  "sha256": "66821162de1e7130c5fb5eedb22140d8d6d013ec51af4550bb095c2a9481a00e",
+  "cached": true,
+  "tries": 1
+ },
+ "S06": {
+  "status": 200,
+  "bytes": 1379086,
+  "sha256": "715d140154622ff08b895c735fa69e94aa6ace271dd50fef46c03f92cab42d84",
+  "cached": true,
+  "tries": 1
+ },
+ "S07": {
+  "status": 200,
+  "bytes": 2216632,
+  "sha256": "03fa2f493a1448a309586b9cf9e5c3a4dfd14735e0786cc94674519570b890ff",
+  "cached": true,
+  "tries": 1
+ },
+ "S08": {
+  "status": 200,
+  "bytes": 182059,
+  "sha256": "f7b1f78d9a7cbeb85e32b8c563a6db60771a5cc4bdc55580645f7cb778a4966b",
+  "cached": true,
+  "tries": 1
+ },
+ "S09": {
+  "status": 200,
+  "bytes": 154696,
+  "sha256": "1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11",
+  "cached": true,
+  "tries": 1
+ },
+ "S10": {
+  "status": 200,
+  "bytes": 337736,
+  "sha256": "47871bc8820a2c3b6ea89f061055577058862cf543686b82d10131239702b3bd",
+  "cached": true,
+  
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "ok": 15,
+ "failed": {}
+}
+```
+
+### #155 ② 資料 Ingestion — 2026-11-24 21:46:27
+
+- **輸入**：
+
+```json
+{
+ "files": [
+  "S01.txt",
+  "S02.pdf",
+  "S03.pdf",
+  "S04.pdf",
+  "S05.pdf",
+  "S06.pdf",
+  "S07.pdf",
+  "S08.pdf",
+  "S09.txt",
+  "S10.txt",
+  "S11.pdf",
+  "S12.pdf",
+  "S13.pdf",
+  "S14.pdf",
+  "S15.html"
+ ]
+}
+```
+- **輸出**：
+
+```json
+{
+ "S01": {
+  "ok": true,
+  "pages": 366,
+  "chars": 867261,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S01.extracted.txt"
+ },
+ "S02": {
+  "ok": true,
+  "pages": 49,
+  "chars": 135580,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S02.extracted.txt"
+ },
+ "S03": {
+  "ok": true,
+  "pages": 61,
+  "chars": 184790,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S03.extracted.txt"
+ },
+ "S04": {
+  "ok": true,
+  "pages": 46,
+  "chars": 69838,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 77,
+  "warnings": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ],
+  "extracted": "S04.extracted.txt"
+ },
+ "S05": {
+  "ok": true,
+  "pages": 66,
+  "chars": 120932,
+  "near_empty_pages": 1,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S05.extracted.txt"
+ },
+ "S06": {
+  "ok": true,
+  "pages": 91,
+  "chars": 238077,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S06.extracted.txt"
+ },
+ "S07": {
+  "ok": true,
+  "pages": 11,
+  "chars": 66174,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "extracted": "S07.extracted.txt"
+ },
+ "S08": {
+  "ok": true,
+  "pages": 15,
+  "chars": 34868,
+  "near_empty_pages": 0,
+  "expected_missing": [],
+  "ligature_loss_markers": 0,
+  "warnings": [],
+  "ext
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "failed": [],
+ "warnings": {
+  "S04": [
+   "ligature-loss: 77 個 fi 連字遺失症狀字（如 specifed）；引文比對需摺疊 fi→f"
+  ]
+ }
+}
+```
+
+### #157 ③ Wiki 知識整理（agent） — 2026-11-24 21:46:28（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0,
+ "mode": "incremental"
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：增量模式：使用者回饋『多一些起承轉合、章與章切換要提醒』屬於教學編排，Wiki 不需更新。這次先更新大綱（35 張，第 2～6 章開頭加承上啟下轉場頁）再讓 Graph 查詢，避免 run-07 的順序錯誤。
+
+### #158 ④ Wiki Validation — 2026-11-24 21:46:29（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "pages": {
+  "concept_pages": 22,
+  "source_pages": 15,
+  "quotes": 279,
+  "facts": 19
+ }
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：W1: 0E/0W，W2: 0E/0W，W3: 0E/0W，W4: 0E/0W，W5: 0E/0W，W6: 0E/0W，W7: 0E/0W，W8: 0E/0W
+- **路由決策**：pass
+
+### #159 ⑤ 查詢 Wiki — 2026-11-24 21:46:29
+
+- **輸入**：
+
+```json
+{
+ "queries": [
+  {
+   "slide": 1,
+   "terms": []
+  },
+  {
+   "slide": 2,
+   "terms": [
+    "教學順序",
+    "teaching approach"
+   ]
+  },
+  {
+   "slide": 3,
+   "terms": [
+    "密碼學",
+    "information security",
+    "Cryptography"
+   ]
+  },
+  {
+   "slide": 4,
+   "terms": [
+    "明文",
+    "密文",
+    "金鑰",
+    "加密"
+   ]
+  },
+  {
+   "slide": 5,
+   "terms": [
+    "Kerckhoffs",
+    "暴力破解"
+   ]
+  },
+  {
+   "slide": 6,
+   "terms": [
+    "XOR",
+    "取餘數",
+    "模運算"
+   ]
+  },
+  {
+   "slide": 7,
+   "terms": [
+    "Kerckhoffs",
+    "XOR",
+    "取餘數"
+   ]
+  },
+  {
+   "slide": 8,
+   "terms": [
+    "Caesar cipher",
+    "凱撒密碼",
+    "位移密碼"
+   ]
+  },
+  {
+   "slide": 9,
+   "terms": [
+    "替換密碼",
+    "substitution cipher"
+   ]
+  },
+  {
+   "slide": 10,
+   "terms": [
+    "Vigenère cipher",
+    "多表替換",
+    "polyalphabetic substitution"
+   ]
+  },
+  {
+   "slide": 11,
+   "terms": [
+    "換位密碼",
+    "transposition cipher"
+   ]
+  },
+  {
+   "slide": 12,
+   "terms": [
+    "頻率分析",
+    "frequency analysis",
+    "Kasiski"
+   ]
+  },
+  {
+   "slide": 13,
+   "terms": [
+    "頻率分析",
+    "Kasiski",
+    "frequency analysis"
+   ]
+  },
+  {
+   "slide": 14,
+   "terms": [
+    "對稱式加密",
+    "symmetric encryption"
+   ]
+  },
+  {
+   "slide": 15,
+   "terms": [
+    "金鑰分配問題",
+    "對稱式加密",
+    "public key"
+   ]
+  },
+  {
+   "slide": 16,
+   "terms": [
+    "區塊加密",
+    "串流加密"
+   ]
+  },
+  {
+   "slide": 17,
+   "terms": [
+    "位元組",
+    "十六進位",
+    "byte"
+   ]
+  },
+  {
+   "slide": 18,
+   "terms": [
+    "AES",
+    "Rijndael"
+   ]
+  },
+  {
+   "slide": 19,
+   "terms": [
+    "AES",
+    "AES-128"
+   ]
+  },
+  {
+   "slide": 20,
+   "terms": [
+    "AES
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **輸出**：
+
+```json
+{
+ "1": [],
+ "2": [
+  "teaching-how-others-explain"
+ ],
+ "3": [
+  "intro-what-is-crypto",
+  "asym-public-key",
+  "app-hybrid-tls"
+ ],
+ "4": [
+  "intro-terminology",
+  "asym-public-key",
+  "sym-block-vs-stream",
+  "sym-concept",
+  "classical-limitations"
+ ],
+ "5": [
+  "intro-kerckhoffs"
+ ],
+ "6": [
+  "basics-bits-xor-mod",
+  "teaching-how-others-explain"
+ ],
+ "7": [
+  "basics-bits-xor-mod",
+  "intro-kerckhoffs",
+  "sym-aes",
+  "teaching-how-others-explain"
+ ],
+ "8": [
+  "classical-caesar"
+ ],
+ "9": [
+  "classical-substitution"
+ ],
+ "10": [
+  "classical-substitution"
+ ],
+ "11": [
+  "classical-transposition"
+ ],
+ "12": [
+  "classical-limitations",
+  "classical-substitution"
+ ],
+ "13": [
+  "classical-limitations",
+  "classical-substitution"
+ ],
+ "14": [
+  "sym-concept",
+  "asym-public-key"
+ ],
+ "15": [
+  "asym-public-key",
+  "sym-concept",
+  "asym-key-exchange"
+ ],
+ "16": [
+  "sym-block-vs-stream",
+  "teaching-how-others-explain",
+  "mode-ctr"
+ ],
+ "17": [
+  "basics-bits-xor-mod",
+  "sym-aes"
+ ],
+ "18": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead"
+ ],
+ "19": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead",
+  "app-hybrid-tls"
+ ],
+ "20": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead",
+  "app-hybrid-tls"
+ ],
+ "21": [
+  "mode-gcm-aead",
+  "asym-rsa",
+  "classical-caesar",
+  "sym-aes",
+  "app-hybrid-tls"
+ ],
+ "22": [
+  "sym-aes",
+  "asym-rsa",
+  "classical-caesar",
+  "mode-gcm-aead",
+  "app-hybrid-tls"
+ ],
+ "23": [
+  "mode-overview",
+  "mode-ecb"
+ ],
+ "24": [
+  "mode-overview",
+  "mode-cbc"
+ ],
+ "25": [
+  "mode-ctr",
+ …（截斷，完整內容見 logs/ 下的 JSON）
+```
+- **檢查結果**：
+
+```json
+{
+ "passed": true,
+ "slides_without_hits": []
+}
+```
+
+### #161 ⑥ 整理教學內容（agent） — 2026-11-24 21:47:17（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Workflow/artifacts/slide_content.json"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：draft_content（使用者回饋：多一些起承轉合、章與章切換要提醒）：第 2～6 章開頭各加 1 張轉場頁，結構為『剛剛學到（回顧上一章 2–3 個重點）→ 但是……（上一章留下的新問題，例如 1 MB 照片要切成 65,536 塊怎麼加密）→ 這一章會看到（預告）』；總結頁改為『每一章解決了什麼問題』的問題→解法鏈。共 35 張。
+
+### #162 ⑦ Content Validation — 2026-11-24 21:47:17（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "slides": 35,
+ "points": 104,
+ "nodes_used": 22,
+ "wiki_nodes": 22
+}
+```
+- **檢查結果**：❌ 未通過，errors=3，warnings=0
+  - 各檢查項：C1: 0E/0W，C2: 0E/0W，C3: 0E/0W，C4: 0E/0W，C5: 0E/0W，C6: 0E/0W，C7: 3E/0W，C8: 0E/0W，C9: 0E/0W，C10: 0E/0W
+  - `[C7]` slide 13：名詞「對稱式加密」第一次出現，但之前和這一張都沒有解釋
+  - `[C7]` slide 22：名詞「操作模式」第一次出現，但之前和這一張都沒有解釋
+  - `[C7]` slide 26：名詞「公開金鑰加密」第一次出現，但之前和這一張都沒有解釋
+- **路由決策**：retry
+
+### #164 ⑥ 整理教學內容（agent） — 2026-11-24 21:47:31（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 3
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Workflow/artifacts/slide_content.json"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：Content 修正 retry 1：C7 抓到第 3、4、5 章轉場頁的標題（對稱式加密、操作模式、公開金鑰加密）在下一頁解釋之前就先出現。這是真的教學順序問題（不是誤判），所以修內容：每張轉場頁加一張『本章主角』名詞小卡，先用一句話說明，下一頁再詳細展開。
+
+### #165 ⑦ Content Validation — 2026-11-24 21:47:31（attempt 2）
+
+- **輸入**：
+
+```json
+{
+ "slides": 35,
+ "points": 104,
+ "nodes_used": 22,
+ "wiki_nodes": 22
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：C1: 0E/0W，C2: 0E/0W，C3: 0E/0W，C4: 0E/0W，C5: 0E/0W，C6: 0E/0W，C7: 0E/0W，C8: 0E/0W，C9: 0E/0W，C10: 0E/0W
+- **路由決策**：pass
+
+### #167 ⑧ 產生 HTML 簡報（agent） — 2026-11-24 21:48:00（attempt 0）
+
+- **輸入**：
+
+```json
+{
+ "issues_from_last_validation": 0
+}
+```
+- **輸出**：
+
+```json
+{
+ "changed_files": {
+  "added": [],
+  "modified": [
+   "Slides/index.html"
+  ],
+  "removed": []
+ }
+}
+```
+- **修正／agent 說明**：build_html：產生器新增轉場頁版面（左：剛剛學到；中：大字的『但是……』新問題＋本章主角名詞小卡；右：這一章會看到，標記 data-glossary-skip），總結頁改為問題→解法鏈的圖。
+
+### #168 ⑨ HTML Validation — 2026-11-24 21:48:44（attempt 1）
+
+- **輸入**：
+
+```json
+{
+ "file": "Slides\\index.html",
+ "bytes": 124107,
+ "external_requests": [
+  "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+ ],
+ "slides_in_dom": 35,
+ "navigation": {
+  "初始": true,
+  "第 1 頁按 ←": true,
+  "→": true,
+  "下一頁按鈕": true,
+  "上一頁按鈕": true,
+  "←": true,
+  "連按 → 到最後": true,
+  "最後一頁按 ←": true
+ },
+ "fullscreen": {
+  "requestFullscreen_calls": 1,
+  "fullscreenElement_after_click": true
+ },
+ "desktop_overflow_slides": [],
+ "demos": {
+  "caesar HELLO+3": "KHOOR",
+  "caesar HAL+1": "IBM",
+  "caesar ABC+0": "ABC",
+  "ecb": {
+   "distinct": [
+    2,
+    2,
+    170
+   ],
+   "ecbStructure": 1,
+   "cbcStructure": 0.0036779730281977932,
+   "ecbContrast": 9.034152677929736
+  },
+  "aes_steps_ok": "10/10",
+  "caesar decrypt KHOOR-3": "HELLO",
+  "mode_tabs": 3
+ },
+ "mobile_hscroll_slides": []
+}
+```
+- **檢查結果**：✅ 通過，errors=0，warnings=0
+  - 各檢查項：H1: 0E/0W，H2: 0E/0W，H3: 0E/0W，H4: 0E/0W，H5: 0E/0W，H6: 0E/0W，H7: 0E/0W，H8: 0E/0W，H9: 0E/0W
+- **路由決策**：pass
+
+### #169 ⑩ 完成 — 2026-11-24 21:48:44
+
+- **輸出**：
+
+```json
+{
+ "attempts": {
+  "wiki": 1,
+  "content": 2,
+  "html": 1
+ },
+ "retries": {
+  "wiki": 0,
+  "content": 1,
+  "html": 0
+ }
+}
+```
+
+### #170 ★ 截圖人工檢查（Graph 外） — 2026-11-24 21:49:47
+
+- **修正／agent 說明**：run-09 結束後看截圖：(1) 第 4、5 章轉場頁的問題文字開頭又寫了一次『但是……』，和上方標籤重複；(2) 三個框被拉成整頁高，下方大量空白。修正：拿掉 lead 開頭重複的『但是……』、轉場頁三欄改為依內容高度。改完後單獨重跑 Content Validation 與 HTML Validation（logs/content_validation_run-09_3.json、html_test_run-09_2.json）。
+
+### #171 ★ 截圖人工檢查（Graph 外） — 2026-11-24 21:50:43
+
+- **修正／agent 說明**：再看一次截圖：轉場頁三個框都靠在頁面上方、下方空白。改為整組（標題＋三欄）垂直置中，單獨重跑 HTML Validation（html_test_run-09_3.json）。
+
+### #172 ★ Validator 自我測試（注入錯誤） — 2026-11-24 21:57:20
+
+- **修正／agent 說明**：run-09 自我測試：新增 C10-no-transition（拿掉第 4 章轉場頁）案例。第 1 次 20/21——漏掉的是 C5-wrong-order，原因是測試案例過時：它固定交換第 6、7 張，加入轉場頁後第 7 張變成轉場頁，注入不再製造順序錯誤。改為依 id 交換工具頁與 Caesar 頁後，21/21 全部抓到。
+

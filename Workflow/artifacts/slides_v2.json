@@ -1,0 +1,345 @@
+[
+ {"no":1,"id":"cover","chapter":"intro","role":[],"title":"Cryptography 101","subtitle":"密碼學如何保護我們的資訊？",
+  "lead":"從兩千年前的 Caesar 密碼，到你每天使用的 HTTPS","points":[],"sources":[]},
+
+ {"no":2,"id":"roadmap","chapter":"intro","role":[],"title":"今天的路線圖",
+  "lead":"先認識名詞和工具，再從最簡單的密碼一路走到網路加密",
+  "points":[
+   {"text":"先認識基本名詞和兩個數學小工具，再開始看密碼","nodes":["teaching-how-others-explain"],"cite":["S13 p.9"]},
+   {"text":"每個主題都照「原理 → 為什麼需要 → 現實中怎麼做」來講","nodes":["teaching-how-others-explain"],"cite":["S15 p.1"]},
+   {"text":"從最簡單的 Caesar 密碼開始，最後看懂 HTTPS 背後的技術","nodes":["teaching-how-others-explain"],"cite":["S14 p.4"]}],
+  "visual":{"type":"roadmap","name":"圖：課程路線圖","items":["基礎觀念","古典密碼","對稱式加密","操作模式","公開金鑰加密","綜合應用：HTTPS"]},
+  "sources":["S13","S15","S14"]},
+
+ {"no":3,"id":"why","chapter":"ch1","role":["為什麼"],"title":"為什麼需要密碼學？",
+  "lead":"網購、傳訊息、登入帳號——資料一路上都可能被偷看或偷改",
+  "points":[
+   {"text":"1960 年代電腦與通訊普及後，民間也開始需要保護數位資訊","nodes":["intro-what-is-crypto"],"cite":["S02 p.2"]},
+   {"text":"機密性：只有被授權的人看得到內容","nodes":["intro-what-is-crypto"],"cite":["S02 p.5","S01 p.94"]},
+   {"text":"完整性：資料被偷改能被發現；鑑別：確認對方是誰","nodes":["intro-what-is-crypto"],"cite":["S02 p.5","S01 p.95"]},
+   {"text":"不可否認性：做過的承諾或動作，事後不能否認","nodes":["intro-what-is-crypto"],"cite":["S02 p.5"]}],
+  "defines":[{"term":"密碼學","text":"研究如何用數學方法保護資訊安全的學問"}],
+  "visual":{"type":"goals","name":"圖：網路購物時的四個安全需求",
+   "items":[{"label":"機密性","desc":"卡號不能被看到"},{"label":"完整性","desc":"金額不能被偷改"},{"label":"鑑別","desc":"確認是真的商店"},{"label":"不可否認性","desc":"商店不能否認收到訂單"}]},
+  "sources":["S02","S01"]},
+
+ {"no":4,"id":"terms","chapter":"ch1","role":["原理"],"title":"密碼學在做什麼？基本名詞",
+  "lead":"把資料變成別人看不懂的樣子，只有拿到金鑰的人能還原",
+  "points":[
+   {"text":"Alice 用金鑰把明文加密成密文，再經過網路傳給 Bob","nodes":["intro-terminology"],"cite":["S01 p.119"]},
+   {"text":"Bob 用金鑰把密文解密，還原成原本的明文","nodes":["intro-terminology"],"cite":["S01 p.119","S02 p.12"]},
+   {"text":"網路上任何人都可能偷聽，但只看得到看不懂的密文","nodes":["intro-terminology"],"cite":["S02 p.14"]}],
+  "defines":[
+   {"term":"明文","text":"原本看得懂的資料，例如 HELLO"},
+   {"term":"加密","text":"用金鑰把明文變成看不懂的樣子"},
+   {"term":"密文","text":"加密後看不懂的資料，例如 KHOOR"},
+   {"term":"解密","text":"用金鑰把密文還原成明文"},
+   {"term":"金鑰","text":"控制加密怎麼變的祕密值，像一把鑰匙"}],
+  "visual":{"type":"flow","name":"圖：Alice 傳祕密訊息給 Bob",
+   "steps":["Alice：明文 HELLO","加密（用金鑰）","密文 KHOOR","解密（用金鑰）","Bob：明文 HELLO"],
+   "labels":["網路（任何人都能偷聽）","偷聽的人只看得到密文"]},
+  "sources":["S01","S02"]},
+
+ {"no":5,"id":"kerckhoffs","chapter":"ch1","role":["原理"],"title":"演算法可以公開，金鑰必須保密",
+  "lead":"鎖的構造大家都知道，但沒有你的鑰匙還是打不開",
+  "points":[
+   {"text":"Kerckhoffs 原則（1883）：安全只能靠金鑰，不能靠隱藏演算法","nodes":["intro-kerckhoffs"],"cite":["S02 p.15"],"facts":{"kerckhoffs.year":1883}},
+   {"text":"演算法很難一直保密，公開讓大家檢驗反而更安全","nodes":["intro-kerckhoffs"],"cite":["S02 p.15","S01 p.268"]},
+   {"text":"金鑰空間要大到暴力破解在計算上做不到","nodes":["intro-kerckhoffs"],"cite":["S02 p.15"]}],
+  "defines":[
+   {"term":"演算法","text":"加密和解密的固定步驟（方法）"},
+   {"term":"攻擊者","text":"想偷看或竄改訊息的人"},
+   {"term":"暴力破解","text":"把所有可能的金鑰一個一個試"},
+   {"term":"金鑰空間","text":"所有可能的金鑰有多少種"}],
+  "visual":{"type":"keyspace","name":"圖：金鑰數量決定暴力破解要試多久",
+   "rows":[{"name":"Caesar 密碼","keys":"26 種：幾秒就試完"},{"name":"好的現代密碼","keys":"多到全世界電腦一起試也試不完"}]},
+  "sources":["S02","S01"]},
+
+ {"no":6,"id":"tools","chapter":"ch1","role":["原理"],"title":"兩個數學小工具：mod 與 XOR",
+  "lead":"後面的密碼都會用到這兩個運算",
+  "points":[
+   {"text":"mod 像時鐘：數到 n 就繞回 0，例如 20 mod 7 = 6","nodes":["basics-bits-xor-mod"],"cite":["S13 p.13"]},
+   {"text":"XOR（⊕）：兩個 0／1 數字相同得 0、不同得 1","nodes":["basics-bits-xor-mod"],"cite":["S14 p.17"]},
+   {"text":"同一個值 XOR 兩次就變回原樣，所以同一個動作能加密也能解密","nodes":["basics-bits-xor-mod"],"cite":["S13 p.15"]}],
+  "defines":[
+   {"term":"mod","text":"取餘數：a mod n 是 a 除以 n 的餘數"},
+   {"term":"XOR","text":"互斥或，符號 ⊕：相同得 0，不同得 1"}],
+  "formulas":[
+   {"expr":"a mod n","symbols":[["a","被除的數"],["n","除數（正整數）"],["mod","取餘數，結果一定在 0 到 n − 1 之間"]]},
+   {"expr":"(P ⊕ K) ⊕ K = P","symbols":[["P","原本的資料"],["K","拿來 XOR 的值，例如金鑰"]]}],
+  "visual":{"type":"tools","name":"圖：mod 時鐘與 XOR 對照表"},
+  "sources":["S13","S14"]},
+
+ {"no":7,"id":"caesar","chapter":"ch2","role":["原理"],"title":"Caesar 密碼：每個字母往後移 k 位",
+  "lead":"兩千年前的加密法，傳說凱撒用 k = 3",
+  "points":[
+   {"text":"先把字母換成編號：A=0、B=1、…、Z=25","nodes":["classical-caesar"],"cite":["S03 p.18"]},
+   {"text":"加密時每個編號加 k，解密時減 k，超過 25 就用 mod 26 繞回","nodes":["classical-caesar"],"cite":["S03 p.18"],"facts":{"caesar.julius_key":3}},
+   {"text":"例：k = 3 時，HELLO 加密成 KHOOR","nodes":["classical-caesar"],"cite":["S03 p.18"]}],
+  "formulas":[{"expr":"c = (m + k) mod 26，m = (c − k) mod 26","symbols":[["m","明文字母的編號（A=0…Z=25）"],["k","金鑰：往後移幾位（0–25）"],["c","密文字母的編號"],["mod","除以 26 取餘數，讓 Z 之後繞回 A"]]}],
+  "visual":{"type":"caesar-demo","name":"圖：Caesar 加密／解密互動示範","modes":["加密","解密"]},
+  "sources":["S03"]},
+
+ {"no":8,"id":"substitution","chapter":"ch2","role":["原理"],"title":"替換密碼：把整個字母表打亂",
+  "lead":"Caesar 只能整排位移，替換密碼可以任意對應",
+  "points":[
+   {"text":"金鑰就是一張對照表，整篇訊息都用同一張表換字母","nodes":["classical-substitution"],"cite":["S02 p.18","S03 p.18"]},
+   {"text":"Caesar 是特例：對照表只能整排往後移","nodes":["classical-caesar"],"cite":["S03 p.18"]},
+   {"text":"英文的對照表有 26! 種（約 4 × 10²⁶），遠多於 Caesar 的 26 種","nodes":["classical-substitution"],"cite":["S02 p.18"],"facts":{"substitution.key_count_english":"26!"}}],
+  "defines":[{"term":"替換密碼","text":"依一張對照表，把每個字母換成另一個字母"}],
+  "visual":{"type":"subst-table","name":"圖：替換密碼的對照表（範例）"},
+  "sources":["S02","S03"]},
+
+ {"no":9,"id":"vigenere","chapter":"ch2","role":["原理"],"title":"多表替換：Vigenère 密碼",
+  "lead":"不只用一張表：每個位置輪流用不同的位移",
+  "points":[
+   {"text":"金鑰是一串位移量，例如 3、7、10，從頭到尾輪流使用","nodes":["classical-substitution"],"cite":["S03 p.20","S02 p.19"]},
+   {"text":"第 1 個字母移 3、第 2 個移 7、第 3 個移 10，第 4 個再移 3","nodes":["classical-substitution"],"cite":["S02 p.19"]},
+   {"text":"同一個字母 E 會變成 O 或 L，看字母次數猜不出來","nodes":["classical-substitution"],"cite":["S02 p.19"]}],
+  "defines":[{"term":"多表替換","text":"不同位置用不同對照表，同一個字母會變成不同字母"}],
+  "formulas":[{"expr":"c_i = (m_i + k_i) mod 26","symbols":[["m_i","第 i 個明文字母的編號"],["k_i","第 i 個位置輪到的位移（3、7、10 輪流）"],["c_i","第 i 個密文字母的編號"]]}],
+  "visual":{"type":"vigenere","name":"圖：Vigenère 加密範例（位移 3、7、10）"},
+  "sources":["S03","S02"]},
+
+ {"no":10,"id":"transposition","chapter":"ch2","role":["原理"],"title":"換位密碼：字母不變，位置打亂",
+  "lead":"替換是換「字母」，換位是換「位置」",
+  "points":[
+   {"text":"把明文每 t 個字母分成一組，每組都用同一個順序重新排列","nodes":["classical-transposition"],"cite":["S03 p.17"]},
+   {"text":"金鑰就是排列順序，t 個位置共有 t! 種排法","nodes":["classical-transposition"],"cite":["S03 p.17"]},
+   {"text":"例：CAESAR 依 6 4 1 3 5 2 的順序取字母，變成 RSCEAA","nodes":["classical-transposition"],"cite":["S03 p.17"]}],
+  "defines":[{"term":"換位密碼","text":"字母本身不變，只依規則重新排列位置"}],
+  "visual":{"type":"transposition","name":"圖：換位密碼範例"},
+  "sources":["S03"]},
+
+ {"no":11,"id":"classical-break","chapter":"ch2","role":["限制","現實應用"],"title":"古典密碼怎麼被破解？",
+  "lead":"金鑰太少，或藏不住語言的規律",
+  "points":[
+   {"text":"Caesar 只有 26 種金鑰，暴力破解一下就試完","nodes":["classical-limitations"],"cite":["S03 p.18"],"facts":{"caesar.key_count":26}},
+   {"text":"替換密碼保留字母次數：英文最常見的 E，對到密文最常見的字母","nodes":["classical-limitations"],"cite":["S02 p.18","S03 p.24"]},
+   {"text":"多表替換：先找出金鑰長度，再分組做頻率分析","nodes":["classical-limitations"],"cite":["S02 p.19","S03 p.26"]},
+   {"text":"所以古典密碼今天只用在教學，不適合實際使用","nodes":["classical-limitations"],"cite":["S03 p.17"]}],
+  "defines":[{"term":"頻率分析","text":"統計密文每個字母出現幾次，對照語言的常見字母來猜"}],
+  "visual":{"type":"break","name":"圖：三種古典密碼各自的弱點"},
+  "sources":["S03","S02"]},
+
+ {"no":12,"id":"sym-principle","chapter":"ch3","role":["原理"],"title":"對稱式加密：同一把金鑰鎖上也打開",
+  "lead":"前面看過的古典密碼，其實都是對稱式加密",
+  "points":[
+   {"text":"Alice 和 Bob 事先共用一把祕密金鑰，加密和解密都用它","nodes":["sym-concept"],"cite":["S06 p.30","S06 p.31"]},
+   {"text":"所以金鑰一定要保密，金鑰被偷，資料就全部曝光","nodes":["sym-concept"],"cite":["S06 p.31"]},
+   {"text":"Caesar、替換、換位密碼都屬於對稱式加密","nodes":["sym-concept"],"cite":["S02 p.16","S02 p.19"]}],
+  "defines":[{"term":"對稱式加密","text":"加密和解密用同一把金鑰的加密方式"}],
+  "visual":{"type":"sym-diagram","name":"圖：同一把金鑰的加密與解密",
+   "steps":["加密：明文 HELLO ＋ 金鑰 K（位移 3）→ 密文 KHOOR","解密：密文 KHOOR ＋ 同一把 K → 明文 HELLO"]},
+  "sources":["S06","S02"]},
+
+ {"no":13,"id":"sym-pros","chapter":"ch3","role":["好處與限制"],"title":"對稱式加密的好處與難題",
+  "lead":"速度快，但雙方要先拿到同一把金鑰",
+  "points":[
+   {"text":"好處：運算快，適合加密大量資料","nodes":["asym-public-key"],"cite":["S06 p.34"]},
+   {"text":"難題一：金鑰要先用安全的方式交給對方（金鑰分配問題）","nodes":["sym-concept"],"cite":["S02 p.17"]},
+   {"text":"難題二：人一多金鑰暴增，1,000 人兩兩通訊需要 499,500 把","nodes":["sym-concept"],"cite":["S06 p.31"]}],
+  "formulas":[{"expr":"N = n × (n − 1) ÷ 2","symbols":[["n","要互相通訊的人數"],["N","需要的金鑰數量（每兩個人一把）"]]}],
+  "visual":{"type":"keycount","name":"圖：人數與需要的金鑰數量","rows":[{"people":4,"keys":6},{"people":1000,"keys":499500}]},
+  "sources":["S06","S02"]},
+
+ {"no":14,"id":"block-stream","chapter":"ch3","role":["原理"],"title":"兩種做法：區塊加密與串流加密",
+  "lead":"資料要一塊一塊加密，還是一個一個加密？",
+  "points":[
+   {"text":"大多數知名的對稱式加密都是區塊加密","nodes":["sym-block-vs-stream"],"cite":["S02 p.17"]},
+   {"text":"串流加密逐個符號處理，傳輸容易出錯時錯誤不會擴散","nodes":["sym-block-vs-stream"],"cite":["S02 p.21"]},
+   {"text":"區塊加密碰到很長的訊息，要決定區塊之間怎麼串（第 4 章）","nodes":["sym-block-vs-stream"],"cite":["S06 p.32"]}],
+  "defines":[
+   {"term":"區塊加密","text":"把資料切成固定長度的區塊，一次加密一塊"},
+   {"term":"串流加密","text":"一個符號一個符號加密，每個符號搭配不同的金鑰串流"}],
+  "visual":{"type":"block-stream","name":"圖：區塊加密與串流加密的差別"},
+  "sources":["S02","S06"]},
+
+ {"no":15,"id":"bytes","chapter":"ch3","role":["原理"],"title":"電腦裡的資料：位元、位元組、十六進位",
+  "lead":"看懂下一個演算法之前，先看懂電腦怎麼寫資料",
+  "points":[
+   {"text":"例：位元組 10100011 用十六進位寫成 a3","nodes":["basics-bits-xor-mod"],"cite":["S04 p.13"]},
+   {"text":"128 個位元 = 16 個位元組，剛好排成 4 × 4 的方格","nodes":["basics-bits-xor-mod"],"cite":["S04 p.13"]},
+   {"text":"XOR 也是一個位元一個位元做：0011 ⊕ 0101 = 0110","nodes":["basics-bits-xor-mod"],"cite":["S13 p.15"]}],
+  "defines":[
+   {"term":"位元","text":"一個 0 或 1 的數字"},
+   {"term":"位元組","text":"8 個位元排在一起"},
+   {"term":"十六進位","text":"用 0–9、a–f 寫數字，一個字元代表 4 個位元"}],
+  "visual":{"type":"bytes","name":"圖：一個位元組的三種寫法"},
+  "sources":["S04","S13"]},
+
+ {"no":16,"id":"aes-overview","chapter":"ch3","role":["現實應用"],"title":"現實中的對稱式加密：AES",
+  "lead":"公開徵選出來、用來取代舊標準 DES 的區塊加密",
+  "points":[
+   {"text":"美國 NIST 1997 年公開徵求，2000 年選出 Rijndael 成為 AES","nodes":["sym-aes"],"cite":["S04 p.9"],"facts":{"aes.selected_year":2000}},
+   {"text":"區塊固定 128 位元；金鑰可為 128、192 或 256 位元","nodes":["sym-aes"],"cite":["S04 p.4"],"facts":{"aes.block_bits":128,"aes.key_bits":[128,192,256]}},
+   {"text":"DES 因電腦變快、強度不夠，2005 年被撤銷；AES 是新產品首選","nodes":["sym-aes"],"cite":["S06 p.32","S06 p.33"],"facts":{"des.withdrawn_year":2005}}],
+  "defines":[
+   {"term":"AES","text":"Advanced Encryption Standard，NIST 的區塊加密標準"},
+   {"term":"DES","text":"1977 年核准的舊加密標準，已撤銷"}],
+  "visual":{"type":"aes-versions","name":"圖：AES 的三個版本"},
+  "sources":["S04","S06"]},
+
+ {"no":17,"id":"aes-steps","chapter":"ch3","role":["原理"],"title":"AES 每一輪的四個步驟",
+  "lead":"同樣四個步驟重複很多次，把資料徹底打亂",
+  "points":[
+   {"text":"SubBytes：每一格查 S-box 換掉（替換）","nodes":["sym-aes"],"cite":["S04 p.21"]},
+   {"text":"ShiftRows：第 r 列往左循環移 r 格（換位置）","nodes":["sym-aes"],"cite":["S04 p.22"]},
+   {"text":"MixColumns：每一直欄的 4 個位元組混在一起","nodes":["sym-aes"],"cite":["S04 p.20"]},
+   {"text":"AddRoundKey：和這一輪的 round key 做 XOR","nodes":["sym-aes"],"cite":["S04 p.24"]}],
+  "defines":[
+   {"term":"state","text":"AES 把 16 個位元組排成的 4 × 4 方格"},
+   {"term":"輪","text":"四個步驟做完一次叫一輪，AES-128 做 10 輪"},
+   {"term":"S-box","text":"固定的替換表，每個位元組查表換成另一個"},
+   {"term":"round key","text":"每一輪從金鑰算出來的一把小金鑰"}],
+  "visual":{"type":"aes-4steps","name":"圖：AES 一輪的四個步驟"},
+  "sources":["S04"]},
+
+ {"no":18,"id":"aes-example","chapter":"ch3","role":["原理"],"title":"AES 實例：一步一步看資料怎麼變",
+  "lead":"用 AES 標準文件裡的官方範例數字，點按鈕逐步播放",
+  "points":[
+   {"text":"輸入 16 個位元組，先和金鑰做 XOR（初始 AddRoundKey）","nodes":["sym-aes"],"cite":["S04 p.42"]},
+   {"text":"接著依序 SubBytes → ShiftRows → MixColumns → AddRoundKey","nodes":["sym-aes"],"cite":["S04 p.20"]},
+   {"text":"金色格是這一步要注意的位元組，可以對照前後的變化","nodes":["sym-aes"],"cite":["S04 p.42"]}],
+  "visual":{"type":"aes-walkthrough","name":"圖：AES-128 第 1 輪逐步圖解"},
+  "sources":["S04"]},
+
+ {"no":19,"id":"aes-use","chapter":"ch3","role":["現實應用"],"title":"AES 怎麼解密？現在用在哪裡？",
+  "lead":"解密就是把每一步倒著做回去",
+  "points":[
+   {"text":"解密：四個步驟換成各自的反運算，依相反順序執行","nodes":["sym-aes"],"cite":["S04 p.26"]},
+   {"text":"AddRoundKey 倒回去，就是再 XOR 一次同一把 round key","nodes":["sym-aes"],"cite":["S04 p.26"]},
+   {"text":"AES 是 NIST 建議新產品使用的區塊加密","nodes":["sym-aes"],"cite":["S06 p.33"]}],
+  "visual":{"type":"aes-use","name":"圖：AES 加密與解密的方向"},
+  "sources":["S04","S06"]},
+
+ {"no":20,"id":"modes-why","chapter":"ch4","role":["為什麼"],"title":"為什麼需要操作模式？先看 ECB 的問題",
+  "lead":"區塊加密一次只處理一塊，長訊息要決定區塊之間怎麼處理",
+  "points":[
+   {"text":"ECB 最簡單：每一塊各自加密，相同明文區塊永遠變成相同密文","nodes":["mode-overview","mode-ecb"],"cite":["S05 p.16","S03 p.7"]},
+   {"text":"所以圖片的輪廓、重複的資料都會被看出來","nodes":["mode-ecb"],"cite":["S03 p.7"]},
+   {"text":"NIST：這個性質不可接受時，就不應該使用 ECB","nodes":["mode-ecb"],"cite":["S05 p.17"]}],
+  "defines":[
+   {"term":"操作模式","text":"區塊加密處理長訊息時，區塊之間怎麼處理的規則"},
+   {"term":"ECB","text":"最簡單的模式：每一塊各自加密"},
+   {"term":"填充","text":"最後一塊不夠長時補上的位元"}],
+  "visual":{"type":"ecb-demo","name":"圖：同一張圖用 ECB 加密的結果（示意用簡化加密）"},
+  "sources":["S05","S03"]},
+
+ {"no":21,"id":"cbc","chapter":"ch4","role":["原理"],"title":"CBC：把區塊一個接一個串起來",
+  "lead":"讓每一塊都和前一塊有關，相同的明文就不會產生相同的密文",
+  "points":[
+   {"text":"加密：明文區塊先和前一塊密文 XOR 再加密，第一塊和 IV XOR","nodes":["mode-cbc"],"cite":["S05 p.17"]},
+   {"text":"同樣的明文，只要 IV 不同，密文就完全不同","nodes":["mode-cbc"],"cite":["S03 p.9"]},
+   {"text":"解密：先解開再 XOR 前一塊密文；加密不能平行，解密可以","nodes":["mode-cbc"],"cite":["S05 p.18"]}],
+  "defines":[
+   {"term":"CBC","text":"每一塊先和前一塊的密文 XOR 再加密"},
+   {"term":"IV","text":"初始向量：第一塊用來 XOR 的值，不必保密但要無法預測"}],
+  "formulas":[{"expr":"Cⱼ = E_K(Pⱼ ⊕ Cⱼ₋₁)，Pⱼ = D_K(Cⱼ) ⊕ Cⱼ₋₁","symbols":[["Pⱼ","第 j 塊明文"],["Cⱼ","第 j 塊密文（第 0 塊就是 IV）"],["E_K","用金鑰 K 做區塊加密"],["D_K","用金鑰 K 做區塊解密"]]}],
+  "visual":{"type":"cbc-tabs","name":"圖：CBC 的效果、加密流程與解密流程"},
+  "sources":["S05","S03"]},
+
+ {"no":22,"id":"ctr-gcm","chapter":"ch4","role":["原理","現實應用"],"title":"CTR 與 GCM：現在網路上用的模式",
+  "lead":"加密「計數器」得到一串亂碼，再和明文 XOR",
+  "points":[
+   {"text":"CTR 每一塊可以同時計算（平行），也不需要填充","nodes":["mode-ctr"],"cite":["S05 p.22"]},
+   {"text":"同一把金鑰下，計數器絕對不能重複","nodes":["mode-ctr"],"cite":["S05 p.22"]},
+   {"text":"GCM 同時保護機密性與完整性，解密前先檢查認證標籤","nodes":["mode-gcm-aead"],"cite":["S11 p.9","S11 p.15"]}],
+  "defines":[
+   {"term":"計數器","text":"每一塊都不一樣的編號，例如 1、2、3…"},
+   {"term":"CTR","text":"加密計數器得到一串亂碼，再和明文 XOR"},
+   {"term":"GCM","text":"以 CTR 加密，再加上認證標籤"},
+   {"term":"認證標籤","text":"一小段檢查碼，資料被改過就對不上"}],
+  "formulas":[{"expr":"Cⱼ = Pⱼ ⊕ E_K(Tⱼ)","symbols":[["Tⱼ","第 j 塊的計數器"],["E_K","用金鑰 K 做區塊加密"],["Pⱼ","第 j 塊明文"],["Cⱼ","第 j 塊密文"]]}],
+  "visual":{"type":"ctr-gcm","name":"圖：CTR 加密流程與 GCM"},
+  "sources":["S05","S11"]},
+
+ {"no":23,"id":"pk-why","chapter":"ch5","role":["為什麼","好處與限制"],"title":"為什麼需要公開金鑰加密？",
+  "lead":"對稱式加密的難題：金鑰要怎麼先交給對方？",
+  "points":[
+   {"text":"1976 年 Diffie 與 Hellman 提出：加密用的金鑰可以公開","nodes":["asym-public-key"],"cite":["S02 p.2","S07 p.1"]},
+   {"text":"別人用你的公鑰加密，只有你的私鑰能解開","nodes":["asym-public-key"],"cite":["S06 p.34"]},
+   {"text":"從公鑰算不出私鑰，所以公鑰可以放心公開","nodes":["asym-public-key"],"cite":["S06 p.34"]},
+   {"text":"缺點：運算比對稱式加密慢很多，不適合大量資料","nodes":["asym-public-key"],"cite":["S06 p.34"]}],
+  "defines":[
+   {"term":"公開金鑰加密","text":"又稱非對稱式加密：用一對金鑰，一把公開、一把保密"},
+   {"term":"公鑰","text":"可以公開給所有人的那一把"},
+   {"term":"私鑰","text":"只有自己知道的那一把"}],
+  "visual":{"type":"mailbox","name":"圖：信箱比喻"},
+  "sources":["S02","S07","S06"]},
+
+ {"no":24,"id":"dh","chapter":"ch5","role":["原理"],"title":"Diffie–Hellman：在公開場合約定同一把金鑰",
+  "lead":"兩個人在大家都聽得到的地方喊數字，最後卻得到只有彼此知道的金鑰",
+  "points":[
+   {"text":"雙方各挑一個祕密數字 X，只把算出來的 Y 公開","nodes":["asym-key-exchange"],"cite":["S07 p.6"]},
+   {"text":"各自用「對方的 Y」和「自己的 X」計算，得到同一把 K","nodes":["asym-key-exchange"],"cite":["S07 p.6"]},
+   {"text":"偷聽的人只看到 Y，要算回 X 非常困難（離散對數問題）","nodes":["asym-key-exchange"],"cite":["S07 p.6","S02 p.3"]}],
+  "defines":[
+   {"term":"金鑰交換","text":"雙方在公開通道上傳數字，最後算出同一把祕密金鑰"},
+   {"term":"質數","text":"只能被 1 和自己整除的數，例如 23"}],
+  "formulas":[{"expr":"Y = α^X mod q，K = (對方的 Y)^X mod q","symbols":[["q","公開的質數"],["α","公開的底數"],["X","自己挑的祕密數字，不公開"],["Y","算出來公開給對方的數字"],["K","雙方算出的同一把金鑰"]]}],
+  "visual":{"type":"dh-demo","name":"圖：Diffie–Hellman 小數字範例"},
+  "sources":["S07","S02"]},
+
+ {"no":25,"id":"rsa-keys","chapter":"ch5","role":["原理"],"title":"RSA（一）：怎麼產生一對金鑰",
+  "lead":"安全性來自「把一個大數分解回兩個質數非常困難」",
+  "points":[
+   {"text":"選兩個很大的質數 p、q，算出 n = p × q","nodes":["asym-rsa"],"cite":["S08 p.6"]},
+   {"text":"公鑰是 (e, n)，可以公開；私鑰是 (d, n)，自己保管","nodes":["asym-rsa"],"cite":["S08 p.6"]},
+   {"text":"n 公開，但要分解回 p、q 非常困難，所以算不出 d","nodes":["asym-rsa"],"cite":["S08 p.6"]}],
+  "defines":[
+   {"term":"RSA","text":"1978 年提出的第一個實用公開金鑰加密方法"},
+   {"term":"互質","text":"兩個數除了 1 以外沒有共同的因數"}],
+  "formulas":[{"expr":"n = p × q，φ = (p − 1) × (q − 1)，e × d mod φ = 1","symbols":[["p","祕密的大質數之一"],["q","祕密的大質數之二"],["n","p 乘 q 的結果（模數），公開"],["φ","算金鑰用的中間值，保密"],["d","私鑰指數：和 φ 互質的數"],["e","公鑰指數：讓 e × d 除以 φ 餘 1"]]}],
+  "visual":{"type":"rsa-keygen","name":"圖：RSA 產生金鑰的例子"},
+  "sources":["S08"]},
+
+ {"no":26,"id":"rsa-encrypt","chapter":"ch5","role":["原理","現實應用"],"title":"RSA（二）：加密與解密",
+  "lead":"加密和解密都是「次方，再取餘數」",
+  "points":[
+   {"text":"加密：明文數字 M 做 e 次方，再除以 n 取餘數","nodes":["asym-rsa"],"cite":["S08 p.1"]},
+   {"text":"解密：密文 C 做 d 次方，再除以 n 取餘數，就還原 M","nodes":["asym-rsa"],"cite":["S08 p.6"]},
+   {"text":"論文例子：920 用公鑰 (17, 2773) 加密，得到 948","nodes":["asym-rsa"],"cite":["S08 p.10"]},
+   {"text":"實務上 n 至少 2048 位元，且先用 OAEP 處理明文","nodes":["asym-rsa"],"cite":["S12 p.67","S09 p.18"],"facts":{"rsa.k_for_112bit":2048}}],
+  "formulas":[{"expr":"C = M^e mod n，M = C^d mod n","symbols":[["M","明文（先轉成小於 n 的數字）"],["C","密文（數字）"],["e","公鑰指數，公開"],["d","私鑰指數，保密"],["n","模數 n = p × q，公開"]]}],
+  "visual":{"type":"rsa-flow","name":"圖：Alice 用 RSA 傳加密訊息給 Bob"},
+  "sources":["S08","S12","S09"]},
+
+ {"no":27,"id":"signature","chapter":"ch5","role":["原理","現實應用"],"title":"數位簽章：私鑰簽、公鑰驗",
+  "lead":"公開金鑰也能反過來用：證明「這真的是我寫的」",
+  "points":[
+   {"text":"方向和加密相反：用私鑰簽章，任何人用公鑰驗證","nodes":["asym-signature"],"cite":["S06 p.34"]},
+   {"text":"簽章同時綁定訊息和簽署者，訊息被改就驗證不過","nodes":["asym-signature"],"cite":["S08 p.4"]},
+   {"text":"用途：確認身分、確認內容沒被改，簽署者也不能否認","nodes":["asym-signature"],"cite":["S06 p.34","S08 p.1"]}],
+  "defines":[{"term":"數位簽章","text":"用私鑰對訊息算出的一段資料，任何人都能用公鑰檢查"}],
+  "visual":{"type":"signature","name":"圖：數位簽章的簽與驗"},
+  "sources":["S06","S08"]},
+
+ {"no":28,"id":"https","chapter":"ch6","role":["現實應用"],"title":"全部組合起來：HTTPS 與 TLS 1.3",
+  "lead":"公開金鑰負責建立金鑰和確認身分，對稱式加密負責保護資料",
+  "points":[
+   {"text":"交握：用 Diffie–Hellman（(EC)DHE）算出共用的金鑰","nodes":["app-hybrid-tls"],"cite":["S10 p.10","S10 p.6"]},
+   {"text":"憑證＋數位簽章：確認連到的是真的網站","nodes":["app-hybrid-tls"],"cite":["S10 p.6"]},
+   {"text":"之後的資料用 AES-GCM 加密，同時防偷看與防竄改","nodes":["app-hybrid-tls"],"cite":["S10 p.102","S10 p.8"]},
+   {"text":"TLS 1.3 不再用 RSA 傳送金鑰，RSA 只用在簽章","nodes":["app-hybrid-tls"],"cite":["S10 p.8","S10 p.70"],"facts":{"tls13.static_rsa_removed":true}}],
+  "defines":[
+   {"term":"HTTPS","text":"網址前面有鎖頭的安全網頁連線"},
+   {"term":"TLS","text":"HTTPS 用來保護連線的協定，目前最新是 1.3 版"},
+   {"term":"交握","text":"連線一開始，雙方協商演算法並建立金鑰的步驟"},
+   {"term":"憑證","text":"網站證明身分用的電子文件，裡面有網站的公鑰"}],
+  "visual":{"type":"tls-flow","name":"圖：瀏覽器連上 HTTPS 網站的過程"},
+  "sources":["S10"]},
+
+ {"no":29,"id":"summary","chapter":"outro","role":[],"title":"總結：從古典密碼到現代密碼學",
+  "lead":"不變的原則：演算法公開，安全靠金鑰，而且要用對方法",
+  "points":[
+   {"text":"古典密碼：金鑰太少、藏不住字母規律，所以容易破解","nodes":["classical-limitations"],"cite":["S03 p.17"]},
+   {"text":"對稱式加密（AES）：速度快，但要先安全地分配金鑰","nodes":["sym-aes","sym-concept"],"cite":["S06 p.33","S02 p.17"]},
+   {"text":"操作模式很重要：避免 ECB，網路上用 GCM","nodes":["mode-ecb","mode-gcm-aead"],"cite":["S05 p.17","S11 p.9"]},
+   {"text":"公開金鑰（DH、RSA）：解決金鑰分配，也能做數位簽章","nodes":["asym-public-key","asym-key-exchange","asym-signature"],"cite":["S07 p.1","S08 p.1"]},
+   {"text":"HTTPS：公開金鑰建立金鑰，對稱式加密保護資料","nodes":["app-hybrid-tls"],"cite":["S10 p.6","S06 p.34"]}],
+  "visual":{"type":"timeline","name":"圖：密碼學的發展"},
+  "sources":["S03","S06","S02","S05","S11","S07","S08","S10"]},
+
+ {"no":30,"id":"references","chapter":"outro","role":[],"title":"參考資料","points":[],"sources":[]}
+]

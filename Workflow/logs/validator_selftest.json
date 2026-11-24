@@ -1,0 +1,178 @@
+{
+  "cases": [
+    {
+      "case": "W5-fabricated-quote",
+      "injected": "把 AES 引文的 128 bits 改成 256 bits（虛構引文）",
+      "validator": "wiki",
+      "expected_check": "W5",
+      "caught": true,
+      "evidence": "引文在 S04 原文中找不到（可能是改寫或虛構）：The AES algorithm is capable of using cryptographic keys of 128, 192, "
+    },
+    {
+      "case": "W5-wrong-page",
+      "injected": "把引文頁碼 p.4 改成 p.30",
+      "validator": "wiki",
+      "expected_check": "W5",
+      "caught": true,
+      "evidence": "引文頁碼錯誤：[S04 p.30] 實際在 p.4：The AES algorithm is capable of using cryptographic keys of "
+    },
+    {
+      "case": "W8-fact-contradiction",
+      "injected": "概念頁宣稱 AES-128 做 12 輪",
+      "validator": "wiki",
+      "expected_check": "W8",
+      "caught": true,
+      "evidence": "事實矛盾：aes.rounds={'AES-128': 12, 'AES-192': 12, 'AES-256': 14}，facts.json 為 {'AES-128': 10, 'AES-192': 12, 'AES-256': 14}"
+    },
+    {
+      "case": "W6-broken-link",
+      "injected": "加入不存在的節點連結 [[mode-xts]]",
+      "validator": "wiki",
+      "expected_check": "W6",
+      "caught": true,
+      "evidence": "連結目標不存在：[[mode-xts]]"
+    },
+    {
+      "case": "W2-missing-source-page",
+      "injected": "刪除來源頁 S11",
+      "validator": "wiki",
+      "expected_check": "W2",
+      "caught": true,
+      "evidence": "缺少來源頁 Wiki/sources/S11-*.md"
+    },
+    {
+      "case": "W8-misconception",
+      "injected": "在重點段落寫入過時說法「HTTPS 用 RSA 加密 session key」",
+      "validator": "wiki",
+      "expected_check": "W8",
+      "caught": true,
+      "evidence": "出現常見誤解「tls13-rsa-key-transport」（只能放在『常見誤解』段落說明）：- HTTPS 是用 RSA 加密 session key 再傳給伺服器 [S10 p.8]。"
+    },
+    {
+      "case": "C2-no-wiki-node",
+      "injected": "投影片重點沒有標註 Wiki 節點",
+      "validator": "content",
+      "expected_check": "C2",
+      "caught": true,
+      "evidence": "沒有標註 Wiki 節點：先認識基本名詞和兩個數學小工具，再開始看密碼"
+    },
+    {
+      "case": "C3-wrong-rounds",
+      "injected": "投影片寫「AES-128 做 12 輪」",
+      "validator": "content",
+      "expected_check": "C3",
+      "caught": true,
+      "evidence": "AES-128 應為 10 輪，內容寫 12 輪：AES-128 做 12 輪運算"
+    },
+    {
+      "case": "C4-wrong-rsa",
+      "injected": "RSA 範例密文寫成 949",
+      "validator": "content",
+      "expected_check": "C4",
+      "caught": true,
+      "evidence": "加密結果應為 948，內容寫 949"
+    },
+    {
+      "case": "C5-wrong-order",
+      "injected": "把 AES 那頁移到對稱式加密之前",
+      "validator": "content",
+      "expected_check": "C5",
+      "caught": true,
+      "evidence": "教學順序錯誤：classical-caesar 需要先懂 basics-bits-xor-mod，但 basics-bits-xor-mod 到第 7 張才出現"
+    },
+    {
+      "case": "C6-text-overload",
+      "injected": "第 2 張塞到 6 個重點",
+      "validator": "content",
+      "expected_check": "C6",
+      "caught": true,
+      "evidence": "重點 5 個，超過上限 4（文字堆積）"
+    },
+    {
+      "case": "C7-term-before-definition",
+      "injected": "拿掉 mod 的名詞解釋（Caesar 頁會先用到 mod）",
+      "validator": "content",
+      "expected_check": "C7",
+      "caught": true,
+      "evidence": "名詞「mod」第一次出現，但之前和這一張都沒有解釋"
+    },
+    {
+      "case": "C8-symbol-unexplained",
+      "injected": "RSA 加密公式拿掉 n 的說明",
+      "validator": "content",
+      "expected_check": "C8",
+      "caught": true,
+      "evidence": "公式 C = M^e mod n，M = C^d mod n 的符號「n」沒有說明"
+    },
+    {
+      "case": "C9-figure-source-wording",
+      "injected": "圖片名稱寫成「依 HAC 圖 1.6 改繪」",
+      "validator": "content",
+      "expected_check": "C9",
+      "caught": true,
+      "evidence": "圖片名稱不需要寫來源或製作方式：依 HAC 圖 1.6 改繪"
+    },
+    {
+      "case": "C10-missing-real-world",
+      "injected": "第 3 章拿掉所有「現實應用」",
+      "validator": "content",
+      "expected_check": "C10",
+      "caught": true,
+      "evidence": "「第 3 章 · 對稱式加密」缺少：現實應用"
+    },
+    {
+      "case": "H8-term-before-definition-dom",
+      "injected": "HTML 第 3 張多一句先提到 RSA",
+      "validator": "html",
+      "expected_check": "H8",
+      "caught": true,
+      "evidence": "畫面上第一次出現「RSA」，但之前沒有解釋"
+    },
+    {
+      "case": "C8-no-tex",
+      "injected": "RSA 加密公式拿掉 LaTeX（只剩純文字）",
+      "validator": "content",
+      "expected_check": "C8",
+      "caught": true,
+      "evidence": "公式 C = M^e mod n，M = C^d mod n 沒有數學排版（缺 tex）"
+    },
+    {
+      "case": "H9-raw-math",
+      "injected": "HTML 第 3 張多一句沒排版的 x^2",
+      "validator": "html",
+      "expected_check": "H9",
+      "caught": true,
+      "evidence": "出現沒有排版的數學寫法：…內容 ｜ 例如 x^2 ｜ 完整性：…"
+    },
+    {
+      "case": "C10-no-transition",
+      "injected": "拿掉第 4 章的轉場頁（AES 直接跳到 ECB）",
+      "validator": "content",
+      "expected_check": "C10",
+      "caught": true,
+      "evidence": "「第 4 章 · 操作模式」缺少：承上啟下"
+    },
+    {
+      "case": "H5-no-fullscreen",
+      "injected": "移除全螢幕按鈕",
+      "validator": "html",
+      "expected_check": "H5",
+      "caught": true,
+      "evidence": "找不到全螢幕按鈕 #fullscreen"
+    },
+    {
+      "case": "H2-missing-point",
+      "injected": "HTML 漏掉第 3 張的一個重點",
+      "validator": "html",
+      "expected_check": "H2",
+      "caught": true,
+      "evidence": "缺少重點3：網路上任何人都可能偷聽，但只看得到看不懂的密文"
+    }
+  ],
+  "caught": 21,
+  "total": 21,
+  "control_unmodified_passes": {
+    "wiki": true,
+    "content": true
+  }
+}

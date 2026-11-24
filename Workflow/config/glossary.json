@@ -1,0 +1,197 @@
+{
+  "_comment": "C7／H8『名詞先解釋』檢查用的名詞表（run-07 依使用者回饋新增）：名詞第一次出現的那一張（或更早）必須在 defines 中解釋它。pattern 為正規表示式。封面、路線圖、參考資料頁不檢查。",
+  "terms": [
+    {
+      "term": "加密",
+      "pattern": "加密"
+    },
+    {
+      "term": "解密",
+      "pattern": "解密"
+    },
+    {
+      "term": "明文",
+      "pattern": "明文|plaintext"
+    },
+    {
+      "term": "密文",
+      "pattern": "密文|ciphertext"
+    },
+    {
+      "term": "金鑰",
+      "pattern": "金鑰|鑰匙"
+    },
+    {
+      "term": "演算法",
+      "pattern": "演算法|algorithm"
+    },
+    {
+      "term": "攻擊者",
+      "pattern": "攻擊者|[Aa]dversary"
+    },
+    {
+      "term": "暴力破解",
+      "pattern": "暴力破解|窮舉|brute force"
+    },
+    {
+      "term": "金鑰空間",
+      "pattern": "金鑰空間|key space"
+    },
+    {
+      "term": "mod",
+      "pattern": "\\bmod\\b|取餘數"
+    },
+    {
+      "term": "XOR",
+      "pattern": "XOR|⊕"
+    },
+    {
+      "term": "替換密碼",
+      "pattern": "替換密碼|單表替換"
+    },
+    {
+      "term": "多表替換",
+      "pattern": "多表替換|Vigen"
+    },
+    {
+      "term": "換位密碼",
+      "pattern": "換位"
+    },
+    {
+      "term": "頻率分析",
+      "pattern": "頻率分析"
+    },
+    {
+      "term": "對稱式加密",
+      "pattern": "(?<!非)對稱式|(?<!非)對稱加密"
+    },
+    {
+      "term": "區塊加密",
+      "pattern": "區塊加密|block cipher"
+    },
+    {
+      "term": "串流加密",
+      "pattern": "串流"
+    },
+    {
+      "term": "位元",
+      "pattern": "位元(?!組)|\\bbits?\\b"
+    },
+    {
+      "term": "位元組",
+      "pattern": "位元組|\\bbytes?\\b"
+    },
+    {
+      "term": "十六進位",
+      "pattern": "十六進位|hexadecimal"
+    },
+    {
+      "term": "AES",
+      "pattern": "(?<![A-Za-z])AES(?![A-Za-z])"
+    },
+    {
+      "term": "DES",
+      "pattern": "(?<![A-Za-z3])DES\\b"
+    },
+    {
+      "term": "state",
+      "pattern": "\\bstate\\b"
+    },
+    {
+      "term": "輪",
+      "pattern": "每一?輪(?![流到])|(?<!輪)一輪(?![流到])|\\d+ ?輪(?![流到])|輪數|round(?! key)"
+    },
+    {
+      "term": "S-box",
+      "pattern": "S-box"
+    },
+    {
+      "term": "round key",
+      "pattern": "round key|輪金鑰"
+    },
+    {
+      "term": "操作模式",
+      "pattern": "操作模式"
+    },
+    {
+      "term": "填充",
+      "pattern": "填充|padding"
+    },
+    {
+      "term": "ECB",
+      "pattern": "ECB"
+    },
+    {
+      "term": "CBC",
+      "pattern": "CBC"
+    },
+    {
+      "term": "CTR",
+      "pattern": "CTR"
+    },
+    {
+      "term": "IV",
+      "pattern": "\\bIV\\b|初始向量"
+    },
+    {
+      "term": "計數器",
+      "pattern": "計數器"
+    },
+    {
+      "term": "GCM",
+      "pattern": "GCM"
+    },
+    {
+      "term": "認證標籤",
+      "pattern": "認證標籤|認證加密"
+    },
+    {
+      "term": "公鑰",
+      "pattern": "公鑰"
+    },
+    {
+      "term": "私鑰",
+      "pattern": "私鑰"
+    },
+    {
+      "term": "公開金鑰加密",
+      "pattern": "公開金鑰|非對稱"
+    },
+    {
+      "term": "金鑰交換",
+      "pattern": "金鑰交換"
+    },
+    {
+      "term": "質數",
+      "pattern": "質數"
+    },
+    {
+      "term": "互質",
+      "pattern": "互質"
+    },
+    {
+      "term": "RSA",
+      "pattern": "RSA"
+    },
+    {
+      "term": "數位簽章",
+      "pattern": "簽章"
+    },
+    {
+      "term": "憑證",
+      "pattern": "憑證"
+    },
+    {
+      "term": "HTTPS",
+      "pattern": "HTTPS"
+    },
+    {
+      "term": "TLS",
+      "pattern": "TLS"
+    },
+    {
+      "term": "交握",
+      "pattern": "交握"
+    }
+  ]
+}

@@ -1,0 +1,438 @@
+{
+  "_comment": "簡報大綱 v2（run-07，依使用者回饋重排）：每個主題依『基本原理 → 為什麼需要／好處與限制 → 現實中怎麼做』分頁講完。張數由使用者要求擴充（原作業建議約 10–12 張）。 run-09：依使用者回饋加入第 2～6 章的承上啟下轉場頁（回顧→新問題→預告）。",
+  "deck_title": "Cryptography 101：密碼學如何保護我們的資訊？",
+  "slide_count": [
+    30,
+    40
+  ],
+  "chapters": [
+    {
+      "id": "intro",
+      "name": "開場",
+      "required_roles": []
+    },
+    {
+      "id": "ch1",
+      "name": "第 1 章 · 基礎觀念",
+      "required_roles": []
+    },
+    {
+      "id": "ch2",
+      "name": "第 2 章 · 古典密碼",
+      "required_roles": [
+        "承上啟下",
+        "原理",
+        "限制",
+        "現實應用"
+      ]
+    },
+    {
+      "id": "ch3",
+      "name": "第 3 章 · 對稱式加密",
+      "required_roles": [
+        "承上啟下",
+        "原理",
+        "好處與限制",
+        "現實應用"
+      ]
+    },
+    {
+      "id": "ch4",
+      "name": "第 4 章 · 操作模式",
+      "required_roles": [
+        "承上啟下",
+        "為什麼",
+        "原理",
+        "現實應用"
+      ]
+    },
+    {
+      "id": "ch5",
+      "name": "第 5 章 · 公開金鑰加密",
+      "required_roles": [
+        "承上啟下",
+        "為什麼",
+        "原理",
+        "好處與限制",
+        "現實應用"
+      ]
+    },
+    {
+      "id": "ch6",
+      "name": "第 6 章 · 綜合應用",
+      "required_roles": [
+        "承上啟下",
+        "現實應用"
+      ]
+    },
+    {
+      "id": "outro",
+      "name": "結尾",
+      "required_roles": []
+    }
+  ],
+  "slides": [
+    {
+      "no": 1,
+      "id": "cover",
+      "title": "Cryptography 101",
+      "needs_wiki": false,
+      "terms": []
+    },
+    {
+      "no": 2,
+      "id": "roadmap",
+      "title": "今天的路線圖",
+      "needs_wiki": true,
+      "terms": [
+        "教學順序",
+        "teaching approach"
+      ]
+    },
+    {
+      "no": 3,
+      "id": "why",
+      "title": "為什麼需要密碼學？",
+      "needs_wiki": true,
+      "terms": [
+        "密碼學",
+        "information security",
+        "Cryptography"
+      ]
+    },
+    {
+      "no": 4,
+      "id": "terms",
+      "title": "密碼學在做什麼？基本名詞",
+      "needs_wiki": true,
+      "terms": [
+        "明文",
+        "密文",
+        "金鑰",
+        "加密"
+      ]
+    },
+    {
+      "no": 5,
+      "id": "kerckhoffs",
+      "title": "演算法可以公開，金鑰必須保密",
+      "needs_wiki": true,
+      "terms": [
+        "Kerckhoffs",
+        "暴力破解"
+      ]
+    },
+    {
+      "no": 6,
+      "id": "tools",
+      "title": "兩個數學小工具：mod 與 XOR",
+      "needs_wiki": true,
+      "terms": [
+        "XOR",
+        "取餘數",
+        "模運算"
+      ]
+    },
+    {
+      "no": 7,
+      "id": "ch2-intro",
+      "title": "第 2 章：古典密碼",
+      "needs_wiki": true,
+      "terms": [
+        "Kerckhoffs",
+        "XOR",
+        "取餘數"
+      ]
+    },
+    {
+      "no": 8,
+      "id": "caesar",
+      "title": "Caesar 密碼：每個字母往後移 k 位",
+      "needs_wiki": true,
+      "terms": [
+        "Caesar cipher",
+        "凱撒密碼",
+        "位移密碼"
+      ]
+    },
+    {
+      "no": 9,
+      "id": "substitution",
+      "title": "替換密碼：把整個字母表打亂",
+      "needs_wiki": true,
+      "terms": [
+        "替換密碼",
+        "substitution cipher"
+      ]
+    },
+    {
+      "no": 10,
+      "id": "vigenere",
+      "title": "多表替換：Vigenère 密碼",
+      "needs_wiki": true,
+      "terms": [
+        "Vigenère cipher",
+        "多表替換",
+        "polyalphabetic substitution"
+      ]
+    },
+    {
+      "no": 11,
+      "id": "transposition",
+      "title": "換位密碼：字母不變，位置打亂",
+      "needs_wiki": true,
+      "terms": [
+        "換位密碼",
+        "transposition cipher"
+      ]
+    },
+    {
+      "no": 12,
+      "id": "classical-break",
+      "title": "古典密碼怎麼被破解？",
+      "needs_wiki": true,
+      "terms": [
+        "頻率分析",
+        "frequency analysis",
+        "Kasiski"
+      ]
+    },
+    {
+      "no": 13,
+      "id": "ch3-intro",
+      "title": "第 3 章：對稱式加密",
+      "needs_wiki": true,
+      "terms": [
+        "頻率分析",
+        "Kasiski",
+        "frequency analysis"
+      ]
+    },
+    {
+      "no": 14,
+      "id": "sym-principle",
+      "title": "對稱式加密：同一把金鑰鎖上也打開",
+      "needs_wiki": true,
+      "terms": [
+        "對稱式加密",
+        "symmetric encryption"
+      ]
+    },
+    {
+      "no": 15,
+      "id": "sym-pros",
+      "title": "對稱式加密的好處與難題",
+      "needs_wiki": true,
+      "terms": [
+        "金鑰分配問題",
+        "對稱式加密",
+        "public key"
+      ]
+    },
+    {
+      "no": 16,
+      "id": "block-stream",
+      "title": "兩種做法：區塊加密與串流加密",
+      "needs_wiki": true,
+      "terms": [
+        "區塊加密",
+        "串流加密"
+      ]
+    },
+    {
+      "no": 17,
+      "id": "bytes",
+      "title": "電腦裡的資料：位元、位元組、十六進位",
+      "needs_wiki": true,
+      "terms": [
+        "位元組",
+        "十六進位",
+        "byte"
+      ]
+    },
+    {
+      "no": 18,
+      "id": "aes-overview",
+      "title": "現實中的對稱式加密：AES",
+      "needs_wiki": true,
+      "terms": [
+        "AES",
+        "Rijndael"
+      ]
+    },
+    {
+      "no": 19,
+      "id": "aes-steps",
+      "title": "AES 每一輪的四個步驟",
+      "needs_wiki": true,
+      "terms": [
+        "AES",
+        "AES-128"
+      ]
+    },
+    {
+      "no": 20,
+      "id": "aes-example",
+      "title": "AES 實例：一步一步看資料怎麼變",
+      "needs_wiki": true,
+      "terms": [
+        "AES",
+        "AES-128"
+      ]
+    },
+    {
+      "no": 21,
+      "id": "aes-use",
+      "title": "AES 怎麼解密？現在用在哪裡？",
+      "needs_wiki": true,
+      "terms": [
+        "AES",
+        "AES-GCM"
+      ]
+    },
+    {
+      "no": 22,
+      "id": "ch4-intro",
+      "title": "第 4 章：操作模式",
+      "needs_wiki": true,
+      "terms": [
+        "AES",
+        "AES-128"
+      ]
+    },
+    {
+      "no": 23,
+      "id": "modes-why",
+      "title": "為什麼需要操作模式？先看 ECB 的問題",
+      "needs_wiki": true,
+      "terms": [
+        "操作模式",
+        "ECB"
+      ]
+    },
+    {
+      "no": 24,
+      "id": "cbc",
+      "title": "CBC：把區塊一個接一個串起來",
+      "needs_wiki": true,
+      "terms": [
+        "CBC",
+        "初始向量"
+      ]
+    },
+    {
+      "no": 25,
+      "id": "ctr-gcm",
+      "title": "CTR 與 GCM：現在網路上用的模式",
+      "needs_wiki": true,
+      "terms": [
+        "CTR",
+        "GCM",
+        "計數器模式"
+      ]
+    },
+    {
+      "no": 26,
+      "id": "ch5-intro",
+      "title": "第 5 章：公開金鑰加密",
+      "needs_wiki": true,
+      "terms": [
+        "金鑰分配問題",
+        "GCM",
+        "AES-GCM"
+      ]
+    },
+    {
+      "no": 27,
+      "id": "pk-why",
+      "title": "為什麼需要公開金鑰加密？",
+      "needs_wiki": true,
+      "terms": [
+        "公開金鑰",
+        "public key",
+        "金鑰分配問題"
+      ]
+    },
+    {
+      "no": 28,
+      "id": "dh",
+      "title": "Diffie–Hellman：在公開場合約定同一把金鑰",
+      "needs_wiki": true,
+      "terms": [
+        "Diffie-Hellman",
+        "金鑰交換"
+      ]
+    },
+    {
+      "no": 29,
+      "id": "rsa-keys",
+      "title": "RSA（一）：怎麼產生一對金鑰",
+      "needs_wiki": true,
+      "terms": [
+        "RSA",
+        "RSA modulus"
+      ]
+    },
+    {
+      "no": 30,
+      "id": "rsa-encrypt",
+      "title": "RSA（二）：加密與解密",
+      "needs_wiki": true,
+      "terms": [
+        "RSA",
+        "OAEP"
+      ]
+    },
+    {
+      "no": 31,
+      "id": "signature",
+      "title": "數位簽章：私鑰簽、公鑰驗",
+      "needs_wiki": true,
+      "terms": [
+        "數位簽章",
+        "digital signature"
+      ]
+    },
+    {
+      "no": 32,
+      "id": "ch6-intro",
+      "title": "第 6 章：綜合應用",
+      "needs_wiki": true,
+      "terms": [
+        "public key",
+        "數位簽章",
+        "AES"
+      ]
+    },
+    {
+      "no": 33,
+      "id": "https",
+      "title": "全部組合起來：HTTPS 與 TLS 1.3",
+      "needs_wiki": true,
+      "terms": [
+        "TLS 1.3",
+        "HTTPS",
+        "憑證"
+      ]
+    },
+    {
+      "no": 34,
+      "id": "summary",
+      "title": "總結：從古典密碼到現代密碼學",
+      "needs_wiki": true,
+      "terms": [
+        "AES",
+        "公開金鑰",
+        "TLS 1.3",
+        "classical cipher weaknesses"
+      ]
+    },
+    {
+      "no": 35,
+      "id": "references",
+      "title": "參考資料",
+      "needs_wiki": false,
+      "terms": []
+    }
+  ]
+}

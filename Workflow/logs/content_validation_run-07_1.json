@@ -1,0 +1,74 @@
+{
+  "passed": false,
+  "n_errors": 3,
+  "n_warnings": 0,
+  "by_check": {
+    "C1": {
+      "error": 0,
+      "warn": 0
+    },
+    "C2": {
+      "error": 1,
+      "warn": 0
+    },
+    "C3": {
+      "error": 0,
+      "warn": 0
+    },
+    "C4": {
+      "error": 0,
+      "warn": 0
+    },
+    "C5": {
+      "error": 0,
+      "warn": 0
+    },
+    "C6": {
+      "error": 0,
+      "warn": 0
+    },
+    "C7": {
+      "error": 2,
+      "warn": 0
+    },
+    "C8": {
+      "error": 0,
+      "warn": 0
+    },
+    "C9": {
+      "error": 0,
+      "warn": 0
+    },
+    "C10": {
+      "error": 0,
+      "warn": 0
+    }
+  },
+  "issues": [
+    {
+      "check": "C2",
+      "severity": "error",
+      "where": "slide 8 重點2",
+      "msg": "節點 classical-caesar 不在 query_wiki 對本頁的檢索結果中（內容未經查詢取得）"
+    },
+    {
+      "check": "C7",
+      "severity": "error",
+      "where": "slide 9",
+      "msg": "名詞「輪」第一次出現，但之前和這一張都沒有解釋"
+    },
+    {
+      "check": "C7",
+      "severity": "error",
+      "where": "slide 10",
+      "msg": "名詞「AES」第一次出現，但之前和這一張都沒有解釋"
+    }
+  ],
+  "stats": {
+    "slides": 30,
+    "points": 92,
+    "nodes_used": 22,
+    "wiki_nodes": 22
+  },
+  "decision": "retry"
+}

@@ -1,0 +1,256 @@
+[
+  {
+    "id": "S01",
+    "format": "txt",
+    "batch": [
+      1
+    ],
+    "title": "RFC 4949: Internet Security Glossary, Version 2",
+    "author": "R. Shirey (IETF)",
+    "year": 2007,
+    "url": "https://www.rfc-editor.org/rfc/rfc4949.txt",
+    "purpose": "標準術語定義（plaintext、ciphertext、encryption、key、symmetric / asymmetric cryptography 等）",
+    "expect": [
+      "Internet Security Glossary",
+      "ciphertext",
+      "asymmetric cryptography"
+    ]
+  },
+  {
+    "id": "S02",
+    "format": "pdf",
+    "batch": [
+      1,
+      2,
+      3
+    ],
+    "title": "Handbook of Applied Cryptography, Chapter 1: Overview of Cryptography",
+    "author": "A. Menezes, P. van Oorschot, S. Vanstone (CRC Press; hosted by University of Waterloo CACR)",
+    "year": 1996,
+    "url": "https://cacr.uwaterloo.ca/hac/about/chap1.pdf",
+    "purpose": "大學教材：密碼學目標、基本術語、對稱式加密、替換與換位密碼、公開金鑰概念",
+    "expect": [
+      "Overview of Cryptography",
+      "transposition",
+      "public-key"
+    ]
+  },
+  {
+    "id": "S03",
+    "format": "pdf",
+    "batch": [
+      2,
+      4
+    ],
+    "title": "Handbook of Applied Cryptography, Chapter 7: Block Ciphers",
+    "author": "A. Menezes, P. van Oorschot, S. Vanstone (CRC Press; hosted by University of Waterloo CACR)",
+    "year": 1996,
+    "url": "https://cacr.uwaterloo.ca/hac/about/chap7.pdf",
+    "purpose": "大學教材：古典密碼與其弱點、區塊加密的操作模式（ECB、CBC 等）",
+    "expect": [
+      "Block Ciphers",
+      "Caesar",
+      "Vigen"
+    ]
+  },
+  {
+    "id": "S04",
+    "format": "pdf",
+    "batch": [
+      3
+    ],
+    "title": "FIPS 197 (Update 1): Advanced Encryption Standard (AES)",
+    "author": "NIST",
+    "year": 2023,
+    "url": "https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf",
+    "purpose": "AES 官方標準：區塊大小、金鑰長度、輪數、輪函數",
+    "expect": [
+      "Advanced Encryption Standard",
+      "SubBytes",
+      "MixColumns"
+    ]
+  },
+  {
+    "id": "S05",
+    "format": "pdf",
+    "batch": [
+      4
+    ],
+    "title": "NIST SP 800-38A: Recommendation for Block Cipher Modes of Operation: Methods and Techniques",
+    "author": "M. Dworkin (NIST)",
+    "year": 2001,
+    "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf",
+    "purpose": "ECB、CBC、CTR 等操作模式的官方定義與 IV／計數器要求",
+    "expect": [
+      "Modes of Operation",
+      "Electronic Codebook",
+      "Counter"
+    ]
+  },
+  {
+    "id": "S06",
+    "format": "pdf",
+    "batch": [
+      3,
+      5
+    ],
+    "title": "NIST SP 800-175B Rev. 1: Guideline for Using Cryptographic Standards in the Federal Government: Cryptographic Mechanisms",
+    "author": "E. Barker (NIST)",
+    "year": 2020,
+    "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-175Br1.pdf",
+    "purpose": "對稱與非對稱機制概覽、金鑰建立與金鑰管理的現代觀點",
+    "expect": [
+      "Cryptographic Mechanisms",
+      "symmetric",
+      "asymmetric"
+    ]
+  },
+  {
+    "id": "S07",
+    "format": "pdf",
+    "batch": [
+      5
+    ],
+    "title": "New Directions in Cryptography",
+    "author": "W. Diffie, M. E. Hellman (IEEE Trans. Information Theory; hosted by Stanford)",
+    "year": 1976,
+    "url": "https://ee.stanford.edu/~hellman/publications/24.pdf",
+    "purpose": "公開金鑰密碼學與金鑰交換概念的原始論文",
+    "expect": [
+      "New Directions in Cryptography",
+      "public key"
+    ]
+  },
+  {
+    "id": "S08",
+    "format": "pdf",
+    "batch": [
+      5
+    ],
+    "title": "A Method for Obtaining Digital Signatures and Public-Key Cryptosystems",
+    "author": "R. L. Rivest, A. Shamir, L. Adleman (Communications of the ACM; hosted by MIT)",
+    "year": 1978,
+    "url": "https://people.csail.mit.edu/rivest/Rsapaper.pdf",
+    "purpose": "RSA 原始論文：金鑰產生、加解密、數位簽章",
+    "expect": [
+      "Digital Signatures",
+      "Public-Key Cryptosystems"
+    ]
+  },
+  {
+    "id": "S09",
+    "format": "txt",
+    "batch": [
+      5
+    ],
+    "title": "RFC 8017: PKCS #1: RSA Cryptography Specifications Version 2.2",
+    "author": "K. Moriarty, B. Kaliski, J. Jonsson, A. Rusch (IETF)",
+    "year": 2016,
+    "url": "https://www.rfc-editor.org/rfc/rfc8017.txt",
+    "purpose": "RSA 現行標準：RSA 公鑰／私鑰定義、RSAES-OAEP、RSASSA-PSS",
+    "expect": [
+      "PKCS #1",
+      "RSAES-OAEP",
+      "RSASSA-PSS"
+    ]
+  },
+  {
+    "id": "S10",
+    "format": "txt",
+    "batch": [
+      5
+    ],
+    "title": "RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3",
+    "author": "E. Rescorla (IETF)",
+    "year": 2018,
+    "url": "https://www.rfc-editor.org/rfc/rfc8446.txt",
+    "purpose": "現代網路應用：TLS 1.3 的金鑰交換、憑證簽章與 AEAD 加密",
+    "expect": [
+      "Transport Layer Security",
+      "Version 1.3",
+      "AEAD"
+    ]
+  },
+  {
+    "id": "S11",
+    "format": "pdf",
+    "batch": [
+      4
+    ],
+    "title": "NIST SP 800-38D: Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC",
+    "author": "M. Dworkin (NIST)",
+    "year": 2007,
+    "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf",
+    "purpose": "GCM（以 CTR 為基礎的認證加密），銜接 CTR 與 TLS 1.3",
+    "expect": [
+      "Galois/Counter Mode",
+      "GMAC"
+    ]
+  },
+  {
+    "id": "S12",
+    "format": "pdf",
+    "batch": [
+      3,
+      5
+    ],
+    "title": "NIST SP 800-57 Part 1 Rev. 5: Recommendation for Key Management: Part 1 – General",
+    "author": "E. Barker (NIST)",
+    "year": 2020,
+    "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57pt1r5.pdf",
+    "purpose": "現行金鑰強度建議（例如 AES 與 RSA 金鑰長度對應的安全強度）",
+    "expect": [
+      "Key Management",
+      "security strength"
+    ]
+  },
+  {
+    "id": "S13",
+    "format": "pdf",
+    "batch": [
+      6
+    ],
+    "title": "The Joy of Cryptography",
+    "author": "Mike Rosulek (Oregon State University)",
+    "year": 2021,
+    "url": "https://joyofcryptography.com/pdf/book.pdf",
+    "purpose": "大學部教科書：看大學課程如何從零介紹 XOR、mod、區塊加密與操作模式（教學法參考＋名詞定義）",
+    "expect": [
+      "Joy of Cryptography",
+      "XOR"
+    ]
+  },
+  {
+    "id": "S14",
+    "format": "pdf",
+    "batch": [
+      6
+    ],
+    "title": "Crypto 101",
+    "author": "Laurens Van Houtven",
+    "year": 2017,
+    "url": "https://www.crypto101.io/Crypto101.pdf",
+    "purpose": "入門書：看入門教材如何安排主題順序（先 XOR、再區塊加密、再操作模式）（教學法參考）",
+    "expect": [
+      "Crypto 101",
+      "exclusive or"
+    ]
+  },
+  {
+    "id": "S15",
+    "format": "html",
+    "batch": [
+      6
+    ],
+    "title": "What is encryption? | Cloudflare Learning Center",
+    "author": "Cloudflare",
+    "year": 2024,
+    "url": "https://www.cloudflare.com/learning/ssl/what-is-encryption/",
+    "purpose": "科技公司給一般大眾的說明：看業界如何用白話介紹加密、金鑰、對稱與非對稱（教學法參考）",
+    "expect": [
+      "encryption",
+      "symmetric",
+      "asymmetric"
+    ]
+  }
+]

@@ -1,0 +1,2516 @@
+{
+  "queries": [
+    {
+      "slide": 1,
+      "id": "cover",
+      "title": "Cryptography 101",
+      "terms": [],
+      "needs_wiki": false,
+      "hits": []
+    },
+    {
+      "slide": 2,
+      "id": "roadmap",
+      "title": "今天的路線圖",
+      "terms": [
+        "教學順序",
+        "teaching approach"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "teaching-how-others-explain",
+          "title": "別人怎麼介紹加密演算法？（教學設計參考）",
+          "score": 10,
+          "why": [
+            "title/alias:教學順序",
+            "title/alias:teaching approach"
+          ],
+          "sources": [
+            "S13",
+            "S14",
+            "S15"
+          ],
+          "prerequisites": [],
+          "definition": "本頁比較三種不同對象的教材如何介紹加密：**大學教科書**（The Joy of Cryptography，Oregon State University）[S13 p.9]、**入門書**（Crypto 101）[S14 p.4]、**科技公司給大眾的說明**（Cloudflare Learning Center）[S15 p.1]，並歸納出本簡報採用的教學原則。",
+          "key_points": "- **大學教科書：先複習工具，再從最簡單的密碼開始。** 第 0 章先複習符號與模運算（mod）、字串與 XOR，第 1 章才是第一個密碼（one-time pad）與 Kerckhoffs 原則 [S13 p.9]；之後依序是區塊加密、操作模式、認證加密、RSA、Diffie–Hellman [S13 p.9]。\n- **教科書會先交代每個符號**：例如「Alice 要傳的訊息叫 m，稱為明文」「轉換後的值叫 c，稱為密文」[S13 p.21]。\n- **入門書：第一個「積木」就是 XOR**，然後才是區塊加密（其中介紹 AES）、串流加密、金鑰交換、公開金鑰加密 [S14 p.4]；連公式中的下標都會解釋（「i 只是編號」）[S14 p.18]。\n- **給大眾的說明：定義 → 最簡單的例子 → 比喻 → 分類 → 為什麼重要 → 怎麼被攻擊 → 生活中的應用** [S15 p.1]：\n  - 例子：Alice 把「Hello」每個字母換成字母表後面第 2 個字母 [S15 p.1]\n  - 比喻：金鑰就像實體鑰匙，鎖上（加密）後只有對的鑰匙能打開（解密）[S15 p.1]\n  - 分類：對稱式只有一把金鑰，雙方共用 [S15 p.1]\n  - 攻擊：暴力破解＝猜幾百萬、幾十億次金鑰 [S15 p.1]\n  - 應用：HTTPS 使用 TLS 加密 [S15 p.1]\n- **本簡報採用的教學原則**（本 Wiki 歸納自以上三者）：\n  1. 先介紹之後會用到的名詞與工具（位元、XOR、mod），再用到它們（[[basics-bits-xor-mod]]）。\n  2. 每個主題依序講「基本原理 → 為什麼需要／好處與限制 → 現實中怎麼做」，一個主題分幾頁講完，不擠在一頁。\n  3. 公式出現時，每個符號都說明代表什麼。\n  4. 從最簡單的例子（位移密碼）開始，再進到現代演算法。\n  5. 用生活比喻（鑰匙、信箱）幫助理解，再接回正式名詞。",
+          "example": "| 教材 | 對象 | 開場方式 | 主題順序 |\n|---|---|---|---|\n| The Joy of Cryptography | 大學生 | 複習 mod、XOR 等工具 | 工具 → 簡單密碼 → 區塊加密 → 模式 → 認證加密 → RSA → DH |\n| Crypto 101 | 入門工程師 | XOR | XOR → 區塊加密（AES）→ 串流加密 → 金鑰交換 → 公開金鑰 |\n| Cloudflare | 一般大眾 | 定義＋位移 2 的小例子 | 定義 → 例子 → 鑰匙比喻 → 對稱／非對稱 → 重要性 → 暴力破解 → HTTPS |",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 3,
+      "id": "why",
+      "title": "為什麼需要密碼學？",
+      "terms": [
+        "密碼學",
+        "information security",
+        "Cryptography"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "intro-what-is-crypto",
+          "title": "密碼學是什麼？為什麼需要它？",
+          "score": 23,
+          "why": [
+            "title/alias:密碼學",
+            "body:密碼學×3",
+            "title/alias:information security",
+            "body:information security×2",
+            "title/alias:Cryptography",
+            "body:Cryptography×3"
+          ],
+          "sources": [
+            "S01",
+            "S02"
+          ],
+          "prerequisites": [],
+          "definition": "**密碼學（cryptography）** 是研究「與資訊安全相關的數學技術」的學問，目標包括機密性、資料完整性、實體鑑別與資料來源鑑別 [S02 p.5]。\nRFC 4949 的白話說法：把資料轉換成**看不懂的形式**、**防止資料被偷偷竄改**、**防止未經授權的使用**；如果轉換可逆，也負責把資料還原 [S01 p.90]。",
+          "key_points": "- **為什麼需要**：密碼學原本主要服務軍事、外交與政府；1960 年代電腦與通訊普及後，民間也開始需要保護數位資訊 [S02 p.2]。\n- **密碼學的四大目標**（HAC 的框架）[S02 p.5]：\n  1. **機密性（confidentiality）**：只有被授權的人能看到內容 [S02 p.5][S01 p.94]\n  2. **資料完整性（data integrity）**：能偵測資料是否被未授權地修改 [S02 p.5][S01 p.95]\n  3. **鑑別（authentication，確認身分或來源）**：確認通訊對象是誰、資料從哪裡來 [S02 p.5][S01 p.26]\n  4. **不可否認性（non-repudiation）**：讓人無法否認自己做過的承諾或動作 [S02 p.5][S01 p.200]\n- 密碼學的本質是「預防與偵測作弊及其他惡意行為」[S02 p.5]。\n- 密碼學不是保護資訊的唯一方法，而是其中一組技術 [S02 p.5]。\n- 不同目標由不同工具達成：加密主要負責機密性；完整性、不可否認性需要雜湊函數、數位簽章等其他工具 [S02 p.5]（見 [[asym-signature]]）。",
+          "example": "- 網路購物時：信用卡號不能被看到（機密性）、訂單金額不能被改（完整性）、要確定連到的是真正的商店（鑑別）、商店不能事後否認收到訂單（不可否認性）。——本 Wiki 的教學補充例子，對應四大目標的定義 [S02 p.5]。",
+          "misconceptions": "- **時效註記**：HAC 寫於 1996 年，書中提到 DES「仍是許多金融機構的標準」[S02 p.2]；較新的 RFC 4949（2007）則記載 NIST 以公開程序選出 AES 來取代 DES [S01 p.268]。本 Wiki 以較新的來源為準，不把 DES 當成現行標準（見 [[sym-aes]]）。"
+        },
+        {
+          "id": "asym-public-key",
+          "title": "公開金鑰密碼學（Asymmetric / Public-Key Cryptography）",
+          "score": 15,
+          "why": [
+            "title/alias:密碼學",
+            "body:密碼學×2",
+            "title/alias:Cryptography",
+            "body:Cryptography×3"
+          ],
+          "sources": [
+            "S02",
+            "S06",
+            "S07"
+          ],
+          "prerequisites": [
+            "sym-concept"
+          ],
+          "definition": "**非對稱式（公開金鑰）演算法**使用**一對金鑰**：**公鑰（public key）** 與 **私鑰（private key）**，兩者在數學上相關 [S06 p.34]。\n- 公鑰可以公開，不會降低安全性；私鑰必須保密 [S06 p.34]。\n- 雖然兩把金鑰相關，但**無法從公鑰有效率地推出私鑰** [S06 p.34]。",
+          "key_points": "- **起源**：1976 年 Diffie 與 Hellman 發表《New Directions in Cryptography》，提出公開金鑰密碼學的革命性概念 [S02 p.2]。\n- 他們的想法：加密金鑰 E 與解密金鑰 D 不同，而且**從 E 算出 D 在計算上不可行**，所以 E 可以公開 [S07 p.1]。\n- 每個人把自己的公開加密金鑰放進「公開目錄」，任何人都能用它加密訊息，**只有持有對應私鑰的接收者能解密** [S07 p.1]——就算兩人從沒見過面，也能祕密通訊 [S07 p.1]。\n- **為什麼需要**：對稱式加密必須先透過安全通道分配金鑰；Diffie–Hellman 指出，這個**金鑰分配問題**的成本與延遲，是商業通訊走向大型網路的主要障礙 [S07 p.1]（見 [[sym-concept]]）。\n- **加密 vs. 簽章**的金鑰用法 [S06 p.34]：\n  - 加密：**用公鑰加密、用私鑰解密**；\n  - 數位簽章：**用私鑰簽章、用公鑰驗證**（見 [[asym-signature]]）。\n- **缺點：慢**。非對稱演算法比對稱式慢很多，所以不拿來處理大量資料 [S06 p.34]——實務上兩者混合使用（見 [[app-hybrid-tls]]）。",
+          "example": "**信箱比喻**（本 Wiki 的教學比喻）：公鑰像是**投信口**，任何人都能把信投進去；私鑰像是**信箱鑰匙**，只有主人能打開取信。對應「公鑰加密、私鑰解密」[S06 p.34]。\n\n```\nBob 的公鑰（公開）  ──▶  Alice 用它加密  ──▶  密文  ──▶  只有 Bob 的私鑰能解開\n```",
+          "misconceptions": ""
+        },
+        {
+          "id": "app-hybrid-tls",
+          "title": "密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3",
+          "score": 8,
+          "why": [
+            "title/alias:密碼學",
+            "body:密碼學×2",
+            "body:Cryptography×1"
+          ],
+          "sources": [
+            "S06",
+            "S10"
+          ],
+          "prerequisites": [
+            "sym-aes",
+            "mode-gcm-aead",
+            "asym-key-exchange",
+            "asym-signature"
+          ],
+          "definition": "**TLS** 的主要目標是在兩個通訊端點之間提供一條**安全通道** [S10 p.6]，具備三種性質 [S10 p.6]：\n- **鑑別（authentication）**：伺服器端一定會被鑑別，可使用 RSA、ECDSA 等非對稱密碼學或預先共享金鑰；\n- **機密性（confidentiality）**：建立連線後的資料只有兩端看得到；\n- **完整性（integrity）**：資料被攻擊者修改一定會被偵測出來。\n\n我們瀏覽 HTTPS 網站時，背後就是 TLS 在保護資料（HTTPS 與 TLS 的關係為本 Wiki 的教學補充）。",
+          "key_points": "- **混合加密（hybrid）**：非對稱演算法太慢、不適合處理大量資料；NIST 指出可以**結合對稱與非對稱演算法**，兼顧效率並減少所需金鑰數量 [S06 p.34–35]。\n- TLS 由兩部分組成 [S10 p.6]：\n  1. **Handshake（交握）協定**：鑑別雙方、協商演算法，並**建立共享金鑰** → 用到 **(EC)DHE 金鑰交換**（[[asym-key-exchange]]）與**憑證簽章**（[[asym-signature]]）；\n  2. **Record（記錄）協定**：用交握得到的金鑰保護之後的所有流量 → 用到**對稱式 AEAD 加密**（如 AES-GCM，[[mode-gcm-aead]]）。\n- **TLS 1.3 的重要改變** [S10 p.8]：\n  - **移除了靜態 RSA 與靜態 Diffie–Hellman 的金鑰交換**，所有公鑰式金鑰交換都提供**前向保密（forward secrecy）**；\n  - 對稱式演算法只保留 **AEAD**。\n- **前向保密**：即使長期金鑰（例如憑證的簽章私鑰）在交握完成後外洩，也不會危及這次連線的 session key [S10 p.143]。\n- 每個 TLS 1.3 實作都必須支援 **TLS_AES_128_GCM_SHA256** [S10 p.102]——也就是 AES-128 + GCM。\n- RSA 在 TLS 1.3 的角色是**簽章**（且必須用 RSASSA-PSS）[S10 p.70]，不是用來「加密並傳送 session key」。",
+          "example": "```\n瀏覽器（Client）                                  網站（Server）\n   │  ① ClientHello + (EC)DHE 公開值  ────────────▶ │\n   │  ◀──────────── ② ServerHello + (EC)DHE 公開值   │   → 雙方各自算出相同的共享金鑰\n   │  ◀──────────── ③ 憑證 + 簽章（RSA-PSS／ECDSA）  │   → 確認「真的是這個網站」\n   │  ④ 之後的網頁資料：AES-GCM 加密 + 認證  ◀══════▶ │   → 機密性 + 完整性\n```\n（依 RFC 8446 §1、§2 的描述簡化繪製 [S10 p.6][S10 p.10]）",
+          "misconceptions": "- 「HTTPS 是用 RSA 加密 session key 再傳給伺服器」——這是舊版 TLS 的靜態 RSA 金鑰傳輸；**TLS 1.3 已移除** [S10 p.8]，改用 (EC)DHE 金鑰交換，RSA 只用於簽章 [S10 p.70]。"
+        }
+      ]
+    },
+    {
+      "slide": 4,
+      "id": "terms",
+      "title": "密碼學在做什麼？基本名詞",
+      "terms": [
+        "明文",
+        "密文",
+        "金鑰",
+        "加密"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "intro-terminology",
+          "title": "基本術語：明文、密文、金鑰、加密與解密",
+          "score": 32,
+          "why": [
+            "title/alias:明文",
+            "body:明文×3",
+            "title/alias:密文",
+            "body:密文×3",
+            "title/alias:金鑰",
+            "body:金鑰×3",
+            "title/alias:加密",
+            "body:加密×3"
+          ],
+          "sources": [
+            "S01",
+            "S02"
+          ],
+          "prerequisites": [
+            "intro-what-is-crypto"
+          ],
+          "definition": "| 術語 | 意思 | 來源 |\n|---|---|---|\n| **明文（plaintext）** | 要被加密的原始資料 | [S01 p.225][S02 p.12] |\n| **密文（ciphertext）** | 加密後、意義已無法直接理解的資料 | [S01 p.62][S02 p.12] |\n| **加密（encryption）** | 把明文轉換成密文，藏住原本的意義 | [S01 p.119] |\n| **解密（decryption）** | 加密的反向過程，把密文還原成明文 | [S01 p.119][S02 p.12] |\n| **金鑰（key）** | 控制加密演算法「怎麼轉換」的輸入參數 | [S01 p.171][S02 p.12] |\n| **金鑰空間（key space）** | 所有可能金鑰的集合（範圍） | [S01 p.177][S02 p.12] |\n| **密碼／加密法（cipher）** | 用來加密與解密的演算法；HAC 稱「加密方案」 | [S01 p.61][S02 p.13] |",
+          "key_points": "- **兩方通訊模型**：Alice（傳送者）加密後透過**不安全的通道**送給 Bob（接收者），中間的**攻擊者（adversary）**想破壞這個安全服務 [S02 p.14]。\n- 不安全的通道上，旁人可以**讀取、插入、刪除、重排**訊息 [S02 p.14]。\n- 加密要能還原：每一把加密金鑰都必須對應到一把解密金鑰，使解密後得到原本的明文 [S02 p.13]。\n- HAC 把加密金鑰 e 和解密金鑰 d 合稱「key pair」，並註明 **e 和 d 可以相同** [S02 p.13]——相同時就是**對稱式加密**（[[sym-concept]]）；「公鑰／私鑰對」是另一回事，屬於非對稱式加密（[[asym-public-key]]）。\n- **密碼分析（cryptanalysis）**：研究如何破解密碼技術；**cryptology** 是密碼學與密碼分析的合稱 [S02 p.16]。\n- 密碼技術一般分成兩大類：**對稱式金鑰（symmetric-key）** 與 **公開金鑰（public-key）** [S02 p.16]。",
+          "example": "```\n明文  HELLO  ──加密(金鑰 k)──▶  密文  KHOOR  ──解密(金鑰 k)──▶  HELLO\n```\n（以位移 3 的 Caesar 密碼示意，詳見 [[classical-caesar]]。）",
+          "misconceptions": ""
+        },
+        {
+          "id": "asym-public-key",
+          "title": "公開金鑰密碼學（Asymmetric / Public-Key Cryptography）",
+          "score": 17,
+          "why": [
+            "body:密文×1",
+            "title/alias:金鑰",
+            "body:金鑰×3",
+            "title/alias:加密",
+            "body:加密×3"
+          ],
+          "sources": [
+            "S02",
+            "S06",
+            "S07"
+          ],
+          "prerequisites": [
+            "sym-concept"
+          ],
+          "definition": "**非對稱式（公開金鑰）演算法**使用**一對金鑰**：**公鑰（public key）** 與 **私鑰（private key）**，兩者在數學上相關 [S06 p.34]。\n- 公鑰可以公開，不會降低安全性；私鑰必須保密 [S06 p.34]。\n- 雖然兩把金鑰相關，但**無法從公鑰有效率地推出私鑰** [S06 p.34]。",
+          "key_points": "- **起源**：1976 年 Diffie 與 Hellman 發表《New Directions in Cryptography》，提出公開金鑰密碼學的革命性概念 [S02 p.2]。\n- 他們的想法：加密金鑰 E 與解密金鑰 D 不同，而且**從 E 算出 D 在計算上不可行**，所以 E 可以公開 [S07 p.1]。\n- 每個人把自己的公開加密金鑰放進「公開目錄」，任何人都能用它加密訊息，**只有持有對應私鑰的接收者能解密** [S07 p.1]——就算兩人從沒見過面，也能祕密通訊 [S07 p.1]。\n- **為什麼需要**：對稱式加密必須先透過安全通道分配金鑰；Diffie–Hellman 指出，這個**金鑰分配問題**的成本與延遲，是商業通訊走向大型網路的主要障礙 [S07 p.1]（見 [[sym-concept]]）。\n- **加密 vs. 簽章**的金鑰用法 [S06 p.34]：\n  - 加密：**用公鑰加密、用私鑰解密**；\n  - 數位簽章：**用私鑰簽章、用公鑰驗證**（見 [[asym-signature]]）。\n- **缺點：慢**。非對稱演算法比對稱式慢很多，所以不拿來處理大量資料 [S06 p.34]——實務上兩者混合使用（見 [[app-hybrid-tls]]）。",
+          "example": "**信箱比喻**（本 Wiki 的教學比喻）：公鑰像是**投信口**，任何人都能把信投進去；私鑰像是**信箱鑰匙**，只有主人能打開取信。對應「公鑰加密、私鑰解密」[S06 p.34]。\n\n```\nBob 的公鑰（公開）  ──▶  Alice 用它加密  ──▶  密文  ──▶  只有 Bob 的私鑰能解開\n```",
+          "misconceptions": ""
+        },
+        {
+          "id": "sym-block-vs-stream",
+          "title": "區塊加密（Block Cipher）與串流加密（Stream Cipher）",
+          "score": 17,
+          "why": [
+            "body:明文×1",
+            "title/alias:金鑰",
+            "body:金鑰×3",
+            "title/alias:加密",
+            "body:加密×3"
+          ],
+          "sources": [
+            "S02",
+            "S06"
+          ],
+          "prerequisites": [
+            "sym-concept"
+          ],
+          "definition": "- **區塊加密（block cipher）**：把明文切成**固定長度的區塊**，一次加密一個區塊 [S02 p.17]。\n- **串流加密（stream cipher）**：可以看成區塊長度為 1 的簡單區塊加密，但**每個符號的加密方式都可以不同**，由一串**金鑰串流（keystream）** 決定 [S02 p.21]。",
+          "key_points": "- 大多數知名的對稱式加密技術都是區塊加密 [S02 p.17]。替換密碼與換位密碼是區塊加密的兩個重要類別，**product cipher** 則把兩者組合起來 [S02 p.17]。\n- 單獨使用替換或換位的安全性都不高 [S02 p.20]；現代區塊加密（例如 AES）就是反覆組合「替換」與「排列/混合」步驟（見 [[sym-aes]]）。\n- 串流加密的優點：傳輸錯誤多時**不會擴散錯誤**；也適合一次只能處理一個符號的設備 [S02 p.21]。\n- 金鑰串流可以隨機產生，或由一個小的種子（seed）經演算法產生（keystream generator）[S02 p.22]。\n- NIST：區塊加密演算法要搭配**經核准的操作模式（mode of operation）** 使用 [S06 p.32]（見 [[mode-overview]]）。",
+          "example": "```\n區塊加密： [HELLOWOR][LD______] → 每塊固定長度，各自送進加密函數\n串流加密： H⊕k1  E⊕k2  L⊕k3  L⊕k4 …  → 每個符號配一個金鑰串流符號\n```\n（示意圖，⊕ 表示與金鑰串流組合；依 [S02 p.17][S02 p.21] 的定義繪製）",
+          "misconceptions": ""
+        },
+        {
+          "id": "sym-concept",
+          "title": "對稱式加密（Symmetric Encryption）與金鑰分配問題",
+          "score": 17,
+          "why": [
+            "body:密文×1",
+            "title/alias:金鑰",
+            "body:金鑰×3",
+            "title/alias:加密",
+            "body:加密×3"
+          ],
+          "sources": [
+            "S02",
+            "S06"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "intro-kerckhoffs"
+          ],
+          "definition": "**對稱式金鑰演算法**（又稱 secret-key algorithm）用**同一把金鑰**加上保護、也解除保護：加密用的金鑰，同時也是解密用的金鑰 [S06 p.30–31]。\n這把金鑰稱為 **secret key（祕密金鑰）**，又稱 symmetric key [S06 p.18]。\nHAC 的定義：知道加密金鑰 e 就能輕易算出解密金鑰 d（反之亦然），而實務上大多 **e = d** [S02 p.16]。",
+          "key_points": "- **金鑰必須保密**，資料才會受到保護 [S06 p.31]；因為 d 能從 e 推出，加密金鑰 e 也必須保密 [S02 p.17]。\n- 用途：加密以提供**機密性**、訊息鑑別以確保**完整性與來源**、金鑰衍生、金鑰包裝、亂數產生 [S06 p.31]。\n- **金鑰分配問題（key distribution problem）**：雙方要先用**安全的方式**協議並交換金鑰，這是對稱式系統的主要難題之一 [S02 p.17]。\n- **金鑰數量爆炸**：每一對通訊者都要一把不同的金鑰。4 個人需要 6 把；**1,000 個人需要 499,500 把** [S06 p.31]。\n- 對稱式加密分成兩大類：**區塊加密（block cipher）** 與 **串流加密（stream cipher）** [S02 p.17]（見 [[sym-block-vs-stream]]）。\n- 古典密碼（Caesar、替換、換位）都屬於對稱式加密 [S02 p.16][S02 p.19]。",
+          "example": "```\nAlice ──[同一把金鑰 K 加密]──▶ 密文 ──(不安全通道)──▶ Bob [同一把金鑰 K 解密]\n          ▲                                                    ▲\n          └────────── K 必須事先經由「安全通道」交給 Bob ──────────┘\n```\n（依 HAC 圖 1.7「加上一條安全通道來交換金鑰」改繪 [S02 p.17]）\n\nn 個人兩兩通訊所需金鑰數 = n(n−1)/2：4 → 6、1,000 → 499,500 [S06 p.31]。",
+          "misconceptions": ""
+        },
+        {
+          "id": "classical-limitations",
+          "title": "古典密碼的限制：金鑰空間太小與頻率分析",
+          "score": 16,
+          "why": [
+            "body:明文×3",
+            "body:密文×3",
+            "title/alias:金鑰",
+            "body:金鑰×3",
+            "body:加密×2"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "classical-caesar",
+            "classical-substitution",
+            "classical-transposition",
+            "intro-kerckhoffs"
+          ],
+          "definition": "**古典密碼**指在二十世紀後半以前發明、流傳已久的加密技術，大多是簡單替換與簡單換位的變形 [S03 p.16]。\nHAC 明確指出：這些技術**在今天只具歷史與教學價值**，無法抵抗現代密碼分析，**不適合實際使用** [S03 p.17]。",
+          "key_points": "1. **金鑰空間太小 → 暴力破解**：位移密碼只有 26 把金鑰，可以輕易窮舉 [S03 p.18]（見 [[intro-kerckhoffs]]）。\n2. **頻率分析**：自然語言有冗餘，例如英文中 E 遠比 Z 常見、Q 後面幾乎都是 U [S03 p.24]。單表替換不會改變整體的字母頻率分布，所以把密文字母頻率和語言的字母頻率表比對，就能對應回明文字母 [S03 p.18]。\n3. **金鑰空間大也不夠**：英文單表替換有 26! 把金鑰，仍可透過頻率被破解 [S02 p.18]；經驗上大約 **25 個密文字元**就足以讓熟練的分析者還原明文 [S03 p.25]。HAC 的結論：金鑰空間夠大是安全的**必要條件，但通常不是充分條件** [S02 p.22]。\n4. **換位密碼**保留了每種字元的出現次數，一樣容易被分析 [S02 p.19][S03 p.17]。\n5. **多表替換（Vigenère）**：找出金鑰長度後，可以分組做頻率分析 [S02 p.19]；Kasiski 方法利用重複的密文片段推出金鑰長度 [S03 p.26]。\n\n**→ 現代密碼學的教訓**：需要**巨大的金鑰空間**，而且密文**不能洩漏明文的統計特徵**。這正是 AES 這類現代區塊加密的設計目標（[[sym-aes]]）。",
+          "example": "- Caesar 密文「KHOOR」：把 25 種位移逐一試過，就會看到唯一有意義的「HELLO」（本 Wiki 教學補充，依據 [S03 p.18] 的窮舉說法）。",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 5,
+      "id": "kerckhoffs",
+      "title": "演算法可以公開，金鑰必須保密",
+      "terms": [
+        "Kerckhoffs",
+        "暴力破解"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "intro-kerckhoffs",
+          "title": "Kerckhoffs 原則、金鑰空間與暴力破解",
+          "score": 15,
+          "why": [
+            "title/alias:Kerckhoffs",
+            "body:Kerckhoffs×3",
+            "title/alias:暴力破解",
+            "body:暴力破解×2"
+          ],
+          "sources": [
+            "S01",
+            "S02"
+          ],
+          "prerequisites": [
+            "intro-terminology"
+          ],
+          "definition": "**Kerckhoffs 原則**：密碼系統的設計（演算法）可以公開，**安全性只應建立在金鑰的保密上** [S02 p.15]。\n這是 Kerckhoffs 在 1883 年提出的六項要求中的第 2 點 [S02 p.15]。",
+          "key_points": "- 密碼學的基本前提：演算法、明文／密文空間等都是公開的，通訊雙方**唯一要保密的是所用的金鑰** [S02 p.15]。\n- 歷史證明，想把演算法本身保密非常困難 [S02 p.15]；RFC 4949 也指出「靠隱藏設計來求安全（security by obscurity）」在密碼學界早已不被接受 [S01 p.268]。\n- 只靠公開、經過長期同儕審查的演算法；例如 NIST 以**公開程序**選出 AES 取代 DES [S01 p.268]。\n- **暴力破解／窮舉搜尋（exhaustive search, brute force）**：把每一把可能的金鑰都試一遍 [S02 p.15][S01 p.41]。\n- 因此**金鑰空間必須夠大**，讓窮舉在計算上不可行 [S02 p.15]。\n- 「破解」的時間尺度取決於資料要保密多久：股票交易指令可能只需保密幾分鐘，國家機密可能要永久保密 [S02 p.15]。",
+          "example": "- 鎖匠都知道門鎖的構造（演算法公開），但沒有你的鑰匙（金鑰）仍打不開——本 Wiki 的教學比喻，對應 Kerckhoffs 第 2 點 [S02 p.15]。\n- 金鑰空間對比：Caesar 密碼只有 25 種有意義的位移（[[classical-caesar]]），AES-128 有 2^128 種金鑰（[[sym-aes]]）。",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 6,
+      "id": "tools",
+      "title": "兩個數學小工具：mod 與 XOR",
+      "terms": [
+        "XOR",
+        "取餘數",
+        "模運算"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "basics-bits-xor-mod",
+          "title": "基礎工具：位元、位元組、十六進位、XOR 與 mod",
+          "score": 21,
+          "why": [
+            "title/alias:XOR",
+            "body:XOR×3",
+            "title/alias:取餘數",
+            "body:取餘數×3",
+            "title/alias:模運算"
+          ],
+          "sources": [
+            "S04",
+            "S08",
+            "S13",
+            "S14"
+          ],
+          "prerequisites": [
+            "intro-terminology"
+          ],
+          "definition": "| 名詞 | 意思 | 例子 | 來源 |\n|---|---|---|---|\n| **位元（bit）** | 一個二進位數字，只能是 0 或 1 | `1` | [S04 p.10][S04 p.13] |\n| **位元組（byte）** | 8 個位元排在一起 | `10100011` | [S04 p.10][S04 p.13] |\n| **十六進位（hexadecimal）** | 用 0–9、a–f 共 16 個字元，每個字元代表 4 個位元；一個位元組剛好寫成 2 個字元 | `10100011` 寫成 `a3` | [S04 p.13] |\n| **XOR（互斥或，符號 ⊕）** | 兩個位元**不同**得 1、**相同**得 0；兩串等長的位元就逐位做 | `0011 ⊕ 0101 = 0110` | [S14 p.17][S13 p.15] |\n| **mod（取餘數）** | `a mod n` = a 除以 n 的**餘數** | `20 mod 7 = 6` | [S13 p.13][S08 p.1] |",
+          "key_points": "- AES 處理資料的基本單位是**位元組**；AES 的一個區塊是 128 個位元 = 16 個位元組 [S04 p.13]。\n- FIPS 197 用十六進位寫位元組，例如 `{10100011}` 寫成 `{a3}` [S04 p.13]。這就是 AES 實例中 `32 43 f6 a8…` 這種寫法的意思（見 [[sym-aes]]）。\n- **XOR 的兩個性質**讓它很適合加密 [S13 p.15]：\n  - 自己和自己 XOR 會變成 0：x ⊕ x = 0\n  - 和 0 XOR 不會改變：x ⊕ 0 = x\n  - 所以「明文 ⊕ 金鑰 = 密文」之後，「密文 ⊕ 同一把金鑰 = 明文」——**同一個動作就能加密也能解密**（本 Wiki 由上面兩個性質推得）。\n- **mod** 讓數字「繞一圈回來」，像時鐘：Caesar 密碼用 mod 26 讓 Z 之後回到 A（[[classical-caesar]]）；RSA 的加密就是「算次方後除以 n 取餘數」[S08 p.1]（[[asym-rsa]]）。\n- a mod n 的結果一定介於 0 到 n−1 之間 [S13 p.13]。",
+          "example": "```\nXOR（逐位：相同→0，不同→1）        mod（取餘數）\n  0011                               20 mod 7 = 6   （20 = 2×7 + 6）\n⊕ 0101                               27 mod 26 = 1  （Caesar：Y(24) + 3 = 27 → 1 = B）\n= 0110\n```\n（左：[S13 p.15] 的例子；右上：[S13 p.13] 的例子；右下為本 Wiki 依 Caesar 公式計算的教學例）",
+          "misconceptions": ""
+        },
+        {
+          "id": "teaching-how-others-explain",
+          "title": "別人怎麼介紹加密演算法？（教學設計參考）",
+          "score": 4,
+          "why": [
+            "body:XOR×3",
+            "body:模運算×1"
+          ],
+          "sources": [
+            "S13",
+            "S14",
+            "S15"
+          ],
+          "prerequisites": [],
+          "definition": "本頁比較三種不同對象的教材如何介紹加密：**大學教科書**（The Joy of Cryptography，Oregon State University）[S13 p.9]、**入門書**（Crypto 101）[S14 p.4]、**科技公司給大眾的說明**（Cloudflare Learning Center）[S15 p.1]，並歸納出本簡報採用的教學原則。",
+          "key_points": "- **大學教科書：先複習工具，再從最簡單的密碼開始。** 第 0 章先複習符號與模運算（mod）、字串與 XOR，第 1 章才是第一個密碼（one-time pad）與 Kerckhoffs 原則 [S13 p.9]；之後依序是區塊加密、操作模式、認證加密、RSA、Diffie–Hellman [S13 p.9]。\n- **教科書會先交代每個符號**：例如「Alice 要傳的訊息叫 m，稱為明文」「轉換後的值叫 c，稱為密文」[S13 p.21]。\n- **入門書：第一個「積木」就是 XOR**，然後才是區塊加密（其中介紹 AES）、串流加密、金鑰交換、公開金鑰加密 [S14 p.4]；連公式中的下標都會解釋（「i 只是編號」）[S14 p.18]。\n- **給大眾的說明：定義 → 最簡單的例子 → 比喻 → 分類 → 為什麼重要 → 怎麼被攻擊 → 生活中的應用** [S15 p.1]：\n  - 例子：Alice 把「Hello」每個字母換成字母表後面第 2 個字母 [S15 p.1]\n  - 比喻：金鑰就像實體鑰匙，鎖上（加密）後只有對的鑰匙能打開（解密）[S15 p.1]\n  - 分類：對稱式只有一把金鑰，雙方共用 [S15 p.1]\n  - 攻擊：暴力破解＝猜幾百萬、幾十億次金鑰 [S15 p.1]\n  - 應用：HTTPS 使用 TLS 加密 [S15 p.1]\n- **本簡報採用的教學原則**（本 Wiki 歸納自以上三者）：\n  1. 先介紹之後會用到的名詞與工具（位元、XOR、mod），再用到它們（[[basics-bits-xor-mod]]）。\n  2. 每個主題依序講「基本原理 → 為什麼需要／好處與限制 → 現實中怎麼做」，一個主題分幾頁講完，不擠在一頁。\n  3. 公式出現時，每個符號都說明代表什麼。\n  4. 從最簡單的例子（位移密碼）開始，再進到現代演算法。\n  5. 用生活比喻（鑰匙、信箱）幫助理解，再接回正式名詞。",
+          "example": "| 教材 | 對象 | 開場方式 | 主題順序 |\n|---|---|---|---|\n| The Joy of Cryptography | 大學生 | 複習 mod、XOR 等工具 | 工具 → 簡單密碼 → 區塊加密 → 模式 → 認證加密 → RSA → DH |\n| Crypto 101 | 入門工程師 | XOR | XOR → 區塊加密（AES）→ 串流加密 → 金鑰交換 → 公開金鑰 |\n| Cloudflare | 一般大眾 | 定義＋位移 2 的小例子 | 定義 → 例子 → 鑰匙比喻 → 對稱／非對稱 → 重要性 → 暴力破解 → HTTPS |",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 7,
+      "id": "ch2-intro",
+      "title": "第 2 章：古典密碼",
+      "terms": [
+        "Kerckhoffs",
+        "XOR",
+        "取餘數"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "basics-bits-xor-mod",
+          "title": "基礎工具：位元、位元組、十六進位、XOR 與 mod",
+          "score": 16,
+          "why": [
+            "title/alias:XOR",
+            "body:XOR×3",
+            "title/alias:取餘數",
+            "body:取餘數×3"
+          ],
+          "sources": [
+            "S04",
+            "S08",
+            "S13",
+            "S14"
+          ],
+          "prerequisites": [
+            "intro-terminology"
+          ],
+          "definition": "| 名詞 | 意思 | 例子 | 來源 |\n|---|---|---|---|\n| **位元（bit）** | 一個二進位數字，只能是 0 或 1 | `1` | [S04 p.10][S04 p.13] |\n| **位元組（byte）** | 8 個位元排在一起 | `10100011` | [S04 p.10][S04 p.13] |\n| **十六進位（hexadecimal）** | 用 0–9、a–f 共 16 個字元，每個字元代表 4 個位元；一個位元組剛好寫成 2 個字元 | `10100011` 寫成 `a3` | [S04 p.13] |\n| **XOR（互斥或，符號 ⊕）** | 兩個位元**不同**得 1、**相同**得 0；兩串等長的位元就逐位做 | `0011 ⊕ 0101 = 0110` | [S14 p.17][S13 p.15] |\n| **mod（取餘數）** | `a mod n` = a 除以 n 的**餘數** | `20 mod 7 = 6` | [S13 p.13][S08 p.1] |",
+          "key_points": "- AES 處理資料的基本單位是**位元組**；AES 的一個區塊是 128 個位元 = 16 個位元組 [S04 p.13]。\n- FIPS 197 用十六進位寫位元組，例如 `{10100011}` 寫成 `{a3}` [S04 p.13]。這就是 AES 實例中 `32 43 f6 a8…` 這種寫法的意思（見 [[sym-aes]]）。\n- **XOR 的兩個性質**讓它很適合加密 [S13 p.15]：\n  - 自己和自己 XOR 會變成 0：x ⊕ x = 0\n  - 和 0 XOR 不會改變：x ⊕ 0 = x\n  - 所以「明文 ⊕ 金鑰 = 密文」之後，「密文 ⊕ 同一把金鑰 = 明文」——**同一個動作就能加密也能解密**（本 Wiki 由上面兩個性質推得）。\n- **mod** 讓數字「繞一圈回來」，像時鐘：Caesar 密碼用 mod 26 讓 Z 之後回到 A（[[classical-caesar]]）；RSA 的加密就是「算次方後除以 n 取餘數」[S08 p.1]（[[asym-rsa]]）。\n- a mod n 的結果一定介於 0 到 n−1 之間 [S13 p.13]。",
+          "example": "```\nXOR（逐位：相同→0，不同→1）        mod（取餘數）\n  0011                               20 mod 7 = 6   （20 = 2×7 + 6）\n⊕ 0101                               27 mod 26 = 1  （Caesar：Y(24) + 3 = 27 → 1 = B）\n= 0110\n```\n（左：[S13 p.15] 的例子；右上：[S13 p.13] 的例子；右下為本 Wiki 依 Caesar 公式計算的教學例）",
+          "misconceptions": ""
+        },
+        {
+          "id": "intro-kerckhoffs",
+          "title": "Kerckhoffs 原則、金鑰空間與暴力破解",
+          "score": 8,
+          "why": [
+            "title/alias:Kerckhoffs",
+            "body:Kerckhoffs×3"
+          ],
+          "sources": [
+            "S01",
+            "S02"
+          ],
+          "prerequisites": [
+            "intro-terminology"
+          ],
+          "definition": "**Kerckhoffs 原則**：密碼系統的設計（演算法）可以公開，**安全性只應建立在金鑰的保密上** [S02 p.15]。\n這是 Kerckhoffs 在 1883 年提出的六項要求中的第 2 點 [S02 p.15]。",
+          "key_points": "- 密碼學的基本前提：演算法、明文／密文空間等都是公開的，通訊雙方**唯一要保密的是所用的金鑰** [S02 p.15]。\n- 歷史證明，想把演算法本身保密非常困難 [S02 p.15]；RFC 4949 也指出「靠隱藏設計來求安全（security by obscurity）」在密碼學界早已不被接受 [S01 p.268]。\n- 只靠公開、經過長期同儕審查的演算法；例如 NIST 以**公開程序**選出 AES 取代 DES [S01 p.268]。\n- **暴力破解／窮舉搜尋（exhaustive search, brute force）**：把每一把可能的金鑰都試一遍 [S02 p.15][S01 p.41]。\n- 因此**金鑰空間必須夠大**，讓窮舉在計算上不可行 [S02 p.15]。\n- 「破解」的時間尺度取決於資料要保密多久：股票交易指令可能只需保密幾分鐘，國家機密可能要永久保密 [S02 p.15]。",
+          "example": "- 鎖匠都知道門鎖的構造（演算法公開），但沒有你的鑰匙（金鑰）仍打不開——本 Wiki 的教學比喻，對應 Kerckhoffs 第 2 點 [S02 p.15]。\n- 金鑰空間對比：Caesar 密碼只有 25 種有意義的位移（[[classical-caesar]]），AES-128 有 2^128 種金鑰（[[sym-aes]]）。",
+          "misconceptions": ""
+        },
+        {
+          "id": "sym-aes",
+          "title": "AES（Advanced Encryption Standard）",
+          "score": 5,
+          "why": [
+            "body:Kerckhoffs×2",
+            "body:XOR×3"
+          ],
+          "sources": [
+            "S01",
+            "S04",
+            "S06",
+            "S12"
+          ],
+          "prerequisites": [
+            "sym-concept",
+            "sym-block-vs-stream",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**AES** 是 NIST 標準化的**對稱式區塊加密演算法**，可以加密與解密數位資料 [S04 p.4]。\n它使用 **128、192 或 256 位元**的金鑰，對 **128 位元**的資料區塊做加解密 [S04 p.4]。",
+          "key_points": "- **怎麼來的**：NIST 在 1997 年公開徵求候選演算法，2000 年宣布選出 **Rijndael** 作為 AES [S04 p.9]——正是 Kerckhoffs 原則「演算法公開、經過公開審查」的實踐 [S01 p.268]（見 [[intro-kerckhoffs]]）。\n- **三個版本**：AES-128、AES-192、AES-256，數字代表**金鑰長度**；**區塊大小一律 128 位元** [S04 p.9]。（Rijndael 本身支援其他區塊大小，但沒有納入標準 [S04 p.9]。）\n- **輪數（rounds）**：AES-128 做 10 輪、AES-192 做 12 輪、AES-256 做 14 輪 [S04 p.19]。\n- **每一輪的四個步驟**（作用在 4×4 位元組的 state 上）[S04 p.20]：\n  1. **SubBytes**：用替換表（S-box）替換每個位元組——非線性的「替換」[S04 p.21]\n  2. **ShiftRows**：把 state 的後三列循環位移——「換位」[S04 p.22]\n  3. **MixColumns**：把每一欄的資料混合在一起 [S04 p.20]\n  4. **AddRoundKey**：用 XOR 把該輪的 round key 加進 state [S04 p.24]\n  其中有一輪會省略一個步驟 [S04 p.10]。\n- **解密（InvCipher）**：把加密的步驟換成各自的反運算（InvSubBytes、InvShiftRows、InvMixColumns 與 AddRoundKey），並**依相反順序**執行 [S04 p.26]。\n- FIPS 197 附錄 B 提供 AES-128 一步一步的完整實例，下方「實例」整理了第 1 輪 [S04 p.9][S04 p.42]。\n- **取代 DES**：AES 是為了取代 DES 與 TDEA 而開發，是新產品**首選**的區塊加密演算法 [S06 p.33]；DES 因電腦運算力進步、強度不足，已在 **2005 年**被撤銷核准 [S06 p.32]。\n- **安全強度**：AES-128／192／256 分別提供 128／192／256 位元的安全強度；低於 112 位元的組合已不再核准用於加密 [S12 p.68]。",
+          "example": "```\n明文區塊（128 bits）\n   │  AddRoundKey（初始）\n   ▼\n┌─ 第 1 ～ Nr 輪 ───────────────────┐\n│ SubBytes → ShiftRows → MixColumns → AddRoundKey │ ×Nr（最後一輪省略一個步驟）\n└──────────────────────────────────┘\n   ▼\n密文區塊（128 bits）       Nr = 10 / 12 / 14\n```\n（依 FIPS 197 §5.1 的步驟順序與 Table 3 的輪數繪製 [S04 p.19][S04 p.20]）\n\n### 實例：FIPS 197 附錄 B，AES-128 第 1 輪 [S04 p.42]\n\n- 輸入：`32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34`；金鑰：`2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c` [S04 p.42]\n- 16 個位元組**依「欄」**填入 4×4 的 state：前 4 個位元組（32 43 f6 a8）成為第 1 欄。\n\n| 步驟 | state（逐列，由上到下） | 看哪一格 |\n|---|---|---|\n| 初始 AddRoundKey（輸入 ⊕ 金鑰） | `19 a0 9a e9 / 3d f4 c6 f8 / e3 e2 8d 48 / be 2b 2a 08` | 32 ⊕ 2b = 19 |\n| ① SubBytes | `d4 e0 b8 1e / 27 bf b4 41 / 11 98 5d 52 / ae f1 e5 30` | 19 查 S-box：列看前半 1、欄看後半 9 → d4（查表規則見 [S04 p.22]） |\n| ② ShiftRows | `d4 e0 b8 1e / bf b4 41 27 / 5d 52 11 98 / 30 ae f1 e5` | 第 r 列往左循環移 r 格：`27 bf b4 41` → `bf b4 41 27` |\n| ③ MixColumns | `04 e0 48 28 / 66 cb f8 06 / 81 19 d3 26 / e5 9a 7a 4c` | 第 1 欄 `d4 bf 5d 30` → `04 66 81 e5`；04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30（式 5.8，[S04 p.23]） |\n| ④ AddRoundKey（round key 1：`a0 88 23 2a / fa 54 a3 6c / fe 2c 39 76 / 17 b1 39 05`） | `a4 68 6b 02 / 9c 9f 5b 6a / 7f 35 ea 50 / f2 2b 43 49` | 04 ⊕ a0 = a4 |\n\n**解密時**倒著走：再 XOR 同一把 round key（得回 `04 e0 48 28…`）→ InvMixColumns → InvShiftRows（每列往右移回）→ InvSubBytes（反查 S-box），最後回到 `19 a0 9a e9…` [S04 p.26]。\n\n表中每個數值都與 FIPS 197 附錄 B 相同；Content Validation 另以獨立的 AES 參考實作（`Workflow/validators/aes_ref.py`）從輸入與金鑰重算，並確認解密方向能還原。",
+          "misconceptions": "- 「AES-256 的區塊是 256 位元」——錯。256 指的是**金鑰長度**，三種 AES 的區塊大小都是 128 位元 [S04 p.9]。\n- 「DES 仍是目前的加密標準」——錯。DES 已於 2005 年撤銷核准 [S06 p.32]。"
+        },
+        {
+          "id": "teaching-how-others-explain",
+          "title": "別人怎麼介紹加密演算法？（教學設計參考）",
+          "score": 4,
+          "why": [
+            "body:Kerckhoffs×1",
+            "body:XOR×3"
+          ],
+          "sources": [
+            "S13",
+            "S14",
+            "S15"
+          ],
+          "prerequisites": [],
+          "definition": "本頁比較三種不同對象的教材如何介紹加密：**大學教科書**（The Joy of Cryptography，Oregon State University）[S13 p.9]、**入門書**（Crypto 101）[S14 p.4]、**科技公司給大眾的說明**（Cloudflare Learning Center）[S15 p.1]，並歸納出本簡報採用的教學原則。",
+          "key_points": "- **大學教科書：先複習工具，再從最簡單的密碼開始。** 第 0 章先複習符號與模運算（mod）、字串與 XOR，第 1 章才是第一個密碼（one-time pad）與 Kerckhoffs 原則 [S13 p.9]；之後依序是區塊加密、操作模式、認證加密、RSA、Diffie–Hellman [S13 p.9]。\n- **教科書會先交代每個符號**：例如「Alice 要傳的訊息叫 m，稱為明文」「轉換後的值叫 c，稱為密文」[S13 p.21]。\n- **入門書：第一個「積木」就是 XOR**，然後才是區塊加密（其中介紹 AES）、串流加密、金鑰交換、公開金鑰加密 [S14 p.4]；連公式中的下標都會解釋（「i 只是編號」）[S14 p.18]。\n- **給大眾的說明：定義 → 最簡單的例子 → 比喻 → 分類 → 為什麼重要 → 怎麼被攻擊 → 生活中的應用** [S15 p.1]：\n  - 例子：Alice 把「Hello」每個字母換成字母表後面第 2 個字母 [S15 p.1]\n  - 比喻：金鑰就像實體鑰匙，鎖上（加密）後只有對的鑰匙能打開（解密）[S15 p.1]\n  - 分類：對稱式只有一把金鑰，雙方共用 [S15 p.1]\n  - 攻擊：暴力破解＝猜幾百萬、幾十億次金鑰 [S15 p.1]\n  - 應用：HTTPS 使用 TLS 加密 [S15 p.1]\n- **本簡報採用的教學原則**（本 Wiki 歸納自以上三者）：\n  1. 先介紹之後會用到的名詞與工具（位元、XOR、mod），再用到它們（[[basics-bits-xor-mod]]）。\n  2. 每個主題依序講「基本原理 → 為什麼需要／好處與限制 → 現實中怎麼做」，一個主題分幾頁講完，不擠在一頁。\n  3. 公式出現時，每個符號都說明代表什麼。\n  4. 從最簡單的例子（位移密碼）開始，再進到現代演算法。\n  5. 用生活比喻（鑰匙、信箱）幫助理解，再接回正式名詞。",
+          "example": "| 教材 | 對象 | 開場方式 | 主題順序 |\n|---|---|---|---|\n| The Joy of Cryptography | 大學生 | 複習 mod、XOR 等工具 | 工具 → 簡單密碼 → 區塊加密 → 模式 → 認證加密 → RSA → DH |\n| Crypto 101 | 入門工程師 | XOR | XOR → 區塊加密（AES）→ 串流加密 → 金鑰交換 → 公開金鑰 |\n| Cloudflare | 一般大眾 | 定義＋位移 2 的小例子 | 定義 → 例子 → 鑰匙比喻 → 對稱／非對稱 → 重要性 → 暴力破解 → HTTPS |",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 8,
+      "id": "caesar",
+      "title": "Caesar 密碼：每個字母往後移 k 位",
+      "terms": [
+        "Caesar cipher",
+        "凱撒密碼",
+        "位移密碼"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "classical-caesar",
+          "title": "Caesar Cipher（凱撒密碼／位移密碼）",
+          "score": 19,
+          "why": [
+            "title/alias:Caesar cipher",
+            "body:Caesar cipher×1",
+            "title/alias:凱撒密碼",
+            "body:凱撒密碼×1",
+            "title/alias:位移密碼",
+            "body:位移密碼×2"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**位移密碼（shift cipher）／Caesar 密碼**：把字母表中的每個字母**往後移動固定的 k 位**，是一種限定成「字母位移」的簡單替換密碼 [S03 p.18]。\n用數字表示（A=0、B=1、…、Z=25）：\n\n- 加密：c = (m + k) mod 26\n- 解密：m = (c − k) mod 26  [S03 p.18]\n\n金鑰就是位移量 k。傳說凱撒（Julius Caesar）使用 k = 3 [S03 p.18]。",
+          "key_points": "- 它是 **simple substitution（單表替換）** 的特例：整篇訊息都用同一套對應表 [S03 p.18]（見 [[classical-substitution]]）。\n- 例：k = 1 時，HAL 加密成 IBM [S03 p.18]。\n- HAC 第 1 章用「每個字母往右移 3 位」當作對稱式加密的入門範例，加密與解密用的是同一個祕密（位移量）[S02 p.16]。\n- **致命弱點**：英文只有 26 種位移（s = 26），攻擊者把所有金鑰試一遍就能破解 [S03 p.18]（見 [[classical-limitations]]、[[intro-kerckhoffs]]）。",
+          "example": "```\nk = 3\n明文：H  E  L  L  O\n      ↓+3 ↓+3 ↓+3 ↓+3 ↓+3\n密文：K  H  O  O  R\n```\n（HELLO → KHOOR 由本 Wiki 以公式 c = (m + 3) mod 26 計算，簡報驗證節點會用程式重算。）",
+          "misconceptions": "- 「Caesar 密碼有 25 或 26 把金鑰，所以算安全」——錯。金鑰空間只有 26，用手就能窮舉 [S03 p.18]。"
+        }
+      ]
+    },
+    {
+      "slide": 9,
+      "id": "substitution",
+      "title": "替換密碼：把整個字母表打亂",
+      "terms": [
+        "替換密碼",
+        "substitution cipher"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "classical-substitution",
+          "title": "替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）",
+          "score": 15,
+          "why": [
+            "title/alias:替換密碼",
+            "body:替換密碼×2",
+            "title/alias:substitution cipher",
+            "body:substitution cipher×3"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology"
+          ],
+          "definition": "**替換密碼**：把符號（或一組符號）**換成其他符號**，字母的位置不變 [S02 p.18]。",
+          "key_points": "- **單表替換（simple / mono-alphabetic substitution）**：整篇用同一張對應表（字母表的一個排列）替換每個字母 [S02 p.18][S03 p.18]。Caesar 是其中「只能位移」的特例（[[classical-caesar]]）。\n- 英文單表替換的金鑰數是 **26!**（約 4 × 10²⁶），金鑰空間非常大 [S02 p.18]——**但仍不安全**：字母頻率分布會原封不動留在密文裡，只要觀察適量密文就能推出金鑰 [S02 p.18]。\n- **同音替換（homophonic）**：一個明文字母可對應多個密文符號、隨機挑選，用來把密文字母頻率「拉平」，代價是密文變長 [S02 p.19][S03 p.19]。\n- **多表替換（polyalphabetic）**：不同位置使用不同的對應表，同一個明文字母會變成不同密文字母 [S03 p.20]。**Vigenère 密碼**就是輪流使用 t 個位移密碼（t 為金鑰長度）[S03 p.20]。\n- 多表替換**沒有難破很多**：一旦找出金鑰長度 t，就能把密文分成 t 組，每組各自做頻率分析 [S02 p.19]；Kasiski 方法可用重複出現的密文片段推出金鑰長度 [S03 p.26–27]。",
+          "example": "HAC 的 Vigenère 例子（t = 3，三個位移量為 3、7、10）[S02 p.19]：\n\n```\n明文：THI SCI PHE RIS CER TAI NLY NOT SEC URE\n密文：WOS VJS SOO UPC FLB WHS QSI QVD VLM XYO\n```\n同一個字母 E 被加密成 O 和 L 兩種結果 [S02 p.19]。",
+          "misconceptions": "- 「金鑰空間有 26! 那麼大，一定安全」——錯。HAC 指出單表替換即使金鑰空間極大，仍可用頻率分析輕易破解 [S02 p.18]。"
+        }
+      ]
+    },
+    {
+      "slide": 10,
+      "id": "vigenere",
+      "title": "多表替換：Vigenère 密碼",
+      "terms": [
+        "Vigenère cipher",
+        "多表替換",
+        "polyalphabetic substitution"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "classical-substitution",
+          "title": "替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）",
+          "score": 18,
+          "why": [
+            "title/alias:Vigenère cipher",
+            "body:Vigenère cipher×1",
+            "title/alias:多表替換",
+            "body:多表替換×2",
+            "title/alias:polyalphabetic substitution"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology"
+          ],
+          "definition": "**替換密碼**：把符號（或一組符號）**換成其他符號**，字母的位置不變 [S02 p.18]。",
+          "key_points": "- **單表替換（simple / mono-alphabetic substitution）**：整篇用同一張對應表（字母表的一個排列）替換每個字母 [S02 p.18][S03 p.18]。Caesar 是其中「只能位移」的特例（[[classical-caesar]]）。\n- 英文單表替換的金鑰數是 **26!**（約 4 × 10²⁶），金鑰空間非常大 [S02 p.18]——**但仍不安全**：字母頻率分布會原封不動留在密文裡，只要觀察適量密文就能推出金鑰 [S02 p.18]。\n- **同音替換（homophonic）**：一個明文字母可對應多個密文符號、隨機挑選，用來把密文字母頻率「拉平」，代價是密文變長 [S02 p.19][S03 p.19]。\n- **多表替換（polyalphabetic）**：不同位置使用不同的對應表，同一個明文字母會變成不同密文字母 [S03 p.20]。**Vigenère 密碼**就是輪流使用 t 個位移密碼（t 為金鑰長度）[S03 p.20]。\n- 多表替換**沒有難破很多**：一旦找出金鑰長度 t，就能把密文分成 t 組，每組各自做頻率分析 [S02 p.19]；Kasiski 方法可用重複出現的密文片段推出金鑰長度 [S03 p.26–27]。",
+          "example": "HAC 的 Vigenère 例子（t = 3，三個位移量為 3、7、10）[S02 p.19]：\n\n```\n明文：THI SCI PHE RIS CER TAI NLY NOT SEC URE\n密文：WOS VJS SOO UPC FLB WHS QSI QVD VLM XYO\n```\n同一個字母 E 被加密成 O 和 L 兩種結果 [S02 p.19]。",
+          "misconceptions": "- 「金鑰空間有 26! 那麼大，一定安全」——錯。HAC 指出單表替換即使金鑰空間極大，仍可用頻率分析輕易破解 [S02 p.18]。"
+        }
+      ]
+    },
+    {
+      "slide": 11,
+      "id": "transposition",
+      "title": "換位密碼：字母不變，位置打亂",
+      "terms": [
+        "換位密碼",
+        "transposition cipher"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "classical-transposition",
+          "title": "換位密碼（Transposition Cipher）",
+          "score": 16,
+          "why": [
+            "title/alias:換位密碼",
+            "body:換位密碼×3",
+            "title/alias:transposition cipher",
+            "body:transposition cipher×3"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology"
+          ],
+          "definition": "**簡單換位密碼**：不改變字母本身，只**重新排列一個區塊內字母的位置** [S02 p.19]。\n把明文分成每 t 個字元一組，對每組套用同一個排列 e（1～t 的一種排列）；解密時用反向排列 [S03 p.17]。",
+          "key_points": "- 金鑰是排列 e；週期為 t 時，金鑰空間大小為 t! [S03 p.17]。\n- HAC 例子：t = 6、e = (6 4 1 3 5 2)，CAESAR 加密成 RSCEAA，解密用反排列 (3 6 4 2 5 1) [S03 p.17]。\n- **弱點**：換位只改位置，**每種字母出現的次數完全不變**，因此很容易被分析 [S02 p.19]；也因為保留了字元頻率分布，很容易被辨認出是換位密碼 [S03 p.17]。\n- 替換與換位單獨使用的安全性都不高，但兩者組合（product cipher）是現代區塊加密設計的基礎概念之一 [S02 p.20]（見 [[sym-block-vs-stream]]）。",
+          "example": "```\n位置： 1 2 3 4 5 6\n明文： C A E S A R\ne = (6 4 1 3 5 2)：依序取第 6、4、1、3、5、2 個字母\n密文： R S C E A A\n```\n[S03 p.17]",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 12,
+      "id": "classical-break",
+      "title": "古典密碼怎麼被破解？",
+      "terms": [
+        "頻率分析",
+        "frequency analysis",
+        "Kasiski"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "classical-limitations",
+          "title": "古典密碼的限制：金鑰空間太小與頻率分析",
+          "score": 21,
+          "why": [
+            "title/alias:頻率分析",
+            "body:頻率分析×3",
+            "title/alias:frequency analysis",
+            "body:frequency analysis×1",
+            "title/alias:Kasiski",
+            "body:Kasiski×2"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "classical-caesar",
+            "classical-substitution",
+            "classical-transposition",
+            "intro-kerckhoffs"
+          ],
+          "definition": "**古典密碼**指在二十世紀後半以前發明、流傳已久的加密技術，大多是簡單替換與簡單換位的變形 [S03 p.16]。\nHAC 明確指出：這些技術**在今天只具歷史與教學價值**，無法抵抗現代密碼分析，**不適合實際使用** [S03 p.17]。",
+          "key_points": "1. **金鑰空間太小 → 暴力破解**：位移密碼只有 26 把金鑰，可以輕易窮舉 [S03 p.18]（見 [[intro-kerckhoffs]]）。\n2. **頻率分析**：自然語言有冗餘，例如英文中 E 遠比 Z 常見、Q 後面幾乎都是 U [S03 p.24]。單表替換不會改變整體的字母頻率分布，所以把密文字母頻率和語言的字母頻率表比對，就能對應回明文字母 [S03 p.18]。\n3. **金鑰空間大也不夠**：英文單表替換有 26! 把金鑰，仍可透過頻率被破解 [S02 p.18]；經驗上大約 **25 個密文字元**就足以讓熟練的分析者還原明文 [S03 p.25]。HAC 的結論：金鑰空間夠大是安全的**必要條件，但通常不是充分條件** [S02 p.22]。\n4. **換位密碼**保留了每種字元的出現次數，一樣容易被分析 [S02 p.19][S03 p.17]。\n5. **多表替換（Vigenère）**：找出金鑰長度後，可以分組做頻率分析 [S02 p.19]；Kasiski 方法利用重複的密文片段推出金鑰長度 [S03 p.26]。\n\n**→ 現代密碼學的教訓**：需要**巨大的金鑰空間**，而且密文**不能洩漏明文的統計特徵**。這正是 AES 這類現代區塊加密的設計目標（[[sym-aes]]）。",
+          "example": "- Caesar 密文「KHOOR」：把 25 種位移逐一試過，就會看到唯一有意義的「HELLO」（本 Wiki 教學補充，依據 [S03 p.18] 的窮舉說法）。",
+          "misconceptions": ""
+        },
+        {
+          "id": "classical-substitution",
+          "title": "替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）",
+          "score": 5,
+          "why": [
+            "body:頻率分析×2",
+            "body:frequency analysis×1",
+            "body:Kasiski×2"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology"
+          ],
+          "definition": "**替換密碼**：把符號（或一組符號）**換成其他符號**，字母的位置不變 [S02 p.18]。",
+          "key_points": "- **單表替換（simple / mono-alphabetic substitution）**：整篇用同一張對應表（字母表的一個排列）替換每個字母 [S02 p.18][S03 p.18]。Caesar 是其中「只能位移」的特例（[[classical-caesar]]）。\n- 英文單表替換的金鑰數是 **26!**（約 4 × 10²⁶），金鑰空間非常大 [S02 p.18]——**但仍不安全**：字母頻率分布會原封不動留在密文裡，只要觀察適量密文就能推出金鑰 [S02 p.18]。\n- **同音替換（homophonic）**：一個明文字母可對應多個密文符號、隨機挑選，用來把密文字母頻率「拉平」，代價是密文變長 [S02 p.19][S03 p.19]。\n- **多表替換（polyalphabetic）**：不同位置使用不同的對應表，同一個明文字母會變成不同密文字母 [S03 p.20]。**Vigenère 密碼**就是輪流使用 t 個位移密碼（t 為金鑰長度）[S03 p.20]。\n- 多表替換**沒有難破很多**：一旦找出金鑰長度 t，就能把密文分成 t 組，每組各自做頻率分析 [S02 p.19]；Kasiski 方法可用重複出現的密文片段推出金鑰長度 [S03 p.26–27]。",
+          "example": "HAC 的 Vigenère 例子（t = 3，三個位移量為 3、7、10）[S02 p.19]：\n\n```\n明文：THI SCI PHE RIS CER TAI NLY NOT SEC URE\n密文：WOS VJS SOO UPC FLB WHS QSI QVD VLM XYO\n```\n同一個字母 E 被加密成 O 和 L 兩種結果 [S02 p.19]。",
+          "misconceptions": "- 「金鑰空間有 26! 那麼大，一定安全」——錯。HAC 指出單表替換即使金鑰空間極大，仍可用頻率分析輕易破解 [S02 p.18]。"
+        }
+      ]
+    },
+    {
+      "slide": 13,
+      "id": "ch3-intro",
+      "title": "第 3 章：對稱式加密",
+      "terms": [
+        "頻率分析",
+        "Kasiski",
+        "frequency analysis"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "classical-limitations",
+          "title": "古典密碼的限制：金鑰空間太小與頻率分析",
+          "score": 21,
+          "why": [
+            "title/alias:頻率分析",
+            "body:頻率分析×3",
+            "title/alias:Kasiski",
+            "body:Kasiski×2",
+            "title/alias:frequency analysis",
+            "body:frequency analysis×1"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "classical-caesar",
+            "classical-substitution",
+            "classical-transposition",
+            "intro-kerckhoffs"
+          ],
+          "definition": "**古典密碼**指在二十世紀後半以前發明、流傳已久的加密技術，大多是簡單替換與簡單換位的變形 [S03 p.16]。\nHAC 明確指出：這些技術**在今天只具歷史與教學價值**，無法抵抗現代密碼分析，**不適合實際使用** [S03 p.17]。",
+          "key_points": "1. **金鑰空間太小 → 暴力破解**：位移密碼只有 26 把金鑰，可以輕易窮舉 [S03 p.18]（見 [[intro-kerckhoffs]]）。\n2. **頻率分析**：自然語言有冗餘，例如英文中 E 遠比 Z 常見、Q 後面幾乎都是 U [S03 p.24]。單表替換不會改變整體的字母頻率分布，所以把密文字母頻率和語言的字母頻率表比對，就能對應回明文字母 [S03 p.18]。\n3. **金鑰空間大也不夠**：英文單表替換有 26! 把金鑰，仍可透過頻率被破解 [S02 p.18]；經驗上大約 **25 個密文字元**就足以讓熟練的分析者還原明文 [S03 p.25]。HAC 的結論：金鑰空間夠大是安全的**必要條件，但通常不是充分條件** [S02 p.22]。\n4. **換位密碼**保留了每種字元的出現次數，一樣容易被分析 [S02 p.19][S03 p.17]。\n5. **多表替換（Vigenère）**：找出金鑰長度後，可以分組做頻率分析 [S02 p.19]；Kasiski 方法利用重複的密文片段推出金鑰長度 [S03 p.26]。\n\n**→ 現代密碼學的教訓**：需要**巨大的金鑰空間**，而且密文**不能洩漏明文的統計特徵**。這正是 AES 這類現代區塊加密的設計目標（[[sym-aes]]）。",
+          "example": "- Caesar 密文「KHOOR」：把 25 種位移逐一試過，就會看到唯一有意義的「HELLO」（本 Wiki 教學補充，依據 [S03 p.18] 的窮舉說法）。",
+          "misconceptions": ""
+        },
+        {
+          "id": "classical-substitution",
+          "title": "替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）",
+          "score": 5,
+          "why": [
+            "body:頻率分析×2",
+            "body:Kasiski×2",
+            "body:frequency analysis×1"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology"
+          ],
+          "definition": "**替換密碼**：把符號（或一組符號）**換成其他符號**，字母的位置不變 [S02 p.18]。",
+          "key_points": "- **單表替換（simple / mono-alphabetic substitution）**：整篇用同一張對應表（字母表的一個排列）替換每個字母 [S02 p.18][S03 p.18]。Caesar 是其中「只能位移」的特例（[[classical-caesar]]）。\n- 英文單表替換的金鑰數是 **26!**（約 4 × 10²⁶），金鑰空間非常大 [S02 p.18]——**但仍不安全**：字母頻率分布會原封不動留在密文裡，只要觀察適量密文就能推出金鑰 [S02 p.18]。\n- **同音替換（homophonic）**：一個明文字母可對應多個密文符號、隨機挑選，用來把密文字母頻率「拉平」，代價是密文變長 [S02 p.19][S03 p.19]。\n- **多表替換（polyalphabetic）**：不同位置使用不同的對應表，同一個明文字母會變成不同密文字母 [S03 p.20]。**Vigenère 密碼**就是輪流使用 t 個位移密碼（t 為金鑰長度）[S03 p.20]。\n- 多表替換**沒有難破很多**：一旦找出金鑰長度 t，就能把密文分成 t 組，每組各自做頻率分析 [S02 p.19]；Kasiski 方法可用重複出現的密文片段推出金鑰長度 [S03 p.26–27]。",
+          "example": "HAC 的 Vigenère 例子（t = 3，三個位移量為 3、7、10）[S02 p.19]：\n\n```\n明文：THI SCI PHE RIS CER TAI NLY NOT SEC URE\n密文：WOS VJS SOO UPC FLB WHS QSI QVD VLM XYO\n```\n同一個字母 E 被加密成 O 和 L 兩種結果 [S02 p.19]。",
+          "misconceptions": "- 「金鑰空間有 26! 那麼大，一定安全」——錯。HAC 指出單表替換即使金鑰空間極大，仍可用頻率分析輕易破解 [S02 p.18]。"
+        }
+      ]
+    },
+    {
+      "slide": 14,
+      "id": "sym-principle",
+      "title": "對稱式加密：同一把金鑰鎖上也打開",
+      "terms": [
+        "對稱式加密",
+        "symmetric encryption"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "sym-concept",
+          "title": "對稱式加密（Symmetric Encryption）與金鑰分配問題",
+          "score": 14,
+          "why": [
+            "title/alias:對稱式加密",
+            "body:對稱式加密×3",
+            "title/alias:symmetric encryption",
+            "body:symmetric encryption×1"
+          ],
+          "sources": [
+            "S02",
+            "S06"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "intro-kerckhoffs"
+          ],
+          "definition": "**對稱式金鑰演算法**（又稱 secret-key algorithm）用**同一把金鑰**加上保護、也解除保護：加密用的金鑰，同時也是解密用的金鑰 [S06 p.30–31]。\n這把金鑰稱為 **secret key（祕密金鑰）**，又稱 symmetric key [S06 p.18]。\nHAC 的定義：知道加密金鑰 e 就能輕易算出解密金鑰 d（反之亦然），而實務上大多 **e = d** [S02 p.16]。",
+          "key_points": "- **金鑰必須保密**，資料才會受到保護 [S06 p.31]；因為 d 能從 e 推出，加密金鑰 e 也必須保密 [S02 p.17]。\n- 用途：加密以提供**機密性**、訊息鑑別以確保**完整性與來源**、金鑰衍生、金鑰包裝、亂數產生 [S06 p.31]。\n- **金鑰分配問題（key distribution problem）**：雙方要先用**安全的方式**協議並交換金鑰，這是對稱式系統的主要難題之一 [S02 p.17]。\n- **金鑰數量爆炸**：每一對通訊者都要一把不同的金鑰。4 個人需要 6 把；**1,000 個人需要 499,500 把** [S06 p.31]。\n- 對稱式加密分成兩大類：**區塊加密（block cipher）** 與 **串流加密（stream cipher）** [S02 p.17]（見 [[sym-block-vs-stream]]）。\n- 古典密碼（Caesar、替換、換位）都屬於對稱式加密 [S02 p.16][S02 p.19]。",
+          "example": "```\nAlice ──[同一把金鑰 K 加密]──▶ 密文 ──(不安全通道)──▶ Bob [同一把金鑰 K 解密]\n          ▲                                                    ▲\n          └────────── K 必須事先經由「安全通道」交給 Bob ──────────┘\n```\n（依 HAC 圖 1.7「加上一條安全通道來交換金鑰」改繪 [S02 p.17]）\n\nn 個人兩兩通訊所需金鑰數 = n(n−1)/2：4 → 6、1,000 → 499,500 [S06 p.31]。",
+          "misconceptions": ""
+        },
+        {
+          "id": "asym-public-key",
+          "title": "公開金鑰密碼學（Asymmetric / Public-Key Cryptography）",
+          "score": 7,
+          "why": [
+            "title/alias:對稱式加密",
+            "body:對稱式加密×2"
+          ],
+          "sources": [
+            "S02",
+            "S06",
+            "S07"
+          ],
+          "prerequisites": [
+            "sym-concept"
+          ],
+          "definition": "**非對稱式（公開金鑰）演算法**使用**一對金鑰**：**公鑰（public key）** 與 **私鑰（private key）**，兩者在數學上相關 [S06 p.34]。\n- 公鑰可以公開，不會降低安全性；私鑰必須保密 [S06 p.34]。\n- 雖然兩把金鑰相關，但**無法從公鑰有效率地推出私鑰** [S06 p.34]。",
+          "key_points": "- **起源**：1976 年 Diffie 與 Hellman 發表《New Directions in Cryptography》，提出公開金鑰密碼學的革命性概念 [S02 p.2]。\n- 他們的想法：加密金鑰 E 與解密金鑰 D 不同，而且**從 E 算出 D 在計算上不可行**，所以 E 可以公開 [S07 p.1]。\n- 每個人把自己的公開加密金鑰放進「公開目錄」，任何人都能用它加密訊息，**只有持有對應私鑰的接收者能解密** [S07 p.1]——就算兩人從沒見過面，也能祕密通訊 [S07 p.1]。\n- **為什麼需要**：對稱式加密必須先透過安全通道分配金鑰；Diffie–Hellman 指出，這個**金鑰分配問題**的成本與延遲，是商業通訊走向大型網路的主要障礙 [S07 p.1]（見 [[sym-concept]]）。\n- **加密 vs. 簽章**的金鑰用法 [S06 p.34]：\n  - 加密：**用公鑰加密、用私鑰解密**；\n  - 數位簽章：**用私鑰簽章、用公鑰驗證**（見 [[asym-signature]]）。\n- **缺點：慢**。非對稱演算法比對稱式慢很多，所以不拿來處理大量資料 [S06 p.34]——實務上兩者混合使用（見 [[app-hybrid-tls]]）。",
+          "example": "**信箱比喻**（本 Wiki 的教學比喻）：公鑰像是**投信口**，任何人都能把信投進去；私鑰像是**信箱鑰匙**，只有主人能打開取信。對應「公鑰加密、私鑰解密」[S06 p.34]。\n\n```\nBob 的公鑰（公開）  ──▶  Alice 用它加密  ──▶  密文  ──▶  只有 Bob 的私鑰能解開\n```",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 15,
+      "id": "sym-pros",
+      "title": "對稱式加密的好處與難題",
+      "terms": [
+        "金鑰分配問題",
+        "對稱式加密",
+        "public key"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "asym-public-key",
+          "title": "公開金鑰密碼學（Asymmetric / Public-Key Cryptography）",
+          "score": 16,
+          "why": [
+            "body:金鑰分配問題×1",
+            "title/alias:對稱式加密",
+            "body:對稱式加密×2",
+            "title/alias:public key",
+            "body:public key×3"
+          ],
+          "sources": [
+            "S02",
+            "S06",
+            "S07"
+          ],
+          "prerequisites": [
+            "sym-concept"
+          ],
+          "definition": "**非對稱式（公開金鑰）演算法**使用**一對金鑰**：**公鑰（public key）** 與 **私鑰（private key）**，兩者在數學上相關 [S06 p.34]。\n- 公鑰可以公開，不會降低安全性；私鑰必須保密 [S06 p.34]。\n- 雖然兩把金鑰相關，但**無法從公鑰有效率地推出私鑰** [S06 p.34]。",
+          "key_points": "- **起源**：1976 年 Diffie 與 Hellman 發表《New Directions in Cryptography》，提出公開金鑰密碼學的革命性概念 [S02 p.2]。\n- 他們的想法：加密金鑰 E 與解密金鑰 D 不同，而且**從 E 算出 D 在計算上不可行**，所以 E 可以公開 [S07 p.1]。\n- 每個人把自己的公開加密金鑰放進「公開目錄」，任何人都能用它加密訊息，**只有持有對應私鑰的接收者能解密** [S07 p.1]——就算兩人從沒見過面，也能祕密通訊 [S07 p.1]。\n- **為什麼需要**：對稱式加密必須先透過安全通道分配金鑰；Diffie–Hellman 指出，這個**金鑰分配問題**的成本與延遲，是商業通訊走向大型網路的主要障礙 [S07 p.1]（見 [[sym-concept]]）。\n- **加密 vs. 簽章**的金鑰用法 [S06 p.34]：\n  - 加密：**用公鑰加密、用私鑰解密**；\n  - 數位簽章：**用私鑰簽章、用公鑰驗證**（見 [[asym-signature]]）。\n- **缺點：慢**。非對稱演算法比對稱式慢很多，所以不拿來處理大量資料 [S06 p.34]——實務上兩者混合使用（見 [[app-hybrid-tls]]）。",
+          "example": "**信箱比喻**（本 Wiki 的教學比喻）：公鑰像是**投信口**，任何人都能把信投進去；私鑰像是**信箱鑰匙**，只有主人能打開取信。對應「公鑰加密、私鑰解密」[S06 p.34]。\n\n```\nBob 的公鑰（公開）  ──▶  Alice 用它加密  ──▶  密文  ──▶  只有 Bob 的私鑰能解開\n```",
+          "misconceptions": ""
+        },
+        {
+          "id": "sym-concept",
+          "title": "對稱式加密（Symmetric Encryption）與金鑰分配問題",
+          "score": 15,
+          "why": [
+            "title/alias:金鑰分配問題",
+            "body:金鑰分配問題×2",
+            "title/alias:對稱式加密",
+            "body:對稱式加密×3"
+          ],
+          "sources": [
+            "S02",
+            "S06"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "intro-kerckhoffs"
+          ],
+          "definition": "**對稱式金鑰演算法**（又稱 secret-key algorithm）用**同一把金鑰**加上保護、也解除保護：加密用的金鑰，同時也是解密用的金鑰 [S06 p.30–31]。\n這把金鑰稱為 **secret key（祕密金鑰）**，又稱 symmetric key [S06 p.18]。\nHAC 的定義：知道加密金鑰 e 就能輕易算出解密金鑰 d（反之亦然），而實務上大多 **e = d** [S02 p.16]。",
+          "key_points": "- **金鑰必須保密**，資料才會受到保護 [S06 p.31]；因為 d 能從 e 推出，加密金鑰 e 也必須保密 [S02 p.17]。\n- 用途：加密以提供**機密性**、訊息鑑別以確保**完整性與來源**、金鑰衍生、金鑰包裝、亂數產生 [S06 p.31]。\n- **金鑰分配問題（key distribution problem）**：雙方要先用**安全的方式**協議並交換金鑰，這是對稱式系統的主要難題之一 [S02 p.17]。\n- **金鑰數量爆炸**：每一對通訊者都要一把不同的金鑰。4 個人需要 6 把；**1,000 個人需要 499,500 把** [S06 p.31]。\n- 對稱式加密分成兩大類：**區塊加密（block cipher）** 與 **串流加密（stream cipher）** [S02 p.17]（見 [[sym-block-vs-stream]]）。\n- 古典密碼（Caesar、替換、換位）都屬於對稱式加密 [S02 p.16][S02 p.19]。",
+          "example": "```\nAlice ──[同一把金鑰 K 加密]──▶ 密文 ──(不安全通道)──▶ Bob [同一把金鑰 K 解密]\n          ▲                                                    ▲\n          └────────── K 必須事先經由「安全通道」交給 Bob ──────────┘\n```\n（依 HAC 圖 1.7「加上一條安全通道來交換金鑰」改繪 [S02 p.17]）\n\nn 個人兩兩通訊所需金鑰數 = n(n−1)/2：4 → 6、1,000 → 499,500 [S06 p.31]。",
+          "misconceptions": ""
+        },
+        {
+          "id": "asym-key-exchange",
+          "title": "Diffie–Hellman 金鑰交換（Key Exchange）",
+          "score": 8,
+          "why": [
+            "body:金鑰分配問題×1",
+            "title/alias:public key",
+            "body:public key×2"
+          ],
+          "sources": [
+            "S02",
+            "S07",
+            "S08",
+            "S10"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**公開金鑰分配（public key distribution）／金鑰交換**：兩個人在**公開、可被竊聽的通道**上來回交換資訊，最後得到**同一把共享金鑰**；竊聽者即使看到全部交換內容，也無法在可行的計算量內算出這把金鑰 [S07 p.1]。\nDiffie 與 Hellman 在 1976 年提出了這種方法，其安全性建立在**離散對數問題**的困難度上 [S02 p.3][S07 p.6]。",
+          "key_points": "- 目的：**不需要事先的安全通道**就能建立對稱式金鑰，解決金鑰分配問題 [S07 p.1]（見 [[sym-concept]]）。\n- 做法（概念）[S07 p.6]：\n  1. 公開一個質數 q 與一個基底 α；\n  2. 每個人各自挑一個**祕密的隨機數** X，只公開 Y = α^X mod q；\n  3. 雙方用「對方公開的 Y」與「自己的祕密 X」，各自算出相同的 K。\n- 由 X 算 Y 很容易，**由 Y 反推 X（取對數）很難**——系統的安全性正取決於這個困難度 [S07 p.6]。\n- 它和 RSA 不同：DH 是讓兩人**協議出一把金鑰**，再拿去給一般的（對稱式）密碼系統使用 [S08 p.7]。\n- **現代應用**：TLS 1.3 的金鑰交換模式之一就是 **(EC)DHE**——建立在有限體或橢圓曲線上的 Diffie–Hellman [S10 p.10]（見 [[app-hybrid-tls]]）。",
+          "example": "小數字教學範例（本 Wiki 依 [S07 p.6] 的公式自行計算，簡報驗證節點會用程式重算；實務上 q 要非常大）：\n\n```\n公開：q = 23，α = 5\nAlice 祕密 X_A = 4 → 公開 Y_A = 5^4 mod 23 = 4\nBob   祕密 X_B = 3 → 公開 Y_B = 5^3 mod 23 = 10\nAlice 算：K = Y_B^X_A mod 23 = 10^4 mod 23 = 18\nBob   算：K = Y_A^X_B mod 23 = 4^3  mod 23 = 18   ← 兩人得到同一把金鑰\n竊聽者只看到 23、5、4、10，要算出 18 必須先解離散對數\n```",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 16,
+      "id": "block-stream",
+      "title": "兩種做法：區塊加密與串流加密",
+      "terms": [
+        "區塊加密",
+        "串流加密"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "sym-block-vs-stream",
+          "title": "區塊加密（Block Cipher）與串流加密（Stream Cipher）",
+          "score": 16,
+          "why": [
+            "title/alias:區塊加密",
+            "body:區塊加密×3",
+            "title/alias:串流加密",
+            "body:串流加密×3"
+          ],
+          "sources": [
+            "S02",
+            "S06"
+          ],
+          "prerequisites": [
+            "sym-concept"
+          ],
+          "definition": "- **區塊加密（block cipher）**：把明文切成**固定長度的區塊**，一次加密一個區塊 [S02 p.17]。\n- **串流加密（stream cipher）**：可以看成區塊長度為 1 的簡單區塊加密，但**每個符號的加密方式都可以不同**，由一串**金鑰串流（keystream）** 決定 [S02 p.21]。",
+          "key_points": "- 大多數知名的對稱式加密技術都是區塊加密 [S02 p.17]。替換密碼與換位密碼是區塊加密的兩個重要類別，**product cipher** 則把兩者組合起來 [S02 p.17]。\n- 單獨使用替換或換位的安全性都不高 [S02 p.20]；現代區塊加密（例如 AES）就是反覆組合「替換」與「排列/混合」步驟（見 [[sym-aes]]）。\n- 串流加密的優點：傳輸錯誤多時**不會擴散錯誤**；也適合一次只能處理一個符號的設備 [S02 p.21]。\n- 金鑰串流可以隨機產生，或由一個小的種子（seed）經演算法產生（keystream generator）[S02 p.22]。\n- NIST：區塊加密演算法要搭配**經核准的操作模式（mode of operation）** 使用 [S06 p.32]（見 [[mode-overview]]）。",
+          "example": "```\n區塊加密： [HELLOWOR][LD______] → 每塊固定長度，各自送進加密函數\n串流加密： H⊕k1  E⊕k2  L⊕k3  L⊕k4 …  → 每個符號配一個金鑰串流符號\n```\n（示意圖，⊕ 表示與金鑰串流組合；依 [S02 p.17][S02 p.21] 的定義繪製）",
+          "misconceptions": ""
+        },
+        {
+          "id": "teaching-how-others-explain",
+          "title": "別人怎麼介紹加密演算法？（教學設計參考）",
+          "score": 5,
+          "why": [
+            "body:區塊加密×3",
+            "body:串流加密×2"
+          ],
+          "sources": [
+            "S13",
+            "S14",
+            "S15"
+          ],
+          "prerequisites": [],
+          "definition": "本頁比較三種不同對象的教材如何介紹加密：**大學教科書**（The Joy of Cryptography，Oregon State University）[S13 p.9]、**入門書**（Crypto 101）[S14 p.4]、**科技公司給大眾的說明**（Cloudflare Learning Center）[S15 p.1]，並歸納出本簡報採用的教學原則。",
+          "key_points": "- **大學教科書：先複習工具，再從最簡單的密碼開始。** 第 0 章先複習符號與模運算（mod）、字串與 XOR，第 1 章才是第一個密碼（one-time pad）與 Kerckhoffs 原則 [S13 p.9]；之後依序是區塊加密、操作模式、認證加密、RSA、Diffie–Hellman [S13 p.9]。\n- **教科書會先交代每個符號**：例如「Alice 要傳的訊息叫 m，稱為明文」「轉換後的值叫 c，稱為密文」[S13 p.21]。\n- **入門書：第一個「積木」就是 XOR**，然後才是區塊加密（其中介紹 AES）、串流加密、金鑰交換、公開金鑰加密 [S14 p.4]；連公式中的下標都會解釋（「i 只是編號」）[S14 p.18]。\n- **給大眾的說明：定義 → 最簡單的例子 → 比喻 → 分類 → 為什麼重要 → 怎麼被攻擊 → 生活中的應用** [S15 p.1]：\n  - 例子：Alice 把「Hello」每個字母換成字母表後面第 2 個字母 [S15 p.1]\n  - 比喻：金鑰就像實體鑰匙，鎖上（加密）後只有對的鑰匙能打開（解密）[S15 p.1]\n  - 分類：對稱式只有一把金鑰，雙方共用 [S15 p.1]\n  - 攻擊：暴力破解＝猜幾百萬、幾十億次金鑰 [S15 p.1]\n  - 應用：HTTPS 使用 TLS 加密 [S15 p.1]\n- **本簡報採用的教學原則**（本 Wiki 歸納自以上三者）：\n  1. 先介紹之後會用到的名詞與工具（位元、XOR、mod），再用到它們（[[basics-bits-xor-mod]]）。\n  2. 每個主題依序講「基本原理 → 為什麼需要／好處與限制 → 現實中怎麼做」，一個主題分幾頁講完，不擠在一頁。\n  3. 公式出現時，每個符號都說明代表什麼。\n  4. 從最簡單的例子（位移密碼）開始，再進到現代演算法。\n  5. 用生活比喻（鑰匙、信箱）幫助理解，再接回正式名詞。",
+          "example": "| 教材 | 對象 | 開場方式 | 主題順序 |\n|---|---|---|---|\n| The Joy of Cryptography | 大學生 | 複習 mod、XOR 等工具 | 工具 → 簡單密碼 → 區塊加密 → 模式 → 認證加密 → RSA → DH |\n| Crypto 101 | 入門工程師 | XOR | XOR → 區塊加密（AES）→ 串流加密 → 金鑰交換 → 公開金鑰 |\n| Cloudflare | 一般大眾 | 定義＋位移 2 的小例子 | 定義 → 例子 → 鑰匙比喻 → 對稱／非對稱 → 重要性 → 暴力破解 → HTTPS |",
+          "misconceptions": ""
+        },
+        {
+          "id": "mode-ctr",
+          "title": "CTR（Counter）模式",
+          "score": 4,
+          "why": [
+            "body:區塊加密×3",
+            "body:串流加密×1"
+          ],
+          "sources": [
+            "S05"
+          ],
+          "prerequisites": [
+            "mode-overview",
+            "sym-block-vs-stream"
+          ],
+          "definition": "**CTR**：不直接加密明文，而是用區塊加密去加密一連串的**計數器區塊（counter）** T₁, T₂, …，產生的輸出再和明文做 XOR，得到密文；解密時做同樣的事 [S05 p.22]。\n\n- Oⱼ = E_K(Tⱼ)\n- 加密：Cⱼ = Pⱼ ⊕ Oⱼ；解密：Pⱼ = Cⱼ ⊕ Oⱼ  [S05 p.22]\n\n解密時一樣是「加密計數器」產生同一串 Oⱼ，再和密文 XOR，就把明文還原——**解密不需要區塊加密的反函數** [S05 p.22]。\n\n等於把區塊加密變成「產生金鑰串流」的工具，用法很像串流加密（見 [[sym-block-vs-stream]]）。",
+          "key_points": "- **計數器絕對不可重複**：同一把金鑰下，**所有訊息**用過的計數器區塊都必須彼此不同 [S05 p.22]；每則訊息的初始計數器要選得能確保這種唯一性 [S05 p.26]。\n- **加密與解密都可以平行**；任何一個區塊都能獨立解密 [S05 p.22]。\n- **不需要填充**：最後一個區塊可以不滿，只取輸出區塊最前面需要的位元數做 XOR，其餘丟棄 [S05 p.22]。\n- 解密也只用到區塊加密的「正向」函數 [S05 p.22]。\n- TLS 1.3 使用的 **AES-GCM** 就是建立在 CTR 的變形之上（[[mode-gcm-aead]]）。",
+          "example": "```\n 計數器： T1        T2        T3\n          │         │         │\n         E_K       E_K       E_K      ← 三個區塊可以同時算（平行）\n          │         │         │\n P1 ──▶ (⊕)  P2 ──▶ (⊕)  P3 ──▶ (⊕)\n          ▼         ▼         ▼\n          C1        C2        C3\n```\n（依 SP 800-38A §6.5 公式繪製 [S05 p.22]）",
+          "misconceptions": "- 「CTR 的計數器跟 IV 一樣，偶爾重複沒關係」——錯。SP 800-38A 要求同一金鑰下所有計數器都必須互不相同 [S05 p.22]。"
+        }
+      ]
+    },
+    {
+      "slide": 17,
+      "id": "bytes",
+      "title": "電腦裡的資料：位元、位元組、十六進位",
+      "terms": [
+        "位元組",
+        "十六進位",
+        "byte"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "basics-bits-xor-mod",
+          "title": "基礎工具：位元、位元組、十六進位、XOR 與 mod",
+          "score": 24,
+          "why": [
+            "title/alias:位元組",
+            "body:位元組×3",
+            "title/alias:十六進位",
+            "body:十六進位×3",
+            "title/alias:byte",
+            "body:byte×3"
+          ],
+          "sources": [
+            "S04",
+            "S08",
+            "S13",
+            "S14"
+          ],
+          "prerequisites": [
+            "intro-terminology"
+          ],
+          "definition": "| 名詞 | 意思 | 例子 | 來源 |\n|---|---|---|---|\n| **位元（bit）** | 一個二進位數字，只能是 0 或 1 | `1` | [S04 p.10][S04 p.13] |\n| **位元組（byte）** | 8 個位元排在一起 | `10100011` | [S04 p.10][S04 p.13] |\n| **十六進位（hexadecimal）** | 用 0–9、a–f 共 16 個字元，每個字元代表 4 個位元；一個位元組剛好寫成 2 個字元 | `10100011` 寫成 `a3` | [S04 p.13] |\n| **XOR（互斥或，符號 ⊕）** | 兩個位元**不同**得 1、**相同**得 0；兩串等長的位元就逐位做 | `0011 ⊕ 0101 = 0110` | [S14 p.17][S13 p.15] |\n| **mod（取餘數）** | `a mod n` = a 除以 n 的**餘數** | `20 mod 7 = 6` | [S13 p.13][S08 p.1] |",
+          "key_points": "- AES 處理資料的基本單位是**位元組**；AES 的一個區塊是 128 個位元 = 16 個位元組 [S04 p.13]。\n- FIPS 197 用十六進位寫位元組，例如 `{10100011}` 寫成 `{a3}` [S04 p.13]。這就是 AES 實例中 `32 43 f6 a8…` 這種寫法的意思（見 [[sym-aes]]）。\n- **XOR 的兩個性質**讓它很適合加密 [S13 p.15]：\n  - 自己和自己 XOR 會變成 0：x ⊕ x = 0\n  - 和 0 XOR 不會改變：x ⊕ 0 = x\n  - 所以「明文 ⊕ 金鑰 = 密文」之後，「密文 ⊕ 同一把金鑰 = 明文」——**同一個動作就能加密也能解密**（本 Wiki 由上面兩個性質推得）。\n- **mod** 讓數字「繞一圈回來」，像時鐘：Caesar 密碼用 mod 26 讓 Z 之後回到 A（[[classical-caesar]]）；RSA 的加密就是「算次方後除以 n 取餘數」[S08 p.1]（[[asym-rsa]]）。\n- a mod n 的結果一定介於 0 到 n−1 之間 [S13 p.13]。",
+          "example": "```\nXOR（逐位：相同→0，不同→1）        mod（取餘數）\n  0011                               20 mod 7 = 6   （20 = 2×7 + 6）\n⊕ 0101                               27 mod 26 = 1  （Caesar：Y(24) + 3 = 27 → 1 = B）\n= 0110\n```\n（左：[S13 p.15] 的例子；右上：[S13 p.13] 的例子；右下為本 Wiki 依 Caesar 公式計算的教學例）",
+          "misconceptions": ""
+        },
+        {
+          "id": "sym-aes",
+          "title": "AES（Advanced Encryption Standard）",
+          "score": 6,
+          "why": [
+            "body:位元組×3",
+            "body:byte×3"
+          ],
+          "sources": [
+            "S01",
+            "S04",
+            "S06",
+            "S12"
+          ],
+          "prerequisites": [
+            "sym-concept",
+            "sym-block-vs-stream",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**AES** 是 NIST 標準化的**對稱式區塊加密演算法**，可以加密與解密數位資料 [S04 p.4]。\n它使用 **128、192 或 256 位元**的金鑰，對 **128 位元**的資料區塊做加解密 [S04 p.4]。",
+          "key_points": "- **怎麼來的**：NIST 在 1997 年公開徵求候選演算法，2000 年宣布選出 **Rijndael** 作為 AES [S04 p.9]——正是 Kerckhoffs 原則「演算法公開、經過公開審查」的實踐 [S01 p.268]（見 [[intro-kerckhoffs]]）。\n- **三個版本**：AES-128、AES-192、AES-256，數字代表**金鑰長度**；**區塊大小一律 128 位元** [S04 p.9]。（Rijndael 本身支援其他區塊大小，但沒有納入標準 [S04 p.9]。）\n- **輪數（rounds）**：AES-128 做 10 輪、AES-192 做 12 輪、AES-256 做 14 輪 [S04 p.19]。\n- **每一輪的四個步驟**（作用在 4×4 位元組的 state 上）[S04 p.20]：\n  1. **SubBytes**：用替換表（S-box）替換每個位元組——非線性的「替換」[S04 p.21]\n  2. **ShiftRows**：把 state 的後三列循環位移——「換位」[S04 p.22]\n  3. **MixColumns**：把每一欄的資料混合在一起 [S04 p.20]\n  4. **AddRoundKey**：用 XOR 把該輪的 round key 加進 state [S04 p.24]\n  其中有一輪會省略一個步驟 [S04 p.10]。\n- **解密（InvCipher）**：把加密的步驟換成各自的反運算（InvSubBytes、InvShiftRows、InvMixColumns 與 AddRoundKey），並**依相反順序**執行 [S04 p.26]。\n- FIPS 197 附錄 B 提供 AES-128 一步一步的完整實例，下方「實例」整理了第 1 輪 [S04 p.9][S04 p.42]。\n- **取代 DES**：AES 是為了取代 DES 與 TDEA 而開發，是新產品**首選**的區塊加密演算法 [S06 p.33]；DES 因電腦運算力進步、強度不足，已在 **2005 年**被撤銷核准 [S06 p.32]。\n- **安全強度**：AES-128／192／256 分別提供 128／192／256 位元的安全強度；低於 112 位元的組合已不再核准用於加密 [S12 p.68]。",
+          "example": "```\n明文區塊（128 bits）\n   │  AddRoundKey（初始）\n   ▼\n┌─ 第 1 ～ Nr 輪 ───────────────────┐\n│ SubBytes → ShiftRows → MixColumns → AddRoundKey │ ×Nr（最後一輪省略一個步驟）\n└──────────────────────────────────┘\n   ▼\n密文區塊（128 bits）       Nr = 10 / 12 / 14\n```\n（依 FIPS 197 §5.1 的步驟順序與 Table 3 的輪數繪製 [S04 p.19][S04 p.20]）\n\n### 實例：FIPS 197 附錄 B，AES-128 第 1 輪 [S04 p.42]\n\n- 輸入：`32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34`；金鑰：`2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c` [S04 p.42]\n- 16 個位元組**依「欄」**填入 4×4 的 state：前 4 個位元組（32 43 f6 a8）成為第 1 欄。\n\n| 步驟 | state（逐列，由上到下） | 看哪一格 |\n|---|---|---|\n| 初始 AddRoundKey（輸入 ⊕ 金鑰） | `19 a0 9a e9 / 3d f4 c6 f8 / e3 e2 8d 48 / be 2b 2a 08` | 32 ⊕ 2b = 19 |\n| ① SubBytes | `d4 e0 b8 1e / 27 bf b4 41 / 11 98 5d 52 / ae f1 e5 30` | 19 查 S-box：列看前半 1、欄看後半 9 → d4（查表規則見 [S04 p.22]） |\n| ② ShiftRows | `d4 e0 b8 1e / bf b4 41 27 / 5d 52 11 98 / 30 ae f1 e5` | 第 r 列往左循環移 r 格：`27 bf b4 41` → `bf b4 41 27` |\n| ③ MixColumns | `04 e0 48 28 / 66 cb f8 06 / 81 19 d3 26 / e5 9a 7a 4c` | 第 1 欄 `d4 bf 5d 30` → `04 66 81 e5`；04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30（式 5.8，[S04 p.23]） |\n| ④ AddRoundKey（round key 1：`a0 88 23 2a / fa 54 a3 6c / fe 2c 39 76 / 17 b1 39 05`） | `a4 68 6b 02 / 9c 9f 5b 6a / 7f 35 ea 50 / f2 2b 43 49` | 04 ⊕ a0 = a4 |\n\n**解密時**倒著走：再 XOR 同一把 round key（得回 `04 e0 48 28…`）→ InvMixColumns → InvShiftRows（每列往右移回）→ InvSubBytes（反查 S-box），最後回到 `19 a0 9a e9…` [S04 p.26]。\n\n表中每個數值都與 FIPS 197 附錄 B 相同；Content Validation 另以獨立的 AES 參考實作（`Workflow/validators/aes_ref.py`）從輸入與金鑰重算，並確認解密方向能還原。",
+          "misconceptions": "- 「AES-256 的區塊是 256 位元」——錯。256 指的是**金鑰長度**，三種 AES 的區塊大小都是 128 位元 [S04 p.9]。\n- 「DES 仍是目前的加密標準」——錯。DES 已於 2005 年撤銷核准 [S06 p.32]。"
+        }
+      ]
+    },
+    {
+      "slide": 18,
+      "id": "aes-overview",
+      "title": "現實中的對稱式加密：AES",
+      "terms": [
+        "AES",
+        "Rijndael"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "sym-aes",
+          "title": "AES（Advanced Encryption Standard）",
+          "score": 16,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3",
+            "title/alias:Rijndael",
+            "body:Rijndael×3"
+          ],
+          "sources": [
+            "S01",
+            "S04",
+            "S06",
+            "S12"
+          ],
+          "prerequisites": [
+            "sym-concept",
+            "sym-block-vs-stream",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**AES** 是 NIST 標準化的**對稱式區塊加密演算法**，可以加密與解密數位資料 [S04 p.4]。\n它使用 **128、192 或 256 位元**的金鑰，對 **128 位元**的資料區塊做加解密 [S04 p.4]。",
+          "key_points": "- **怎麼來的**：NIST 在 1997 年公開徵求候選演算法，2000 年宣布選出 **Rijndael** 作為 AES [S04 p.9]——正是 Kerckhoffs 原則「演算法公開、經過公開審查」的實踐 [S01 p.268]（見 [[intro-kerckhoffs]]）。\n- **三個版本**：AES-128、AES-192、AES-256，數字代表**金鑰長度**；**區塊大小一律 128 位元** [S04 p.9]。（Rijndael 本身支援其他區塊大小，但沒有納入標準 [S04 p.9]。）\n- **輪數（rounds）**：AES-128 做 10 輪、AES-192 做 12 輪、AES-256 做 14 輪 [S04 p.19]。\n- **每一輪的四個步驟**（作用在 4×4 位元組的 state 上）[S04 p.20]：\n  1. **SubBytes**：用替換表（S-box）替換每個位元組——非線性的「替換」[S04 p.21]\n  2. **ShiftRows**：把 state 的後三列循環位移——「換位」[S04 p.22]\n  3. **MixColumns**：把每一欄的資料混合在一起 [S04 p.20]\n  4. **AddRoundKey**：用 XOR 把該輪的 round key 加進 state [S04 p.24]\n  其中有一輪會省略一個步驟 [S04 p.10]。\n- **解密（InvCipher）**：把加密的步驟換成各自的反運算（InvSubBytes、InvShiftRows、InvMixColumns 與 AddRoundKey），並**依相反順序**執行 [S04 p.26]。\n- FIPS 197 附錄 B 提供 AES-128 一步一步的完整實例，下方「實例」整理了第 1 輪 [S04 p.9][S04 p.42]。\n- **取代 DES**：AES 是為了取代 DES 與 TDEA 而開發，是新產品**首選**的區塊加密演算法 [S06 p.33]；DES 因電腦運算力進步、強度不足，已在 **2005 年**被撤銷核准 [S06 p.32]。\n- **安全強度**：AES-128／192／256 分別提供 128／192／256 位元的安全強度；低於 112 位元的組合已不再核准用於加密 [S12 p.68]。",
+          "example": "```\n明文區塊（128 bits）\n   │  AddRoundKey（初始）\n   ▼\n┌─ 第 1 ～ Nr 輪 ───────────────────┐\n│ SubBytes → ShiftRows → MixColumns → AddRoundKey │ ×Nr（最後一輪省略一個步驟）\n└──────────────────────────────────┘\n   ▼\n密文區塊（128 bits）       Nr = 10 / 12 / 14\n```\n（依 FIPS 197 §5.1 的步驟順序與 Table 3 的輪數繪製 [S04 p.19][S04 p.20]）\n\n### 實例：FIPS 197 附錄 B，AES-128 第 1 輪 [S04 p.42]\n\n- 輸入：`32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34`；金鑰：`2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c` [S04 p.42]\n- 16 個位元組**依「欄」**填入 4×4 的 state：前 4 個位元組（32 43 f6 a8）成為第 1 欄。\n\n| 步驟 | state（逐列，由上到下） | 看哪一格 |\n|---|---|---|\n| 初始 AddRoundKey（輸入 ⊕ 金鑰） | `19 a0 9a e9 / 3d f4 c6 f8 / e3 e2 8d 48 / be 2b 2a 08` | 32 ⊕ 2b = 19 |\n| ① SubBytes | `d4 e0 b8 1e / 27 bf b4 41 / 11 98 5d 52 / ae f1 e5 30` | 19 查 S-box：列看前半 1、欄看後半 9 → d4（查表規則見 [S04 p.22]） |\n| ② ShiftRows | `d4 e0 b8 1e / bf b4 41 27 / 5d 52 11 98 / 30 ae f1 e5` | 第 r 列往左循環移 r 格：`27 bf b4 41` → `bf b4 41 27` |\n| ③ MixColumns | `04 e0 48 28 / 66 cb f8 06 / 81 19 d3 26 / e5 9a 7a 4c` | 第 1 欄 `d4 bf 5d 30` → `04 66 81 e5`；04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30（式 5.8，[S04 p.23]） |\n| ④ AddRoundKey（round key 1：`a0 88 23 2a / fa 54 a3 6c / fe 2c 39 76 / 17 b1 39 05`） | `a4 68 6b 02 / 9c 9f 5b 6a / 7f 35 ea 50 / f2 2b 43 49` | 04 ⊕ a0 = a4 |\n\n**解密時**倒著走：再 XOR 同一把 round key（得回 `04 e0 48 28…`）→ InvMixColumns → InvShiftRows（每列往右移回）→ InvSubBytes（反查 S-box），最後回到 `19 a0 9a e9…` [S04 p.26]。\n\n表中每個數值都與 FIPS 197 附錄 B 相同；Content Validation 另以獨立的 AES 參考實作（`Workflow/validators/aes_ref.py`）從輸入與金鑰重算，並確認解密方向能還原。",
+          "misconceptions": "- 「AES-256 的區塊是 256 位元」——錯。256 指的是**金鑰長度**，三種 AES 的區塊大小都是 128 位元 [S04 p.9]。\n- 「DES 仍是目前的加密標準」——錯。DES 已於 2005 年撤銷核准 [S06 p.32]。"
+        },
+        {
+          "id": "asym-rsa",
+          "title": "RSA：基本運作原理",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S02",
+            "S08",
+            "S09",
+            "S12"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**RSA**（Rivest、Shamir、Adleman，1978）是第一個實用的公開金鑰加密與簽章方案 [S02 p.3]。\n它的特性是：**公開加密金鑰，並不會因此洩漏對應的解密金鑰** [S08 p.1]。",
+          "key_points": "- **金鑰產生** [S08 p.6–7]：\n  1. 選兩個**很大的隨機質數** p、q，計算 **n = p·q**；\n  2. 選一個與 (p−1)(q−1) 互質的 d；\n  3. 算出 e，使 e·d ≡ 1 (mod (p−1)(q−1))。\n  - **公鑰** = (e, n)，**私鑰** = (d, n)；每個人公開加密金鑰、保留解密金鑰 [S08 p.6]。RFC 8017 也定義 RSA 公鑰由 **模數 n（modulus）** 與 **公開指數 e** 組成 [S09 p.8]。\n- **加密／解密** [S08 p.6]：\n  - 加密：C = M^e mod n\n  - 解密：M = C^d mod n\n- **安全性**：n 公開，但 p、q 因為**大數分解非常困難**而保持隱藏，d 也因此無法從 e 推出 [S08 p.6][S08 p.1]。\n- **金鑰長度要跟上時代**：1978 年論文建議 n 約 200 位十進位數字 [S08 p.9]；NIST 現行對照表：RSA 模數 k = **2048** 位元約等於 112 位元安全強度、**3072** 位元約等於 128 位元（相當 AES-128）[S12 p.67][S12 p.68]。\n- **實務上不直接用 M^e mod n**：RFC 8017 規定新應用必須支援 **RSAES-OAEP**（把訊息先經 OAEP 編碼再做 RSA 運算），舊的 PKCS1-v1_5 只為相容而保留 [S09 p.18][S09 p.19]。\n- 量子電腦實用化後，RSA 等演算法的強度估計會大幅改變 [S12 p.68]。",
+          "example": "RSA 原始論文的小例子 [S08 p.10]（簡報驗證節點會用程式重算）：\n\n```\np = 47，q = 59 → n = 47 × 59 = 2773\n(p−1)(q−1) = 46 × 58 = 2668\n私鑰 d = 157 → 公鑰 e = 17（17 × 157 = 2669 ≡ 1 mod 2668）\n加密 M = 920： C = 920^17 mod 2773 = 948\n解密：         M = 948^157 mod 2773 = 920\n```",
+          "misconceptions": "- 「RSA 就是直接算 C = M^e mod n 就好」——教科書公式只說明原理；RFC 8017 要求新應用使用 RSAES-OAEP 編碼 [S09 p.18]。\n- 「200 位數的 n 就夠安全」——那是 1978 年的建議 [S08 p.9]；現行建議至少 2048 位元 [S12 p.67]。"
+        },
+        {
+          "id": "classical-caesar",
+          "title": "Caesar Cipher（凱撒密碼／位移密碼）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**位移密碼（shift cipher）／Caesar 密碼**：把字母表中的每個字母**往後移動固定的 k 位**，是一種限定成「字母位移」的簡單替換密碼 [S03 p.18]。\n用數字表示（A=0、B=1、…、Z=25）：\n\n- 加密：c = (m + k) mod 26\n- 解密：m = (c − k) mod 26  [S03 p.18]\n\n金鑰就是位移量 k。傳說凱撒（Julius Caesar）使用 k = 3 [S03 p.18]。",
+          "key_points": "- 它是 **simple substitution（單表替換）** 的特例：整篇訊息都用同一套對應表 [S03 p.18]（見 [[classical-substitution]]）。\n- 例：k = 1 時，HAL 加密成 IBM [S03 p.18]。\n- HAC 第 1 章用「每個字母往右移 3 位」當作對稱式加密的入門範例，加密與解密用的是同一個祕密（位移量）[S02 p.16]。\n- **致命弱點**：英文只有 26 種位移（s = 26），攻擊者把所有金鑰試一遍就能破解 [S03 p.18]（見 [[classical-limitations]]、[[intro-kerckhoffs]]）。",
+          "example": "```\nk = 3\n明文：H  E  L  L  O\n      ↓+3 ↓+3 ↓+3 ↓+3 ↓+3\n密文：K  H  O  O  R\n```\n（HELLO → KHOOR 由本 Wiki 以公式 c = (m + 3) mod 26 計算，簡報驗證節點會用程式重算。）",
+          "misconceptions": "- 「Caesar 密碼有 25 或 26 把金鑰，所以算安全」——錯。金鑰空間只有 26，用手就能窮舉 [S03 p.18]。"
+        },
+        {
+          "id": "mode-gcm-aead",
+          "title": "GCM 與認證加密（Authenticated Encryption, AEAD）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S05",
+            "S11"
+          ],
+          "prerequisites": [
+            "mode-ctr",
+            "intro-what-is-crypto"
+          ],
+          "definition": "**GCM（Galois/Counter Mode）** 是一種**帶有附加資料的認證加密（authenticated encryption with associated data, AEAD）** 演算法 [S11 p.9]。\n它建立在**區塊大小 128 位元**的經核准區塊加密（例如 AES）之上，所以 GCM 是 AES 的一種操作模式 [S11 p.9]。",
+          "key_points": "- **一次提供兩件事** [S11 p.9]：\n  - **機密性**：使用 **CTR 模式的變形**來加密（見 [[mode-ctr]]）；\n  - **真實性／完整性（authenticity）**：用一個通用雜湊函數計算**認證標籤（authentication tag）**。\n- 加密時同時算出標籤；解密時**先驗證標籤，驗證通過才解密** [S11 p.15]。\n- 這補上了 ECB／CBC／CTR 的缺口：前三者只提供**機密性**（SP 800-38A 稱它們為 confidentiality modes [S05 p.5]），無法偵測竄改——呼應密碼學四大目標中的「完整性」（[[intro-what-is-crypto]]）。\n- **IV 不可重複**：同一把金鑰下只要有一個 IV 重複，就可能遭受偽造攻擊；NIST 說這個要求「幾乎和金鑰保密一樣重要」[S11 p.26]。\n- 本頁只作為銜接 CTR 與 TLS 1.3 的橋樑（TLS 1.3 只使用 AEAD 演算法，見 [[app-hybrid-tls]]）。",
+          "example": "```\n            ┌──────────── GCM ────────────┐\n明文 ──▶   │ CTR 變形加密 → 密文          │ ──▶ 密文 + 標籤(tag)\n附加資料 ─▶ │ GHASH 計算 → 認證標籤 tag     │\n            └─────────────────────────────┘\n接收方：先驗證 tag ✔ → 才解密；tag ✘ → 拒絕\n```\n（依 SP 800-38D §1、§5.2 的描述繪製 [S11 p.9][S11 p.15]）",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 19,
+      "id": "aes-steps",
+      "title": "AES 每一輪的四個步驟",
+      "terms": [
+        "AES",
+        "AES-128"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "sym-aes",
+          "title": "AES（Advanced Encryption Standard）",
+          "score": 16,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3",
+            "title/alias:AES-128",
+            "body:AES-128×3"
+          ],
+          "sources": [
+            "S01",
+            "S04",
+            "S06",
+            "S12"
+          ],
+          "prerequisites": [
+            "sym-concept",
+            "sym-block-vs-stream",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**AES** 是 NIST 標準化的**對稱式區塊加密演算法**，可以加密與解密數位資料 [S04 p.4]。\n它使用 **128、192 或 256 位元**的金鑰，對 **128 位元**的資料區塊做加解密 [S04 p.4]。",
+          "key_points": "- **怎麼來的**：NIST 在 1997 年公開徵求候選演算法，2000 年宣布選出 **Rijndael** 作為 AES [S04 p.9]——正是 Kerckhoffs 原則「演算法公開、經過公開審查」的實踐 [S01 p.268]（見 [[intro-kerckhoffs]]）。\n- **三個版本**：AES-128、AES-192、AES-256，數字代表**金鑰長度**；**區塊大小一律 128 位元** [S04 p.9]。（Rijndael 本身支援其他區塊大小，但沒有納入標準 [S04 p.9]。）\n- **輪數（rounds）**：AES-128 做 10 輪、AES-192 做 12 輪、AES-256 做 14 輪 [S04 p.19]。\n- **每一輪的四個步驟**（作用在 4×4 位元組的 state 上）[S04 p.20]：\n  1. **SubBytes**：用替換表（S-box）替換每個位元組——非線性的「替換」[S04 p.21]\n  2. **ShiftRows**：把 state 的後三列循環位移——「換位」[S04 p.22]\n  3. **MixColumns**：把每一欄的資料混合在一起 [S04 p.20]\n  4. **AddRoundKey**：用 XOR 把該輪的 round key 加進 state [S04 p.24]\n  其中有一輪會省略一個步驟 [S04 p.10]。\n- **解密（InvCipher）**：把加密的步驟換成各自的反運算（InvSubBytes、InvShiftRows、InvMixColumns 與 AddRoundKey），並**依相反順序**執行 [S04 p.26]。\n- FIPS 197 附錄 B 提供 AES-128 一步一步的完整實例，下方「實例」整理了第 1 輪 [S04 p.9][S04 p.42]。\n- **取代 DES**：AES 是為了取代 DES 與 TDEA 而開發，是新產品**首選**的區塊加密演算法 [S06 p.33]；DES 因電腦運算力進步、強度不足，已在 **2005 年**被撤銷核准 [S06 p.32]。\n- **安全強度**：AES-128／192／256 分別提供 128／192／256 位元的安全強度；低於 112 位元的組合已不再核准用於加密 [S12 p.68]。",
+          "example": "```\n明文區塊（128 bits）\n   │  AddRoundKey（初始）\n   ▼\n┌─ 第 1 ～ Nr 輪 ───────────────────┐\n│ SubBytes → ShiftRows → MixColumns → AddRoundKey │ ×Nr（最後一輪省略一個步驟）\n└──────────────────────────────────┘\n   ▼\n密文區塊（128 bits）       Nr = 10 / 12 / 14\n```\n（依 FIPS 197 §5.1 的步驟順序與 Table 3 的輪數繪製 [S04 p.19][S04 p.20]）\n\n### 實例：FIPS 197 附錄 B，AES-128 第 1 輪 [S04 p.42]\n\n- 輸入：`32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34`；金鑰：`2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c` [S04 p.42]\n- 16 個位元組**依「欄」**填入 4×4 的 state：前 4 個位元組（32 43 f6 a8）成為第 1 欄。\n\n| 步驟 | state（逐列，由上到下） | 看哪一格 |\n|---|---|---|\n| 初始 AddRoundKey（輸入 ⊕ 金鑰） | `19 a0 9a e9 / 3d f4 c6 f8 / e3 e2 8d 48 / be 2b 2a 08` | 32 ⊕ 2b = 19 |\n| ① SubBytes | `d4 e0 b8 1e / 27 bf b4 41 / 11 98 5d 52 / ae f1 e5 30` | 19 查 S-box：列看前半 1、欄看後半 9 → d4（查表規則見 [S04 p.22]） |\n| ② ShiftRows | `d4 e0 b8 1e / bf b4 41 27 / 5d 52 11 98 / 30 ae f1 e5` | 第 r 列往左循環移 r 格：`27 bf b4 41` → `bf b4 41 27` |\n| ③ MixColumns | `04 e0 48 28 / 66 cb f8 06 / 81 19 d3 26 / e5 9a 7a 4c` | 第 1 欄 `d4 bf 5d 30` → `04 66 81 e5`；04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30（式 5.8，[S04 p.23]） |\n| ④ AddRoundKey（round key 1：`a0 88 23 2a / fa 54 a3 6c / fe 2c 39 76 / 17 b1 39 05`） | `a4 68 6b 02 / 9c 9f 5b 6a / 7f 35 ea 50 / f2 2b 43 49` | 04 ⊕ a0 = a4 |\n\n**解密時**倒著走：再 XOR 同一把 round key（得回 `04 e0 48 28…`）→ InvMixColumns → InvShiftRows（每列往右移回）→ InvSubBytes（反查 S-box），最後回到 `19 a0 9a e9…` [S04 p.26]。\n\n表中每個數值都與 FIPS 197 附錄 B 相同；Content Validation 另以獨立的 AES 參考實作（`Workflow/validators/aes_ref.py`）從輸入與金鑰重算，並確認解密方向能還原。",
+          "misconceptions": "- 「AES-256 的區塊是 256 位元」——錯。256 指的是**金鑰長度**，三種 AES 的區塊大小都是 128 位元 [S04 p.9]。\n- 「DES 仍是目前的加密標準」——錯。DES 已於 2005 年撤銷核准 [S06 p.32]。"
+        },
+        {
+          "id": "asym-rsa",
+          "title": "RSA：基本運作原理",
+          "score": 10,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3",
+            "body:AES-128×2"
+          ],
+          "sources": [
+            "S02",
+            "S08",
+            "S09",
+            "S12"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**RSA**（Rivest、Shamir、Adleman，1978）是第一個實用的公開金鑰加密與簽章方案 [S02 p.3]。\n它的特性是：**公開加密金鑰，並不會因此洩漏對應的解密金鑰** [S08 p.1]。",
+          "key_points": "- **金鑰產生** [S08 p.6–7]：\n  1. 選兩個**很大的隨機質數** p、q，計算 **n = p·q**；\n  2. 選一個與 (p−1)(q−1) 互質的 d；\n  3. 算出 e，使 e·d ≡ 1 (mod (p−1)(q−1))。\n  - **公鑰** = (e, n)，**私鑰** = (d, n)；每個人公開加密金鑰、保留解密金鑰 [S08 p.6]。RFC 8017 也定義 RSA 公鑰由 **模數 n（modulus）** 與 **公開指數 e** 組成 [S09 p.8]。\n- **加密／解密** [S08 p.6]：\n  - 加密：C = M^e mod n\n  - 解密：M = C^d mod n\n- **安全性**：n 公開，但 p、q 因為**大數分解非常困難**而保持隱藏，d 也因此無法從 e 推出 [S08 p.6][S08 p.1]。\n- **金鑰長度要跟上時代**：1978 年論文建議 n 約 200 位十進位數字 [S08 p.9]；NIST 現行對照表：RSA 模數 k = **2048** 位元約等於 112 位元安全強度、**3072** 位元約等於 128 位元（相當 AES-128）[S12 p.67][S12 p.68]。\n- **實務上不直接用 M^e mod n**：RFC 8017 規定新應用必須支援 **RSAES-OAEP**（把訊息先經 OAEP 編碼再做 RSA 運算），舊的 PKCS1-v1_5 只為相容而保留 [S09 p.18][S09 p.19]。\n- 量子電腦實用化後，RSA 等演算法的強度估計會大幅改變 [S12 p.68]。",
+          "example": "RSA 原始論文的小例子 [S08 p.10]（簡報驗證節點會用程式重算）：\n\n```\np = 47，q = 59 → n = 47 × 59 = 2773\n(p−1)(q−1) = 46 × 58 = 2668\n私鑰 d = 157 → 公鑰 e = 17（17 × 157 = 2669 ≡ 1 mod 2668）\n加密 M = 920： C = 920^17 mod 2773 = 948\n解密：         M = 948^157 mod 2773 = 920\n```",
+          "misconceptions": "- 「RSA 就是直接算 C = M^e mod n 就好」——教科書公式只說明原理；RFC 8017 要求新應用使用 RSAES-OAEP 編碼 [S09 p.18]。\n- 「200 位數的 n 就夠安全」——那是 1978 年的建議 [S08 p.9]；現行建議至少 2048 位元 [S12 p.67]。"
+        },
+        {
+          "id": "classical-caesar",
+          "title": "Caesar Cipher（凱撒密碼／位移密碼）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**位移密碼（shift cipher）／Caesar 密碼**：把字母表中的每個字母**往後移動固定的 k 位**，是一種限定成「字母位移」的簡單替換密碼 [S03 p.18]。\n用數字表示（A=0、B=1、…、Z=25）：\n\n- 加密：c = (m + k) mod 26\n- 解密：m = (c − k) mod 26  [S03 p.18]\n\n金鑰就是位移量 k。傳說凱撒（Julius Caesar）使用 k = 3 [S03 p.18]。",
+          "key_points": "- 它是 **simple substitution（單表替換）** 的特例：整篇訊息都用同一套對應表 [S03 p.18]（見 [[classical-substitution]]）。\n- 例：k = 1 時，HAL 加密成 IBM [S03 p.18]。\n- HAC 第 1 章用「每個字母往右移 3 位」當作對稱式加密的入門範例，加密與解密用的是同一個祕密（位移量）[S02 p.16]。\n- **致命弱點**：英文只有 26 種位移（s = 26），攻擊者把所有金鑰試一遍就能破解 [S03 p.18]（見 [[classical-limitations]]、[[intro-kerckhoffs]]）。",
+          "example": "```\nk = 3\n明文：H  E  L  L  O\n      ↓+3 ↓+3 ↓+3 ↓+3 ↓+3\n密文：K  H  O  O  R\n```\n（HELLO → KHOOR 由本 Wiki 以公式 c = (m + 3) mod 26 計算，簡報驗證節點會用程式重算。）",
+          "misconceptions": "- 「Caesar 密碼有 25 或 26 把金鑰，所以算安全」——錯。金鑰空間只有 26，用手就能窮舉 [S03 p.18]。"
+        },
+        {
+          "id": "mode-gcm-aead",
+          "title": "GCM 與認證加密（Authenticated Encryption, AEAD）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S05",
+            "S11"
+          ],
+          "prerequisites": [
+            "mode-ctr",
+            "intro-what-is-crypto"
+          ],
+          "definition": "**GCM（Galois/Counter Mode）** 是一種**帶有附加資料的認證加密（authenticated encryption with associated data, AEAD）** 演算法 [S11 p.9]。\n它建立在**區塊大小 128 位元**的經核准區塊加密（例如 AES）之上，所以 GCM 是 AES 的一種操作模式 [S11 p.9]。",
+          "key_points": "- **一次提供兩件事** [S11 p.9]：\n  - **機密性**：使用 **CTR 模式的變形**來加密（見 [[mode-ctr]]）；\n  - **真實性／完整性（authenticity）**：用一個通用雜湊函數計算**認證標籤（authentication tag）**。\n- 加密時同時算出標籤；解密時**先驗證標籤，驗證通過才解密** [S11 p.15]。\n- 這補上了 ECB／CBC／CTR 的缺口：前三者只提供**機密性**（SP 800-38A 稱它們為 confidentiality modes [S05 p.5]），無法偵測竄改——呼應密碼學四大目標中的「完整性」（[[intro-what-is-crypto]]）。\n- **IV 不可重複**：同一把金鑰下只要有一個 IV 重複，就可能遭受偽造攻擊；NIST 說這個要求「幾乎和金鑰保密一樣重要」[S11 p.26]。\n- 本頁只作為銜接 CTR 與 TLS 1.3 的橋樑（TLS 1.3 只使用 AEAD 演算法，見 [[app-hybrid-tls]]）。",
+          "example": "```\n            ┌──────────── GCM ────────────┐\n明文 ──▶   │ CTR 變形加密 → 密文          │ ──▶ 密文 + 標籤(tag)\n附加資料 ─▶ │ GHASH 計算 → 認證標籤 tag     │\n            └─────────────────────────────┘\n接收方：先驗證 tag ✔ → 才解密；tag ✘ → 拒絕\n```\n（依 SP 800-38D §1、§5.2 的描述繪製 [S11 p.9][S11 p.15]）",
+          "misconceptions": ""
+        },
+        {
+          "id": "app-hybrid-tls",
+          "title": "密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3",
+          "score": 4,
+          "why": [
+            "body:AES×3",
+            "body:AES-128×1"
+          ],
+          "sources": [
+            "S06",
+            "S10"
+          ],
+          "prerequisites": [
+            "sym-aes",
+            "mode-gcm-aead",
+            "asym-key-exchange",
+            "asym-signature"
+          ],
+          "definition": "**TLS** 的主要目標是在兩個通訊端點之間提供一條**安全通道** [S10 p.6]，具備三種性質 [S10 p.6]：\n- **鑑別（authentication）**：伺服器端一定會被鑑別，可使用 RSA、ECDSA 等非對稱密碼學或預先共享金鑰；\n- **機密性（confidentiality）**：建立連線後的資料只有兩端看得到；\n- **完整性（integrity）**：資料被攻擊者修改一定會被偵測出來。\n\n我們瀏覽 HTTPS 網站時，背後就是 TLS 在保護資料（HTTPS 與 TLS 的關係為本 Wiki 的教學補充）。",
+          "key_points": "- **混合加密（hybrid）**：非對稱演算法太慢、不適合處理大量資料；NIST 指出可以**結合對稱與非對稱演算法**，兼顧效率並減少所需金鑰數量 [S06 p.34–35]。\n- TLS 由兩部分組成 [S10 p.6]：\n  1. **Handshake（交握）協定**：鑑別雙方、協商演算法，並**建立共享金鑰** → 用到 **(EC)DHE 金鑰交換**（[[asym-key-exchange]]）與**憑證簽章**（[[asym-signature]]）；\n  2. **Record（記錄）協定**：用交握得到的金鑰保護之後的所有流量 → 用到**對稱式 AEAD 加密**（如 AES-GCM，[[mode-gcm-aead]]）。\n- **TLS 1.3 的重要改變** [S10 p.8]：\n  - **移除了靜態 RSA 與靜態 Diffie–Hellman 的金鑰交換**，所有公鑰式金鑰交換都提供**前向保密（forward secrecy）**；\n  - 對稱式演算法只保留 **AEAD**。\n- **前向保密**：即使長期金鑰（例如憑證的簽章私鑰）在交握完成後外洩，也不會危及這次連線的 session key [S10 p.143]。\n- 每個 TLS 1.3 實作都必須支援 **TLS_AES_128_GCM_SHA256** [S10 p.102]——也就是 AES-128 + GCM。\n- RSA 在 TLS 1.3 的角色是**簽章**（且必須用 RSASSA-PSS）[S10 p.70]，不是用來「加密並傳送 session key」。",
+          "example": "```\n瀏覽器（Client）                                  網站（Server）\n   │  ① ClientHello + (EC)DHE 公開值  ────────────▶ │\n   │  ◀──────────── ② ServerHello + (EC)DHE 公開值   │   → 雙方各自算出相同的共享金鑰\n   │  ◀──────────── ③ 憑證 + 簽章（RSA-PSS／ECDSA）  │   → 確認「真的是這個網站」\n   │  ④ 之後的網頁資料：AES-GCM 加密 + 認證  ◀══════▶ │   → 機密性 + 完整性\n```\n（依 RFC 8446 §1、§2 的描述簡化繪製 [S10 p.6][S10 p.10]）",
+          "misconceptions": "- 「HTTPS 是用 RSA 加密 session key 再傳給伺服器」——這是舊版 TLS 的靜態 RSA 金鑰傳輸；**TLS 1.3 已移除** [S10 p.8]，改用 (EC)DHE 金鑰交換，RSA 只用於簽章 [S10 p.70]。"
+        }
+      ]
+    },
+    {
+      "slide": 20,
+      "id": "aes-example",
+      "title": "AES 實例：一步一步看資料怎麼變",
+      "terms": [
+        "AES",
+        "AES-128"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "sym-aes",
+          "title": "AES（Advanced Encryption Standard）",
+          "score": 16,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3",
+            "title/alias:AES-128",
+            "body:AES-128×3"
+          ],
+          "sources": [
+            "S01",
+            "S04",
+            "S06",
+            "S12"
+          ],
+          "prerequisites": [
+            "sym-concept",
+            "sym-block-vs-stream",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**AES** 是 NIST 標準化的**對稱式區塊加密演算法**，可以加密與解密數位資料 [S04 p.4]。\n它使用 **128、192 或 256 位元**的金鑰，對 **128 位元**的資料區塊做加解密 [S04 p.4]。",
+          "key_points": "- **怎麼來的**：NIST 在 1997 年公開徵求候選演算法，2000 年宣布選出 **Rijndael** 作為 AES [S04 p.9]——正是 Kerckhoffs 原則「演算法公開、經過公開審查」的實踐 [S01 p.268]（見 [[intro-kerckhoffs]]）。\n- **三個版本**：AES-128、AES-192、AES-256，數字代表**金鑰長度**；**區塊大小一律 128 位元** [S04 p.9]。（Rijndael 本身支援其他區塊大小，但沒有納入標準 [S04 p.9]。）\n- **輪數（rounds）**：AES-128 做 10 輪、AES-192 做 12 輪、AES-256 做 14 輪 [S04 p.19]。\n- **每一輪的四個步驟**（作用在 4×4 位元組的 state 上）[S04 p.20]：\n  1. **SubBytes**：用替換表（S-box）替換每個位元組——非線性的「替換」[S04 p.21]\n  2. **ShiftRows**：把 state 的後三列循環位移——「換位」[S04 p.22]\n  3. **MixColumns**：把每一欄的資料混合在一起 [S04 p.20]\n  4. **AddRoundKey**：用 XOR 把該輪的 round key 加進 state [S04 p.24]\n  其中有一輪會省略一個步驟 [S04 p.10]。\n- **解密（InvCipher）**：把加密的步驟換成各自的反運算（InvSubBytes、InvShiftRows、InvMixColumns 與 AddRoundKey），並**依相反順序**執行 [S04 p.26]。\n- FIPS 197 附錄 B 提供 AES-128 一步一步的完整實例，下方「實例」整理了第 1 輪 [S04 p.9][S04 p.42]。\n- **取代 DES**：AES 是為了取代 DES 與 TDEA 而開發，是新產品**首選**的區塊加密演算法 [S06 p.33]；DES 因電腦運算力進步、強度不足，已在 **2005 年**被撤銷核准 [S06 p.32]。\n- **安全強度**：AES-128／192／256 分別提供 128／192／256 位元的安全強度；低於 112 位元的組合已不再核准用於加密 [S12 p.68]。",
+          "example": "```\n明文區塊（128 bits）\n   │  AddRoundKey（初始）\n   ▼\n┌─ 第 1 ～ Nr 輪 ───────────────────┐\n│ SubBytes → ShiftRows → MixColumns → AddRoundKey │ ×Nr（最後一輪省略一個步驟）\n└──────────────────────────────────┘\n   ▼\n密文區塊（128 bits）       Nr = 10 / 12 / 14\n```\n（依 FIPS 197 §5.1 的步驟順序與 Table 3 的輪數繪製 [S04 p.19][S04 p.20]）\n\n### 實例：FIPS 197 附錄 B，AES-128 第 1 輪 [S04 p.42]\n\n- 輸入：`32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34`；金鑰：`2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c` [S04 p.42]\n- 16 個位元組**依「欄」**填入 4×4 的 state：前 4 個位元組（32 43 f6 a8）成為第 1 欄。\n\n| 步驟 | state（逐列，由上到下） | 看哪一格 |\n|---|---|---|\n| 初始 AddRoundKey（輸入 ⊕ 金鑰） | `19 a0 9a e9 / 3d f4 c6 f8 / e3 e2 8d 48 / be 2b 2a 08` | 32 ⊕ 2b = 19 |\n| ① SubBytes | `d4 e0 b8 1e / 27 bf b4 41 / 11 98 5d 52 / ae f1 e5 30` | 19 查 S-box：列看前半 1、欄看後半 9 → d4（查表規則見 [S04 p.22]） |\n| ② ShiftRows | `d4 e0 b8 1e / bf b4 41 27 / 5d 52 11 98 / 30 ae f1 e5` | 第 r 列往左循環移 r 格：`27 bf b4 41` → `bf b4 41 27` |\n| ③ MixColumns | `04 e0 48 28 / 66 cb f8 06 / 81 19 d3 26 / e5 9a 7a 4c` | 第 1 欄 `d4 bf 5d 30` → `04 66 81 e5`；04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30（式 5.8，[S04 p.23]） |\n| ④ AddRoundKey（round key 1：`a0 88 23 2a / fa 54 a3 6c / fe 2c 39 76 / 17 b1 39 05`） | `a4 68 6b 02 / 9c 9f 5b 6a / 7f 35 ea 50 / f2 2b 43 49` | 04 ⊕ a0 = a4 |\n\n**解密時**倒著走：再 XOR 同一把 round key（得回 `04 e0 48 28…`）→ InvMixColumns → InvShiftRows（每列往右移回）→ InvSubBytes（反查 S-box），最後回到 `19 a0 9a e9…` [S04 p.26]。\n\n表中每個數值都與 FIPS 197 附錄 B 相同；Content Validation 另以獨立的 AES 參考實作（`Workflow/validators/aes_ref.py`）從輸入與金鑰重算，並確認解密方向能還原。",
+          "misconceptions": "- 「AES-256 的區塊是 256 位元」——錯。256 指的是**金鑰長度**，三種 AES 的區塊大小都是 128 位元 [S04 p.9]。\n- 「DES 仍是目前的加密標準」——錯。DES 已於 2005 年撤銷核准 [S06 p.32]。"
+        },
+        {
+          "id": "asym-rsa",
+          "title": "RSA：基本運作原理",
+          "score": 10,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3",
+            "body:AES-128×2"
+          ],
+          "sources": [
+            "S02",
+            "S08",
+            "S09",
+            "S12"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**RSA**（Rivest、Shamir、Adleman，1978）是第一個實用的公開金鑰加密與簽章方案 [S02 p.3]。\n它的特性是：**公開加密金鑰，並不會因此洩漏對應的解密金鑰** [S08 p.1]。",
+          "key_points": "- **金鑰產生** [S08 p.6–7]：\n  1. 選兩個**很大的隨機質數** p、q，計算 **n = p·q**；\n  2. 選一個與 (p−1)(q−1) 互質的 d；\n  3. 算出 e，使 e·d ≡ 1 (mod (p−1)(q−1))。\n  - **公鑰** = (e, n)，**私鑰** = (d, n)；每個人公開加密金鑰、保留解密金鑰 [S08 p.6]。RFC 8017 也定義 RSA 公鑰由 **模數 n（modulus）** 與 **公開指數 e** 組成 [S09 p.8]。\n- **加密／解密** [S08 p.6]：\n  - 加密：C = M^e mod n\n  - 解密：M = C^d mod n\n- **安全性**：n 公開，但 p、q 因為**大數分解非常困難**而保持隱藏，d 也因此無法從 e 推出 [S08 p.6][S08 p.1]。\n- **金鑰長度要跟上時代**：1978 年論文建議 n 約 200 位十進位數字 [S08 p.9]；NIST 現行對照表：RSA 模數 k = **2048** 位元約等於 112 位元安全強度、**3072** 位元約等於 128 位元（相當 AES-128）[S12 p.67][S12 p.68]。\n- **實務上不直接用 M^e mod n**：RFC 8017 規定新應用必須支援 **RSAES-OAEP**（把訊息先經 OAEP 編碼再做 RSA 運算），舊的 PKCS1-v1_5 只為相容而保留 [S09 p.18][S09 p.19]。\n- 量子電腦實用化後，RSA 等演算法的強度估計會大幅改變 [S12 p.68]。",
+          "example": "RSA 原始論文的小例子 [S08 p.10]（簡報驗證節點會用程式重算）：\n\n```\np = 47，q = 59 → n = 47 × 59 = 2773\n(p−1)(q−1) = 46 × 58 = 2668\n私鑰 d = 157 → 公鑰 e = 17（17 × 157 = 2669 ≡ 1 mod 2668）\n加密 M = 920： C = 920^17 mod 2773 = 948\n解密：         M = 948^157 mod 2773 = 920\n```",
+          "misconceptions": "- 「RSA 就是直接算 C = M^e mod n 就好」——教科書公式只說明原理；RFC 8017 要求新應用使用 RSAES-OAEP 編碼 [S09 p.18]。\n- 「200 位數的 n 就夠安全」——那是 1978 年的建議 [S08 p.9]；現行建議至少 2048 位元 [S12 p.67]。"
+        },
+        {
+          "id": "classical-caesar",
+          "title": "Caesar Cipher（凱撒密碼／位移密碼）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**位移密碼（shift cipher）／Caesar 密碼**：把字母表中的每個字母**往後移動固定的 k 位**，是一種限定成「字母位移」的簡單替換密碼 [S03 p.18]。\n用數字表示（A=0、B=1、…、Z=25）：\n\n- 加密：c = (m + k) mod 26\n- 解密：m = (c − k) mod 26  [S03 p.18]\n\n金鑰就是位移量 k。傳說凱撒（Julius Caesar）使用 k = 3 [S03 p.18]。",
+          "key_points": "- 它是 **simple substitution（單表替換）** 的特例：整篇訊息都用同一套對應表 [S03 p.18]（見 [[classical-substitution]]）。\n- 例：k = 1 時，HAL 加密成 IBM [S03 p.18]。\n- HAC 第 1 章用「每個字母往右移 3 位」當作對稱式加密的入門範例，加密與解密用的是同一個祕密（位移量）[S02 p.16]。\n- **致命弱點**：英文只有 26 種位移（s = 26），攻擊者把所有金鑰試一遍就能破解 [S03 p.18]（見 [[classical-limitations]]、[[intro-kerckhoffs]]）。",
+          "example": "```\nk = 3\n明文：H  E  L  L  O\n      ↓+3 ↓+3 ↓+3 ↓+3 ↓+3\n密文：K  H  O  O  R\n```\n（HELLO → KHOOR 由本 Wiki 以公式 c = (m + 3) mod 26 計算，簡報驗證節點會用程式重算。）",
+          "misconceptions": "- 「Caesar 密碼有 25 或 26 把金鑰，所以算安全」——錯。金鑰空間只有 26，用手就能窮舉 [S03 p.18]。"
+        },
+        {
+          "id": "mode-gcm-aead",
+          "title": "GCM 與認證加密（Authenticated Encryption, AEAD）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S05",
+            "S11"
+          ],
+          "prerequisites": [
+            "mode-ctr",
+            "intro-what-is-crypto"
+          ],
+          "definition": "**GCM（Galois/Counter Mode）** 是一種**帶有附加資料的認證加密（authenticated encryption with associated data, AEAD）** 演算法 [S11 p.9]。\n它建立在**區塊大小 128 位元**的經核准區塊加密（例如 AES）之上，所以 GCM 是 AES 的一種操作模式 [S11 p.9]。",
+          "key_points": "- **一次提供兩件事** [S11 p.9]：\n  - **機密性**：使用 **CTR 模式的變形**來加密（見 [[mode-ctr]]）；\n  - **真實性／完整性（authenticity）**：用一個通用雜湊函數計算**認證標籤（authentication tag）**。\n- 加密時同時算出標籤；解密時**先驗證標籤，驗證通過才解密** [S11 p.15]。\n- 這補上了 ECB／CBC／CTR 的缺口：前三者只提供**機密性**（SP 800-38A 稱它們為 confidentiality modes [S05 p.5]），無法偵測竄改——呼應密碼學四大目標中的「完整性」（[[intro-what-is-crypto]]）。\n- **IV 不可重複**：同一把金鑰下只要有一個 IV 重複，就可能遭受偽造攻擊；NIST 說這個要求「幾乎和金鑰保密一樣重要」[S11 p.26]。\n- 本頁只作為銜接 CTR 與 TLS 1.3 的橋樑（TLS 1.3 只使用 AEAD 演算法，見 [[app-hybrid-tls]]）。",
+          "example": "```\n            ┌──────────── GCM ────────────┐\n明文 ──▶   │ CTR 變形加密 → 密文          │ ──▶ 密文 + 標籤(tag)\n附加資料 ─▶ │ GHASH 計算 → 認證標籤 tag     │\n            └─────────────────────────────┘\n接收方：先驗證 tag ✔ → 才解密；tag ✘ → 拒絕\n```\n（依 SP 800-38D §1、§5.2 的描述繪製 [S11 p.9][S11 p.15]）",
+          "misconceptions": ""
+        },
+        {
+          "id": "app-hybrid-tls",
+          "title": "密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3",
+          "score": 4,
+          "why": [
+            "body:AES×3",
+            "body:AES-128×1"
+          ],
+          "sources": [
+            "S06",
+            "S10"
+          ],
+          "prerequisites": [
+            "sym-aes",
+            "mode-gcm-aead",
+            "asym-key-exchange",
+            "asym-signature"
+          ],
+          "definition": "**TLS** 的主要目標是在兩個通訊端點之間提供一條**安全通道** [S10 p.6]，具備三種性質 [S10 p.6]：\n- **鑑別（authentication）**：伺服器端一定會被鑑別，可使用 RSA、ECDSA 等非對稱密碼學或預先共享金鑰；\n- **機密性（confidentiality）**：建立連線後的資料只有兩端看得到；\n- **完整性（integrity）**：資料被攻擊者修改一定會被偵測出來。\n\n我們瀏覽 HTTPS 網站時，背後就是 TLS 在保護資料（HTTPS 與 TLS 的關係為本 Wiki 的教學補充）。",
+          "key_points": "- **混合加密（hybrid）**：非對稱演算法太慢、不適合處理大量資料；NIST 指出可以**結合對稱與非對稱演算法**，兼顧效率並減少所需金鑰數量 [S06 p.34–35]。\n- TLS 由兩部分組成 [S10 p.6]：\n  1. **Handshake（交握）協定**：鑑別雙方、協商演算法，並**建立共享金鑰** → 用到 **(EC)DHE 金鑰交換**（[[asym-key-exchange]]）與**憑證簽章**（[[asym-signature]]）；\n  2. **Record（記錄）協定**：用交握得到的金鑰保護之後的所有流量 → 用到**對稱式 AEAD 加密**（如 AES-GCM，[[mode-gcm-aead]]）。\n- **TLS 1.3 的重要改變** [S10 p.8]：\n  - **移除了靜態 RSA 與靜態 Diffie–Hellman 的金鑰交換**，所有公鑰式金鑰交換都提供**前向保密（forward secrecy）**；\n  - 對稱式演算法只保留 **AEAD**。\n- **前向保密**：即使長期金鑰（例如憑證的簽章私鑰）在交握完成後外洩，也不會危及這次連線的 session key [S10 p.143]。\n- 每個 TLS 1.3 實作都必須支援 **TLS_AES_128_GCM_SHA256** [S10 p.102]——也就是 AES-128 + GCM。\n- RSA 在 TLS 1.3 的角色是**簽章**（且必須用 RSASSA-PSS）[S10 p.70]，不是用來「加密並傳送 session key」。",
+          "example": "```\n瀏覽器（Client）                                  網站（Server）\n   │  ① ClientHello + (EC)DHE 公開值  ────────────▶ │\n   │  ◀──────────── ② ServerHello + (EC)DHE 公開值   │   → 雙方各自算出相同的共享金鑰\n   │  ◀──────────── ③ 憑證 + 簽章（RSA-PSS／ECDSA）  │   → 確認「真的是這個網站」\n   │  ④ 之後的網頁資料：AES-GCM 加密 + 認證  ◀══════▶ │   → 機密性 + 完整性\n```\n（依 RFC 8446 §1、§2 的描述簡化繪製 [S10 p.6][S10 p.10]）",
+          "misconceptions": "- 「HTTPS 是用 RSA 加密 session key 再傳給伺服器」——這是舊版 TLS 的靜態 RSA 金鑰傳輸；**TLS 1.3 已移除** [S10 p.8]，改用 (EC)DHE 金鑰交換，RSA 只用於簽章 [S10 p.70]。"
+        }
+      ]
+    },
+    {
+      "slide": 21,
+      "id": "aes-use",
+      "title": "AES 怎麼解密？現在用在哪裡？",
+      "terms": [
+        "AES",
+        "AES-GCM"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "mode-gcm-aead",
+          "title": "GCM 與認證加密（Authenticated Encryption, AEAD）",
+          "score": 13,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3",
+            "title/alias:AES-GCM"
+          ],
+          "sources": [
+            "S05",
+            "S11"
+          ],
+          "prerequisites": [
+            "mode-ctr",
+            "intro-what-is-crypto"
+          ],
+          "definition": "**GCM（Galois/Counter Mode）** 是一種**帶有附加資料的認證加密（authenticated encryption with associated data, AEAD）** 演算法 [S11 p.9]。\n它建立在**區塊大小 128 位元**的經核准區塊加密（例如 AES）之上，所以 GCM 是 AES 的一種操作模式 [S11 p.9]。",
+          "key_points": "- **一次提供兩件事** [S11 p.9]：\n  - **機密性**：使用 **CTR 模式的變形**來加密（見 [[mode-ctr]]）；\n  - **真實性／完整性（authenticity）**：用一個通用雜湊函數計算**認證標籤（authentication tag）**。\n- 加密時同時算出標籤；解密時**先驗證標籤，驗證通過才解密** [S11 p.15]。\n- 這補上了 ECB／CBC／CTR 的缺口：前三者只提供**機密性**（SP 800-38A 稱它們為 confidentiality modes [S05 p.5]），無法偵測竄改——呼應密碼學四大目標中的「完整性」（[[intro-what-is-crypto]]）。\n- **IV 不可重複**：同一把金鑰下只要有一個 IV 重複，就可能遭受偽造攻擊；NIST 說這個要求「幾乎和金鑰保密一樣重要」[S11 p.26]。\n- 本頁只作為銜接 CTR 與 TLS 1.3 的橋樑（TLS 1.3 只使用 AEAD 演算法，見 [[app-hybrid-tls]]）。",
+          "example": "```\n            ┌──────────── GCM ────────────┐\n明文 ──▶   │ CTR 變形加密 → 密文          │ ──▶ 密文 + 標籤(tag)\n附加資料 ─▶ │ GHASH 計算 → 認證標籤 tag     │\n            └─────────────────────────────┘\n接收方：先驗證 tag ✔ → 才解密；tag ✘ → 拒絕\n```\n（依 SP 800-38D §1、§5.2 的描述繪製 [S11 p.9][S11 p.15]）",
+          "misconceptions": ""
+        },
+        {
+          "id": "asym-rsa",
+          "title": "RSA：基本運作原理",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S02",
+            "S08",
+            "S09",
+            "S12"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**RSA**（Rivest、Shamir、Adleman，1978）是第一個實用的公開金鑰加密與簽章方案 [S02 p.3]。\n它的特性是：**公開加密金鑰，並不會因此洩漏對應的解密金鑰** [S08 p.1]。",
+          "key_points": "- **金鑰產生** [S08 p.6–7]：\n  1. 選兩個**很大的隨機質數** p、q，計算 **n = p·q**；\n  2. 選一個與 (p−1)(q−1) 互質的 d；\n  3. 算出 e，使 e·d ≡ 1 (mod (p−1)(q−1))。\n  - **公鑰** = (e, n)，**私鑰** = (d, n)；每個人公開加密金鑰、保留解密金鑰 [S08 p.6]。RFC 8017 也定義 RSA 公鑰由 **模數 n（modulus）** 與 **公開指數 e** 組成 [S09 p.8]。\n- **加密／解密** [S08 p.6]：\n  - 加密：C = M^e mod n\n  - 解密：M = C^d mod n\n- **安全性**：n 公開，但 p、q 因為**大數分解非常困難**而保持隱藏，d 也因此無法從 e 推出 [S08 p.6][S08 p.1]。\n- **金鑰長度要跟上時代**：1978 年論文建議 n 約 200 位十進位數字 [S08 p.9]；NIST 現行對照表：RSA 模數 k = **2048** 位元約等於 112 位元安全強度、**3072** 位元約等於 128 位元（相當 AES-128）[S12 p.67][S12 p.68]。\n- **實務上不直接用 M^e mod n**：RFC 8017 規定新應用必須支援 **RSAES-OAEP**（把訊息先經 OAEP 編碼再做 RSA 運算），舊的 PKCS1-v1_5 只為相容而保留 [S09 p.18][S09 p.19]。\n- 量子電腦實用化後，RSA 等演算法的強度估計會大幅改變 [S12 p.68]。",
+          "example": "RSA 原始論文的小例子 [S08 p.10]（簡報驗證節點會用程式重算）：\n\n```\np = 47，q = 59 → n = 47 × 59 = 2773\n(p−1)(q−1) = 46 × 58 = 2668\n私鑰 d = 157 → 公鑰 e = 17（17 × 157 = 2669 ≡ 1 mod 2668）\n加密 M = 920： C = 920^17 mod 2773 = 948\n解密：         M = 948^157 mod 2773 = 920\n```",
+          "misconceptions": "- 「RSA 就是直接算 C = M^e mod n 就好」——教科書公式只說明原理；RFC 8017 要求新應用使用 RSAES-OAEP 編碼 [S09 p.18]。\n- 「200 位數的 n 就夠安全」——那是 1978 年的建議 [S08 p.9]；現行建議至少 2048 位元 [S12 p.67]。"
+        },
+        {
+          "id": "classical-caesar",
+          "title": "Caesar Cipher（凱撒密碼／位移密碼）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**位移密碼（shift cipher）／Caesar 密碼**：把字母表中的每個字母**往後移動固定的 k 位**，是一種限定成「字母位移」的簡單替換密碼 [S03 p.18]。\n用數字表示（A=0、B=1、…、Z=25）：\n\n- 加密：c = (m + k) mod 26\n- 解密：m = (c − k) mod 26  [S03 p.18]\n\n金鑰就是位移量 k。傳說凱撒（Julius Caesar）使用 k = 3 [S03 p.18]。",
+          "key_points": "- 它是 **simple substitution（單表替換）** 的特例：整篇訊息都用同一套對應表 [S03 p.18]（見 [[classical-substitution]]）。\n- 例：k = 1 時，HAL 加密成 IBM [S03 p.18]。\n- HAC 第 1 章用「每個字母往右移 3 位」當作對稱式加密的入門範例，加密與解密用的是同一個祕密（位移量）[S02 p.16]。\n- **致命弱點**：英文只有 26 種位移（s = 26），攻擊者把所有金鑰試一遍就能破解 [S03 p.18]（見 [[classical-limitations]]、[[intro-kerckhoffs]]）。",
+          "example": "```\nk = 3\n明文：H  E  L  L  O\n      ↓+3 ↓+3 ↓+3 ↓+3 ↓+3\n密文：K  H  O  O  R\n```\n（HELLO → KHOOR 由本 Wiki 以公式 c = (m + 3) mod 26 計算，簡報驗證節點會用程式重算。）",
+          "misconceptions": "- 「Caesar 密碼有 25 或 26 把金鑰，所以算安全」——錯。金鑰空間只有 26，用手就能窮舉 [S03 p.18]。"
+        },
+        {
+          "id": "sym-aes",
+          "title": "AES（Advanced Encryption Standard）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S01",
+            "S04",
+            "S06",
+            "S12"
+          ],
+          "prerequisites": [
+            "sym-concept",
+            "sym-block-vs-stream",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**AES** 是 NIST 標準化的**對稱式區塊加密演算法**，可以加密與解密數位資料 [S04 p.4]。\n它使用 **128、192 或 256 位元**的金鑰，對 **128 位元**的資料區塊做加解密 [S04 p.4]。",
+          "key_points": "- **怎麼來的**：NIST 在 1997 年公開徵求候選演算法，2000 年宣布選出 **Rijndael** 作為 AES [S04 p.9]——正是 Kerckhoffs 原則「演算法公開、經過公開審查」的實踐 [S01 p.268]（見 [[intro-kerckhoffs]]）。\n- **三個版本**：AES-128、AES-192、AES-256，數字代表**金鑰長度**；**區塊大小一律 128 位元** [S04 p.9]。（Rijndael 本身支援其他區塊大小，但沒有納入標準 [S04 p.9]。）\n- **輪數（rounds）**：AES-128 做 10 輪、AES-192 做 12 輪、AES-256 做 14 輪 [S04 p.19]。\n- **每一輪的四個步驟**（作用在 4×4 位元組的 state 上）[S04 p.20]：\n  1. **SubBytes**：用替換表（S-box）替換每個位元組——非線性的「替換」[S04 p.21]\n  2. **ShiftRows**：把 state 的後三列循環位移——「換位」[S04 p.22]\n  3. **MixColumns**：把每一欄的資料混合在一起 [S04 p.20]\n  4. **AddRoundKey**：用 XOR 把該輪的 round key 加進 state [S04 p.24]\n  其中有一輪會省略一個步驟 [S04 p.10]。\n- **解密（InvCipher）**：把加密的步驟換成各自的反運算（InvSubBytes、InvShiftRows、InvMixColumns 與 AddRoundKey），並**依相反順序**執行 [S04 p.26]。\n- FIPS 197 附錄 B 提供 AES-128 一步一步的完整實例，下方「實例」整理了第 1 輪 [S04 p.9][S04 p.42]。\n- **取代 DES**：AES 是為了取代 DES 與 TDEA 而開發，是新產品**首選**的區塊加密演算法 [S06 p.33]；DES 因電腦運算力進步、強度不足，已在 **2005 年**被撤銷核准 [S06 p.32]。\n- **安全強度**：AES-128／192／256 分別提供 128／192／256 位元的安全強度；低於 112 位元的組合已不再核准用於加密 [S12 p.68]。",
+          "example": "```\n明文區塊（128 bits）\n   │  AddRoundKey（初始）\n   ▼\n┌─ 第 1 ～ Nr 輪 ───────────────────┐\n│ SubBytes → ShiftRows → MixColumns → AddRoundKey │ ×Nr（最後一輪省略一個步驟）\n└──────────────────────────────────┘\n   ▼\n密文區塊（128 bits）       Nr = 10 / 12 / 14\n```\n（依 FIPS 197 §5.1 的步驟順序與 Table 3 的輪數繪製 [S04 p.19][S04 p.20]）\n\n### 實例：FIPS 197 附錄 B，AES-128 第 1 輪 [S04 p.42]\n\n- 輸入：`32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34`；金鑰：`2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c` [S04 p.42]\n- 16 個位元組**依「欄」**填入 4×4 的 state：前 4 個位元組（32 43 f6 a8）成為第 1 欄。\n\n| 步驟 | state（逐列，由上到下） | 看哪一格 |\n|---|---|---|\n| 初始 AddRoundKey（輸入 ⊕ 金鑰） | `19 a0 9a e9 / 3d f4 c6 f8 / e3 e2 8d 48 / be 2b 2a 08` | 32 ⊕ 2b = 19 |\n| ① SubBytes | `d4 e0 b8 1e / 27 bf b4 41 / 11 98 5d 52 / ae f1 e5 30` | 19 查 S-box：列看前半 1、欄看後半 9 → d4（查表規則見 [S04 p.22]） |\n| ② ShiftRows | `d4 e0 b8 1e / bf b4 41 27 / 5d 52 11 98 / 30 ae f1 e5` | 第 r 列往左循環移 r 格：`27 bf b4 41` → `bf b4 41 27` |\n| ③ MixColumns | `04 e0 48 28 / 66 cb f8 06 / 81 19 d3 26 / e5 9a 7a 4c` | 第 1 欄 `d4 bf 5d 30` → `04 66 81 e5`；04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30（式 5.8，[S04 p.23]） |\n| ④ AddRoundKey（round key 1：`a0 88 23 2a / fa 54 a3 6c / fe 2c 39 76 / 17 b1 39 05`） | `a4 68 6b 02 / 9c 9f 5b 6a / 7f 35 ea 50 / f2 2b 43 49` | 04 ⊕ a0 = a4 |\n\n**解密時**倒著走：再 XOR 同一把 round key（得回 `04 e0 48 28…`）→ InvMixColumns → InvShiftRows（每列往右移回）→ InvSubBytes（反查 S-box），最後回到 `19 a0 9a e9…` [S04 p.26]。\n\n表中每個數值都與 FIPS 197 附錄 B 相同；Content Validation 另以獨立的 AES 參考實作（`Workflow/validators/aes_ref.py`）從輸入與金鑰重算，並確認解密方向能還原。",
+          "misconceptions": "- 「AES-256 的區塊是 256 位元」——錯。256 指的是**金鑰長度**，三種 AES 的區塊大小都是 128 位元 [S04 p.9]。\n- 「DES 仍是目前的加密標準」——錯。DES 已於 2005 年撤銷核准 [S06 p.32]。"
+        },
+        {
+          "id": "app-hybrid-tls",
+          "title": "密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3",
+          "score": 5,
+          "why": [
+            "body:AES×3",
+            "body:AES-GCM×2"
+          ],
+          "sources": [
+            "S06",
+            "S10"
+          ],
+          "prerequisites": [
+            "sym-aes",
+            "mode-gcm-aead",
+            "asym-key-exchange",
+            "asym-signature"
+          ],
+          "definition": "**TLS** 的主要目標是在兩個通訊端點之間提供一條**安全通道** [S10 p.6]，具備三種性質 [S10 p.6]：\n- **鑑別（authentication）**：伺服器端一定會被鑑別，可使用 RSA、ECDSA 等非對稱密碼學或預先共享金鑰；\n- **機密性（confidentiality）**：建立連線後的資料只有兩端看得到；\n- **完整性（integrity）**：資料被攻擊者修改一定會被偵測出來。\n\n我們瀏覽 HTTPS 網站時，背後就是 TLS 在保護資料（HTTPS 與 TLS 的關係為本 Wiki 的教學補充）。",
+          "key_points": "- **混合加密（hybrid）**：非對稱演算法太慢、不適合處理大量資料；NIST 指出可以**結合對稱與非對稱演算法**，兼顧效率並減少所需金鑰數量 [S06 p.34–35]。\n- TLS 由兩部分組成 [S10 p.6]：\n  1. **Handshake（交握）協定**：鑑別雙方、協商演算法，並**建立共享金鑰** → 用到 **(EC)DHE 金鑰交換**（[[asym-key-exchange]]）與**憑證簽章**（[[asym-signature]]）；\n  2. **Record（記錄）協定**：用交握得到的金鑰保護之後的所有流量 → 用到**對稱式 AEAD 加密**（如 AES-GCM，[[mode-gcm-aead]]）。\n- **TLS 1.3 的重要改變** [S10 p.8]：\n  - **移除了靜態 RSA 與靜態 Diffie–Hellman 的金鑰交換**，所有公鑰式金鑰交換都提供**前向保密（forward secrecy）**；\n  - 對稱式演算法只保留 **AEAD**。\n- **前向保密**：即使長期金鑰（例如憑證的簽章私鑰）在交握完成後外洩，也不會危及這次連線的 session key [S10 p.143]。\n- 每個 TLS 1.3 實作都必須支援 **TLS_AES_128_GCM_SHA256** [S10 p.102]——也就是 AES-128 + GCM。\n- RSA 在 TLS 1.3 的角色是**簽章**（且必須用 RSASSA-PSS）[S10 p.70]，不是用來「加密並傳送 session key」。",
+          "example": "```\n瀏覽器（Client）                                  網站（Server）\n   │  ① ClientHello + (EC)DHE 公開值  ────────────▶ │\n   │  ◀──────────── ② ServerHello + (EC)DHE 公開值   │   → 雙方各自算出相同的共享金鑰\n   │  ◀──────────── ③ 憑證 + 簽章（RSA-PSS／ECDSA）  │   → 確認「真的是這個網站」\n   │  ④ 之後的網頁資料：AES-GCM 加密 + 認證  ◀══════▶ │   → 機密性 + 完整性\n```\n（依 RFC 8446 §1、§2 的描述簡化繪製 [S10 p.6][S10 p.10]）",
+          "misconceptions": "- 「HTTPS 是用 RSA 加密 session key 再傳給伺服器」——這是舊版 TLS 的靜態 RSA 金鑰傳輸；**TLS 1.3 已移除** [S10 p.8]，改用 (EC)DHE 金鑰交換，RSA 只用於簽章 [S10 p.70]。"
+        }
+      ]
+    },
+    {
+      "slide": 22,
+      "id": "ch4-intro",
+      "title": "第 4 章：操作模式",
+      "terms": [
+        "AES",
+        "AES-128"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "sym-aes",
+          "title": "AES（Advanced Encryption Standard）",
+          "score": 16,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3",
+            "title/alias:AES-128",
+            "body:AES-128×3"
+          ],
+          "sources": [
+            "S01",
+            "S04",
+            "S06",
+            "S12"
+          ],
+          "prerequisites": [
+            "sym-concept",
+            "sym-block-vs-stream",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**AES** 是 NIST 標準化的**對稱式區塊加密演算法**，可以加密與解密數位資料 [S04 p.4]。\n它使用 **128、192 或 256 位元**的金鑰，對 **128 位元**的資料區塊做加解密 [S04 p.4]。",
+          "key_points": "- **怎麼來的**：NIST 在 1997 年公開徵求候選演算法，2000 年宣布選出 **Rijndael** 作為 AES [S04 p.9]——正是 Kerckhoffs 原則「演算法公開、經過公開審查」的實踐 [S01 p.268]（見 [[intro-kerckhoffs]]）。\n- **三個版本**：AES-128、AES-192、AES-256，數字代表**金鑰長度**；**區塊大小一律 128 位元** [S04 p.9]。（Rijndael 本身支援其他區塊大小，但沒有納入標準 [S04 p.9]。）\n- **輪數（rounds）**：AES-128 做 10 輪、AES-192 做 12 輪、AES-256 做 14 輪 [S04 p.19]。\n- **每一輪的四個步驟**（作用在 4×4 位元組的 state 上）[S04 p.20]：\n  1. **SubBytes**：用替換表（S-box）替換每個位元組——非線性的「替換」[S04 p.21]\n  2. **ShiftRows**：把 state 的後三列循環位移——「換位」[S04 p.22]\n  3. **MixColumns**：把每一欄的資料混合在一起 [S04 p.20]\n  4. **AddRoundKey**：用 XOR 把該輪的 round key 加進 state [S04 p.24]\n  其中有一輪會省略一個步驟 [S04 p.10]。\n- **解密（InvCipher）**：把加密的步驟換成各自的反運算（InvSubBytes、InvShiftRows、InvMixColumns 與 AddRoundKey），並**依相反順序**執行 [S04 p.26]。\n- FIPS 197 附錄 B 提供 AES-128 一步一步的完整實例，下方「實例」整理了第 1 輪 [S04 p.9][S04 p.42]。\n- **取代 DES**：AES 是為了取代 DES 與 TDEA 而開發，是新產品**首選**的區塊加密演算法 [S06 p.33]；DES 因電腦運算力進步、強度不足，已在 **2005 年**被撤銷核准 [S06 p.32]。\n- **安全強度**：AES-128／192／256 分別提供 128／192／256 位元的安全強度；低於 112 位元的組合已不再核准用於加密 [S12 p.68]。",
+          "example": "```\n明文區塊（128 bits）\n   │  AddRoundKey（初始）\n   ▼\n┌─ 第 1 ～ Nr 輪 ───────────────────┐\n│ SubBytes → ShiftRows → MixColumns → AddRoundKey │ ×Nr（最後一輪省略一個步驟）\n└──────────────────────────────────┘\n   ▼\n密文區塊（128 bits）       Nr = 10 / 12 / 14\n```\n（依 FIPS 197 §5.1 的步驟順序與 Table 3 的輪數繪製 [S04 p.19][S04 p.20]）\n\n### 實例：FIPS 197 附錄 B，AES-128 第 1 輪 [S04 p.42]\n\n- 輸入：`32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34`；金鑰：`2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c` [S04 p.42]\n- 16 個位元組**依「欄」**填入 4×4 的 state：前 4 個位元組（32 43 f6 a8）成為第 1 欄。\n\n| 步驟 | state（逐列，由上到下） | 看哪一格 |\n|---|---|---|\n| 初始 AddRoundKey（輸入 ⊕ 金鑰） | `19 a0 9a e9 / 3d f4 c6 f8 / e3 e2 8d 48 / be 2b 2a 08` | 32 ⊕ 2b = 19 |\n| ① SubBytes | `d4 e0 b8 1e / 27 bf b4 41 / 11 98 5d 52 / ae f1 e5 30` | 19 查 S-box：列看前半 1、欄看後半 9 → d4（查表規則見 [S04 p.22]） |\n| ② ShiftRows | `d4 e0 b8 1e / bf b4 41 27 / 5d 52 11 98 / 30 ae f1 e5` | 第 r 列往左循環移 r 格：`27 bf b4 41` → `bf b4 41 27` |\n| ③ MixColumns | `04 e0 48 28 / 66 cb f8 06 / 81 19 d3 26 / e5 9a 7a 4c` | 第 1 欄 `d4 bf 5d 30` → `04 66 81 e5`；04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30（式 5.8，[S04 p.23]） |\n| ④ AddRoundKey（round key 1：`a0 88 23 2a / fa 54 a3 6c / fe 2c 39 76 / 17 b1 39 05`） | `a4 68 6b 02 / 9c 9f 5b 6a / 7f 35 ea 50 / f2 2b 43 49` | 04 ⊕ a0 = a4 |\n\n**解密時**倒著走：再 XOR 同一把 round key（得回 `04 e0 48 28…`）→ InvMixColumns → InvShiftRows（每列往右移回）→ InvSubBytes（反查 S-box），最後回到 `19 a0 9a e9…` [S04 p.26]。\n\n表中每個數值都與 FIPS 197 附錄 B 相同；Content Validation 另以獨立的 AES 參考實作（`Workflow/validators/aes_ref.py`）從輸入與金鑰重算，並確認解密方向能還原。",
+          "misconceptions": "- 「AES-256 的區塊是 256 位元」——錯。256 指的是**金鑰長度**，三種 AES 的區塊大小都是 128 位元 [S04 p.9]。\n- 「DES 仍是目前的加密標準」——錯。DES 已於 2005 年撤銷核准 [S06 p.32]。"
+        },
+        {
+          "id": "asym-rsa",
+          "title": "RSA：基本運作原理",
+          "score": 10,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3",
+            "body:AES-128×2"
+          ],
+          "sources": [
+            "S02",
+            "S08",
+            "S09",
+            "S12"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**RSA**（Rivest、Shamir、Adleman，1978）是第一個實用的公開金鑰加密與簽章方案 [S02 p.3]。\n它的特性是：**公開加密金鑰，並不會因此洩漏對應的解密金鑰** [S08 p.1]。",
+          "key_points": "- **金鑰產生** [S08 p.6–7]：\n  1. 選兩個**很大的隨機質數** p、q，計算 **n = p·q**；\n  2. 選一個與 (p−1)(q−1) 互質的 d；\n  3. 算出 e，使 e·d ≡ 1 (mod (p−1)(q−1))。\n  - **公鑰** = (e, n)，**私鑰** = (d, n)；每個人公開加密金鑰、保留解密金鑰 [S08 p.6]。RFC 8017 也定義 RSA 公鑰由 **模數 n（modulus）** 與 **公開指數 e** 組成 [S09 p.8]。\n- **加密／解密** [S08 p.6]：\n  - 加密：C = M^e mod n\n  - 解密：M = C^d mod n\n- **安全性**：n 公開，但 p、q 因為**大數分解非常困難**而保持隱藏，d 也因此無法從 e 推出 [S08 p.6][S08 p.1]。\n- **金鑰長度要跟上時代**：1978 年論文建議 n 約 200 位十進位數字 [S08 p.9]；NIST 現行對照表：RSA 模數 k = **2048** 位元約等於 112 位元安全強度、**3072** 位元約等於 128 位元（相當 AES-128）[S12 p.67][S12 p.68]。\n- **實務上不直接用 M^e mod n**：RFC 8017 規定新應用必須支援 **RSAES-OAEP**（把訊息先經 OAEP 編碼再做 RSA 運算），舊的 PKCS1-v1_5 只為相容而保留 [S09 p.18][S09 p.19]。\n- 量子電腦實用化後，RSA 等演算法的強度估計會大幅改變 [S12 p.68]。",
+          "example": "RSA 原始論文的小例子 [S08 p.10]（簡報驗證節點會用程式重算）：\n\n```\np = 47，q = 59 → n = 47 × 59 = 2773\n(p−1)(q−1) = 46 × 58 = 2668\n私鑰 d = 157 → 公鑰 e = 17（17 × 157 = 2669 ≡ 1 mod 2668）\n加密 M = 920： C = 920^17 mod 2773 = 948\n解密：         M = 948^157 mod 2773 = 920\n```",
+          "misconceptions": "- 「RSA 就是直接算 C = M^e mod n 就好」——教科書公式只說明原理；RFC 8017 要求新應用使用 RSAES-OAEP 編碼 [S09 p.18]。\n- 「200 位數的 n 就夠安全」——那是 1978 年的建議 [S08 p.9]；現行建議至少 2048 位元 [S12 p.67]。"
+        },
+        {
+          "id": "classical-caesar",
+          "title": "Caesar Cipher（凱撒密碼／位移密碼）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**位移密碼（shift cipher）／Caesar 密碼**：把字母表中的每個字母**往後移動固定的 k 位**，是一種限定成「字母位移」的簡單替換密碼 [S03 p.18]。\n用數字表示（A=0、B=1、…、Z=25）：\n\n- 加密：c = (m + k) mod 26\n- 解密：m = (c − k) mod 26  [S03 p.18]\n\n金鑰就是位移量 k。傳說凱撒（Julius Caesar）使用 k = 3 [S03 p.18]。",
+          "key_points": "- 它是 **simple substitution（單表替換）** 的特例：整篇訊息都用同一套對應表 [S03 p.18]（見 [[classical-substitution]]）。\n- 例：k = 1 時，HAL 加密成 IBM [S03 p.18]。\n- HAC 第 1 章用「每個字母往右移 3 位」當作對稱式加密的入門範例，加密與解密用的是同一個祕密（位移量）[S02 p.16]。\n- **致命弱點**：英文只有 26 種位移（s = 26），攻擊者把所有金鑰試一遍就能破解 [S03 p.18]（見 [[classical-limitations]]、[[intro-kerckhoffs]]）。",
+          "example": "```\nk = 3\n明文：H  E  L  L  O\n      ↓+3 ↓+3 ↓+3 ↓+3 ↓+3\n密文：K  H  O  O  R\n```\n（HELLO → KHOOR 由本 Wiki 以公式 c = (m + 3) mod 26 計算，簡報驗證節點會用程式重算。）",
+          "misconceptions": "- 「Caesar 密碼有 25 或 26 把金鑰，所以算安全」——錯。金鑰空間只有 26，用手就能窮舉 [S03 p.18]。"
+        },
+        {
+          "id": "mode-gcm-aead",
+          "title": "GCM 與認證加密（Authenticated Encryption, AEAD）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S05",
+            "S11"
+          ],
+          "prerequisites": [
+            "mode-ctr",
+            "intro-what-is-crypto"
+          ],
+          "definition": "**GCM（Galois/Counter Mode）** 是一種**帶有附加資料的認證加密（authenticated encryption with associated data, AEAD）** 演算法 [S11 p.9]。\n它建立在**區塊大小 128 位元**的經核准區塊加密（例如 AES）之上，所以 GCM 是 AES 的一種操作模式 [S11 p.9]。",
+          "key_points": "- **一次提供兩件事** [S11 p.9]：\n  - **機密性**：使用 **CTR 模式的變形**來加密（見 [[mode-ctr]]）；\n  - **真實性／完整性（authenticity）**：用一個通用雜湊函數計算**認證標籤（authentication tag）**。\n- 加密時同時算出標籤；解密時**先驗證標籤，驗證通過才解密** [S11 p.15]。\n- 這補上了 ECB／CBC／CTR 的缺口：前三者只提供**機密性**（SP 800-38A 稱它們為 confidentiality modes [S05 p.5]），無法偵測竄改——呼應密碼學四大目標中的「完整性」（[[intro-what-is-crypto]]）。\n- **IV 不可重複**：同一把金鑰下只要有一個 IV 重複，就可能遭受偽造攻擊；NIST 說這個要求「幾乎和金鑰保密一樣重要」[S11 p.26]。\n- 本頁只作為銜接 CTR 與 TLS 1.3 的橋樑（TLS 1.3 只使用 AEAD 演算法，見 [[app-hybrid-tls]]）。",
+          "example": "```\n            ┌──────────── GCM ────────────┐\n明文 ──▶   │ CTR 變形加密 → 密文          │ ──▶ 密文 + 標籤(tag)\n附加資料 ─▶ │ GHASH 計算 → 認證標籤 tag     │\n            └─────────────────────────────┘\n接收方：先驗證 tag ✔ → 才解密；tag ✘ → 拒絕\n```\n（依 SP 800-38D §1、§5.2 的描述繪製 [S11 p.9][S11 p.15]）",
+          "misconceptions": ""
+        },
+        {
+          "id": "app-hybrid-tls",
+          "title": "密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3",
+          "score": 4,
+          "why": [
+            "body:AES×3",
+            "body:AES-128×1"
+          ],
+          "sources": [
+            "S06",
+            "S10"
+          ],
+          "prerequisites": [
+            "sym-aes",
+            "mode-gcm-aead",
+            "asym-key-exchange",
+            "asym-signature"
+          ],
+          "definition": "**TLS** 的主要目標是在兩個通訊端點之間提供一條**安全通道** [S10 p.6]，具備三種性質 [S10 p.6]：\n- **鑑別（authentication）**：伺服器端一定會被鑑別，可使用 RSA、ECDSA 等非對稱密碼學或預先共享金鑰；\n- **機密性（confidentiality）**：建立連線後的資料只有兩端看得到；\n- **完整性（integrity）**：資料被攻擊者修改一定會被偵測出來。\n\n我們瀏覽 HTTPS 網站時，背後就是 TLS 在保護資料（HTTPS 與 TLS 的關係為本 Wiki 的教學補充）。",
+          "key_points": "- **混合加密（hybrid）**：非對稱演算法太慢、不適合處理大量資料；NIST 指出可以**結合對稱與非對稱演算法**，兼顧效率並減少所需金鑰數量 [S06 p.34–35]。\n- TLS 由兩部分組成 [S10 p.6]：\n  1. **Handshake（交握）協定**：鑑別雙方、協商演算法，並**建立共享金鑰** → 用到 **(EC)DHE 金鑰交換**（[[asym-key-exchange]]）與**憑證簽章**（[[asym-signature]]）；\n  2. **Record（記錄）協定**：用交握得到的金鑰保護之後的所有流量 → 用到**對稱式 AEAD 加密**（如 AES-GCM，[[mode-gcm-aead]]）。\n- **TLS 1.3 的重要改變** [S10 p.8]：\n  - **移除了靜態 RSA 與靜態 Diffie–Hellman 的金鑰交換**，所有公鑰式金鑰交換都提供**前向保密（forward secrecy）**；\n  - 對稱式演算法只保留 **AEAD**。\n- **前向保密**：即使長期金鑰（例如憑證的簽章私鑰）在交握完成後外洩，也不會危及這次連線的 session key [S10 p.143]。\n- 每個 TLS 1.3 實作都必須支援 **TLS_AES_128_GCM_SHA256** [S10 p.102]——也就是 AES-128 + GCM。\n- RSA 在 TLS 1.3 的角色是**簽章**（且必須用 RSASSA-PSS）[S10 p.70]，不是用來「加密並傳送 session key」。",
+          "example": "```\n瀏覽器（Client）                                  網站（Server）\n   │  ① ClientHello + (EC)DHE 公開值  ────────────▶ │\n   │  ◀──────────── ② ServerHello + (EC)DHE 公開值   │   → 雙方各自算出相同的共享金鑰\n   │  ◀──────────── ③ 憑證 + 簽章（RSA-PSS／ECDSA）  │   → 確認「真的是這個網站」\n   │  ④ 之後的網頁資料：AES-GCM 加密 + 認證  ◀══════▶ │   → 機密性 + 完整性\n```\n（依 RFC 8446 §1、§2 的描述簡化繪製 [S10 p.6][S10 p.10]）",
+          "misconceptions": "- 「HTTPS 是用 RSA 加密 session key 再傳給伺服器」——這是舊版 TLS 的靜態 RSA 金鑰傳輸；**TLS 1.3 已移除** [S10 p.8]，改用 (EC)DHE 金鑰交換，RSA 只用於簽章 [S10 p.70]。"
+        }
+      ]
+    },
+    {
+      "slide": 23,
+      "id": "modes-why",
+      "title": "為什麼需要操作模式？先看 ECB 的問題",
+      "terms": [
+        "操作模式",
+        "ECB"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "mode-overview",
+          "title": "操作模式（Mode of Operation）：為什麼需要？IV 與填充",
+          "score": 11,
+          "why": [
+            "title/alias:操作模式",
+            "body:操作模式×3",
+            "body:ECB×3"
+          ],
+          "sources": [
+            "S03",
+            "S05"
+          ],
+          "prerequisites": [
+            "sym-block-vs-stream",
+            "sym-aes"
+          ],
+          "definition": "區塊加密（如 AES）一次只能加密**一個固定大小的區塊**。訊息比一個區塊長時，就需要一套規則決定「區塊之間怎麼處理」——這就是**操作模式（mode of operation）** [S03 p.7]。\nNIST SP 800-38A 定義了五種提供機密性的操作模式：**ECB、CBC、CFB、OFB、CTR** [S05 p.5]。",
+          "key_points": "- 最簡單的做法是把訊息切塊、各自加密，也就是 ECB；但它在多數應用中有缺點，因此才發展出其他模式 [S03 p.7]（見 [[mode-ecb]]）。\n- **初始向量（IV, initialization vector）**：CBC、CFB、OFB 在加密時除了明文，還要輸入一個資料區塊 IV [S05 p.15]。\n  - IV **不需要保密** [S05 p.15]；\n  - 但 CBC／CFB 的 IV **必須無法預測**，OFB 每次都要用**不同的** IV [S05 p.15]。\n- **填充（padding）**：ECB、CBC、CFB 要求明文長度是區塊大小的整數倍，不足時要在尾端補位元 [S05 p.24]。CTR 不需要（見 [[mode-ctr]]）。\n- 本 Wiki 聚焦 ECB、CBC、CTR 三種，並補充以 CTR 為基礎、TLS 1.3 實際使用的 **GCM**（[[mode-gcm-aead]]）。",
+          "example": "| 模式 | 需要 IV／計數器？ | 需要填充？ | 加密可平行？ | 同樣明文區塊 → 同樣密文區塊？ |\n|---|---|---|---|---|\n| ECB | 否 | 是 | 是 | **是（洩漏圖樣）** |\n| CBC | IV（不可預測） | 是 | 否（解密可以） | 否 |\n| CTR | 計數器（不可重複） | 否 | 是 | 否 |\n\n（整理自 [S05 p.15–24]、[S03 p.7–9]，各格依據見各模式頁。）",
+          "misconceptions": ""
+        },
+        {
+          "id": "mode-ecb",
+          "title": "ECB（Electronic Codebook）模式",
+          "score": 8,
+          "why": [
+            "title/alias:ECB",
+            "body:ECB×3"
+          ],
+          "sources": [
+            "S03",
+            "S05"
+          ],
+          "prerequisites": [
+            "mode-overview"
+          ],
+          "definition": "**ECB**：在同一把金鑰下，每個明文區塊都對應到一個固定的密文區塊，就像查「密碼本」一樣 [S05 p.16]。\n加密時，把區塊加密函數**直接、獨立地**套用到每一個明文區塊 [S05 p.16]：Cⱼ = E_K(Pⱼ)。",
+          "key_points": "- **致命缺點：洩漏圖樣**——同一把金鑰下，相同的明文區塊**永遠**加密成相同的密文區塊 [S05 p.16–17][S03 p.7]。HAC：區塊加密本身不會隱藏資料圖樣 [S03 p.7]。\n- NIST：如果這個性質在應用中不可接受，就**不應該使用 ECB** [S05 p.17]；HAC：ECB **不建議用於超過一個區塊的訊息** [S03 p.7]。\n- 區塊彼此獨立：攻擊者重排或替換密文區塊，解密出的明文也會跟著被重排／替換 [S03 p.7]。\n- 優點只有簡單、可平行運算 [S05 p.16]。\n- ECB 要求明文是完整區塊，需要填充 [S05 p.24]。",
+          "example": "```\n明文區塊：  [AAAA] [BBBB] [AAAA] [AAAA]\nECB 密文：  [X7#q] [p2@L] [X7#q] [X7#q]   ← 重複的明文 → 重複的密文，圖樣外洩\n```\n（示意。簡報中會用一張簡單圖片示範：ECB 加密後仍看得出輪廓，CBC/CTR 則看起來像雜訊。）",
+          "misconceptions": "- 「用了 AES 就安全，模式不重要」——錯。AES 搭配 ECB 時，重複的明文區塊仍會產生重複的密文區塊 [S05 p.16–17]，攻擊者看得出資料的結構。"
+        }
+      ]
+    },
+    {
+      "slide": 24,
+      "id": "cbc",
+      "title": "CBC：把區塊一個接一個串起來",
+      "terms": [
+        "CBC",
+        "初始向量"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "mode-overview",
+          "title": "操作模式（Mode of Operation）：為什麼需要？IV 與填充",
+          "score": 9,
+          "why": [
+            "body:CBC×3",
+            "title/alias:初始向量",
+            "body:初始向量×1"
+          ],
+          "sources": [
+            "S03",
+            "S05"
+          ],
+          "prerequisites": [
+            "sym-block-vs-stream",
+            "sym-aes"
+          ],
+          "definition": "區塊加密（如 AES）一次只能加密**一個固定大小的區塊**。訊息比一個區塊長時，就需要一套規則決定「區塊之間怎麼處理」——這就是**操作模式（mode of operation）** [S03 p.7]。\nNIST SP 800-38A 定義了五種提供機密性的操作模式：**ECB、CBC、CFB、OFB、CTR** [S05 p.5]。",
+          "key_points": "- 最簡單的做法是把訊息切塊、各自加密，也就是 ECB；但它在多數應用中有缺點，因此才發展出其他模式 [S03 p.7]（見 [[mode-ecb]]）。\n- **初始向量（IV, initialization vector）**：CBC、CFB、OFB 在加密時除了明文，還要輸入一個資料區塊 IV [S05 p.15]。\n  - IV **不需要保密** [S05 p.15]；\n  - 但 CBC／CFB 的 IV **必須無法預測**，OFB 每次都要用**不同的** IV [S05 p.15]。\n- **填充（padding）**：ECB、CBC、CFB 要求明文長度是區塊大小的整數倍，不足時要在尾端補位元 [S05 p.24]。CTR 不需要（見 [[mode-ctr]]）。\n- 本 Wiki 聚焦 ECB、CBC、CTR 三種，並補充以 CTR 為基礎、TLS 1.3 實際使用的 **GCM**（[[mode-gcm-aead]]）。",
+          "example": "| 模式 | 需要 IV／計數器？ | 需要填充？ | 加密可平行？ | 同樣明文區塊 → 同樣密文區塊？ |\n|---|---|---|---|---|\n| ECB | 否 | 是 | 是 | **是（洩漏圖樣）** |\n| CBC | IV（不可預測） | 是 | 否（解密可以） | 否 |\n| CTR | 計數器（不可重複） | 否 | 是 | 否 |\n\n（整理自 [S05 p.15–24]、[S03 p.7–9]，各格依據見各模式頁。）",
+          "misconceptions": ""
+        },
+        {
+          "id": "mode-cbc",
+          "title": "CBC（Cipher Block Chaining）模式",
+          "score": 8,
+          "why": [
+            "title/alias:CBC",
+            "body:CBC×3"
+          ],
+          "sources": [
+            "S01",
+            "S03",
+            "S05"
+          ],
+          "prerequisites": [
+            "mode-overview",
+            "mode-ecb",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**CBC**：每個明文區塊在加密前，先和**前一個密文區塊**做 XOR（⊕），把區塊「鏈結」起來；第一個區塊則和 **IV** 做 XOR [S05 p.17]。\n\n- C₁ = E_K(P₁ ⊕ IV)\n- Cⱼ = E_K(Pⱼ ⊕ Cⱼ₋₁)，j = 2…n  [S05 p.17]\n\n**解密**反過來：先用區塊加密的**反函數**解開密文區塊，再和前一個密文區塊（第一塊用 IV）做 XOR [S05 p.18]。\n\n- P₁ = D_K(C₁) ⊕ IV\n- Pⱼ = D_K(Cⱼ) ⊕ Cⱼ₋₁，j = 2…n  [S05 p.18]\n\nRFC 4949 也說 CBC 是「以鏈結密文區塊來改進 ECB」的模式 [S01 p.61]。",
+          "key_points": "- **打破重複**：因為鏈結，每個密文區塊都和它之前的所有明文區塊有關 [S03 p.9]；只要改變 IV，同樣的明文就會產生不同的密文 [S03 p.9]。\n- **IV 不需要保密，但必須無法預測**，而且 IV 的完整性應受到保護 [S05 p.17]。\n- **加密無法平行**：每個區塊的輸入要等前一個區塊的加密結果 [S05 p.18]；**解密可以平行**，因為所有密文區塊都已經拿到了 [S05 p.18]。\n- 需要填充，讓明文成為完整區塊 [S05 p.24]。\n- 錯誤傳播：密文區塊 cⱼ 有一個位元出錯，會影響 cⱼ 與 cⱼ₊₁ 兩個區塊的解密 [S03 p.9]。",
+          "example": "```\n         IV        C1         C2\n          │         │          │\n P1 ──▶ (⊕) ──▶ E_K ─┤  P2 ──▶ (⊕) ──▶ E_K ─┤  P3 ──▶ (⊕) ──▶ E_K ──▶ C3\n                    C1                    C2\n```\n（依 SP 800-38A §6.2 公式繪製 [S05 p.17]）",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 25,
+      "id": "ctr-gcm",
+      "title": "CTR 與 GCM：現在網路上用的模式",
+      "terms": [
+        "CTR",
+        "GCM",
+        "計數器模式"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "mode-ctr",
+          "title": "CTR（Counter）模式",
+          "score": 16,
+          "why": [
+            "title/alias:CTR",
+            "body:CTR×3",
+            "body:GCM×3",
+            "title/alias:計數器模式"
+          ],
+          "sources": [
+            "S05"
+          ],
+          "prerequisites": [
+            "mode-overview",
+            "sym-block-vs-stream"
+          ],
+          "definition": "**CTR**：不直接加密明文，而是用區塊加密去加密一連串的**計數器區塊（counter）** T₁, T₂, …，產生的輸出再和明文做 XOR，得到密文；解密時做同樣的事 [S05 p.22]。\n\n- Oⱼ = E_K(Tⱼ)\n- 加密：Cⱼ = Pⱼ ⊕ Oⱼ；解密：Pⱼ = Cⱼ ⊕ Oⱼ  [S05 p.22]\n\n解密時一樣是「加密計數器」產生同一串 Oⱼ，再和密文 XOR，就把明文還原——**解密不需要區塊加密的反函數** [S05 p.22]。\n\n等於把區塊加密變成「產生金鑰串流」的工具，用法很像串流加密（見 [[sym-block-vs-stream]]）。",
+          "key_points": "- **計數器絕對不可重複**：同一把金鑰下，**所有訊息**用過的計數器區塊都必須彼此不同 [S05 p.22]；每則訊息的初始計數器要選得能確保這種唯一性 [S05 p.26]。\n- **加密與解密都可以平行**；任何一個區塊都能獨立解密 [S05 p.22]。\n- **不需要填充**：最後一個區塊可以不滿，只取輸出區塊最前面需要的位元數做 XOR，其餘丟棄 [S05 p.22]。\n- 解密也只用到區塊加密的「正向」函數 [S05 p.22]。\n- TLS 1.3 使用的 **AES-GCM** 就是建立在 CTR 的變形之上（[[mode-gcm-aead]]）。",
+          "example": "```\n 計數器： T1        T2        T3\n          │         │         │\n         E_K       E_K       E_K      ← 三個區塊可以同時算（平行）\n          │         │         │\n P1 ──▶ (⊕)  P2 ──▶ (⊕)  P3 ──▶ (⊕)\n          ▼         ▼         ▼\n          C1        C2        C3\n```\n（依 SP 800-38A §6.5 公式繪製 [S05 p.22]）",
+          "misconceptions": "- 「CTR 的計數器跟 IV 一樣，偶爾重複沒關係」——錯。SP 800-38A 要求同一金鑰下所有計數器都必須互不相同 [S05 p.22]。"
+        },
+        {
+          "id": "mode-gcm-aead",
+          "title": "GCM 與認證加密（Authenticated Encryption, AEAD）",
+          "score": 11,
+          "why": [
+            "body:CTR×3",
+            "title/alias:GCM",
+            "body:GCM×3"
+          ],
+          "sources": [
+            "S05",
+            "S11"
+          ],
+          "prerequisites": [
+            "mode-ctr",
+            "intro-what-is-crypto"
+          ],
+          "definition": "**GCM（Galois/Counter Mode）** 是一種**帶有附加資料的認證加密（authenticated encryption with associated data, AEAD）** 演算法 [S11 p.9]。\n它建立在**區塊大小 128 位元**的經核准區塊加密（例如 AES）之上，所以 GCM 是 AES 的一種操作模式 [S11 p.9]。",
+          "key_points": "- **一次提供兩件事** [S11 p.9]：\n  - **機密性**：使用 **CTR 模式的變形**來加密（見 [[mode-ctr]]）；\n  - **真實性／完整性（authenticity）**：用一個通用雜湊函數計算**認證標籤（authentication tag）**。\n- 加密時同時算出標籤；解密時**先驗證標籤，驗證通過才解密** [S11 p.15]。\n- 這補上了 ECB／CBC／CTR 的缺口：前三者只提供**機密性**（SP 800-38A 稱它們為 confidentiality modes [S05 p.5]），無法偵測竄改——呼應密碼學四大目標中的「完整性」（[[intro-what-is-crypto]]）。\n- **IV 不可重複**：同一把金鑰下只要有一個 IV 重複，就可能遭受偽造攻擊；NIST 說這個要求「幾乎和金鑰保密一樣重要」[S11 p.26]。\n- 本頁只作為銜接 CTR 與 TLS 1.3 的橋樑（TLS 1.3 只使用 AEAD 演算法，見 [[app-hybrid-tls]]）。",
+          "example": "```\n            ┌──────────── GCM ────────────┐\n明文 ──▶   │ CTR 變形加密 → 密文          │ ──▶ 密文 + 標籤(tag)\n附加資料 ─▶ │ GHASH 計算 → 認證標籤 tag     │\n            └─────────────────────────────┘\n接收方：先驗證 tag ✔ → 才解密；tag ✘ → 拒絕\n```\n（依 SP 800-38D §1、§5.2 的描述繪製 [S11 p.9][S11 p.15]）",
+          "misconceptions": ""
+        },
+        {
+          "id": "mode-ecb",
+          "title": "ECB（Electronic Codebook）模式",
+          "score": 8,
+          "why": [
+            "title/alias:CTR",
+            "body:CTR×3"
+          ],
+          "sources": [
+            "S03",
+            "S05"
+          ],
+          "prerequisites": [
+            "mode-overview"
+          ],
+          "definition": "**ECB**：在同一把金鑰下，每個明文區塊都對應到一個固定的密文區塊，就像查「密碼本」一樣 [S05 p.16]。\n加密時，把區塊加密函數**直接、獨立地**套用到每一個明文區塊 [S05 p.16]：Cⱼ = E_K(Pⱼ)。",
+          "key_points": "- **致命缺點：洩漏圖樣**——同一把金鑰下，相同的明文區塊**永遠**加密成相同的密文區塊 [S05 p.16–17][S03 p.7]。HAC：區塊加密本身不會隱藏資料圖樣 [S03 p.7]。\n- NIST：如果這個性質在應用中不可接受，就**不應該使用 ECB** [S05 p.17]；HAC：ECB **不建議用於超過一個區塊的訊息** [S03 p.7]。\n- 區塊彼此獨立：攻擊者重排或替換密文區塊，解密出的明文也會跟著被重排／替換 [S03 p.7]。\n- 優點只有簡單、可平行運算 [S05 p.16]。\n- ECB 要求明文是完整區塊，需要填充 [S05 p.24]。",
+          "example": "```\n明文區塊：  [AAAA] [BBBB] [AAAA] [AAAA]\nECB 密文：  [X7#q] [p2@L] [X7#q] [X7#q]   ← 重複的明文 → 重複的密文，圖樣外洩\n```\n（示意。簡報中會用一張簡單圖片示範：ECB 加密後仍看得出輪廓，CBC/CTR 則看起來像雜訊。）",
+          "misconceptions": "- 「用了 AES 就安全，模式不重要」——錯。AES 搭配 ECB 時，重複的明文區塊仍會產生重複的密文區塊 [S05 p.16–17]，攻擊者看得出資料的結構。"
+        },
+        {
+          "id": "mode-overview",
+          "title": "操作模式（Mode of Operation）：為什麼需要？IV 與填充",
+          "score": 6,
+          "why": [
+            "body:CTR×3",
+            "body:GCM×3"
+          ],
+          "sources": [
+            "S03",
+            "S05"
+          ],
+          "prerequisites": [
+            "sym-block-vs-stream",
+            "sym-aes"
+          ],
+          "definition": "區塊加密（如 AES）一次只能加密**一個固定大小的區塊**。訊息比一個區塊長時，就需要一套規則決定「區塊之間怎麼處理」——這就是**操作模式（mode of operation）** [S03 p.7]。\nNIST SP 800-38A 定義了五種提供機密性的操作模式：**ECB、CBC、CFB、OFB、CTR** [S05 p.5]。",
+          "key_points": "- 最簡單的做法是把訊息切塊、各自加密，也就是 ECB；但它在多數應用中有缺點，因此才發展出其他模式 [S03 p.7]（見 [[mode-ecb]]）。\n- **初始向量（IV, initialization vector）**：CBC、CFB、OFB 在加密時除了明文，還要輸入一個資料區塊 IV [S05 p.15]。\n  - IV **不需要保密** [S05 p.15]；\n  - 但 CBC／CFB 的 IV **必須無法預測**，OFB 每次都要用**不同的** IV [S05 p.15]。\n- **填充（padding）**：ECB、CBC、CFB 要求明文長度是區塊大小的整數倍，不足時要在尾端補位元 [S05 p.24]。CTR 不需要（見 [[mode-ctr]]）。\n- 本 Wiki 聚焦 ECB、CBC、CTR 三種，並補充以 CTR 為基礎、TLS 1.3 實際使用的 **GCM**（[[mode-gcm-aead]]）。",
+          "example": "| 模式 | 需要 IV／計數器？ | 需要填充？ | 加密可平行？ | 同樣明文區塊 → 同樣密文區塊？ |\n|---|---|---|---|---|\n| ECB | 否 | 是 | 是 | **是（洩漏圖樣）** |\n| CBC | IV（不可預測） | 是 | 否（解密可以） | 否 |\n| CTR | 計數器（不可重複） | 否 | 是 | 否 |\n\n（整理自 [S05 p.15–24]、[S03 p.7–9]，各格依據見各模式頁。）",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 26,
+      "id": "ch5-intro",
+      "title": "第 5 章：公開金鑰加密",
+      "terms": [
+        "金鑰分配問題",
+        "GCM",
+        "AES-GCM"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "mode-gcm-aead",
+          "title": "GCM 與認證加密（Authenticated Encryption, AEAD）",
+          "score": 13,
+          "why": [
+            "title/alias:GCM",
+            "body:GCM×3",
+            "title/alias:AES-GCM"
+          ],
+          "sources": [
+            "S05",
+            "S11"
+          ],
+          "prerequisites": [
+            "mode-ctr",
+            "intro-what-is-crypto"
+          ],
+          "definition": "**GCM（Galois/Counter Mode）** 是一種**帶有附加資料的認證加密（authenticated encryption with associated data, AEAD）** 演算法 [S11 p.9]。\n它建立在**區塊大小 128 位元**的經核准區塊加密（例如 AES）之上，所以 GCM 是 AES 的一種操作模式 [S11 p.9]。",
+          "key_points": "- **一次提供兩件事** [S11 p.9]：\n  - **機密性**：使用 **CTR 模式的變形**來加密（見 [[mode-ctr]]）；\n  - **真實性／完整性（authenticity）**：用一個通用雜湊函數計算**認證標籤（authentication tag）**。\n- 加密時同時算出標籤；解密時**先驗證標籤，驗證通過才解密** [S11 p.15]。\n- 這補上了 ECB／CBC／CTR 的缺口：前三者只提供**機密性**（SP 800-38A 稱它們為 confidentiality modes [S05 p.5]），無法偵測竄改——呼應密碼學四大目標中的「完整性」（[[intro-what-is-crypto]]）。\n- **IV 不可重複**：同一把金鑰下只要有一個 IV 重複，就可能遭受偽造攻擊；NIST 說這個要求「幾乎和金鑰保密一樣重要」[S11 p.26]。\n- 本頁只作為銜接 CTR 與 TLS 1.3 的橋樑（TLS 1.3 只使用 AEAD 演算法，見 [[app-hybrid-tls]]）。",
+          "example": "```\n            ┌──────────── GCM ────────────┐\n明文 ──▶   │ CTR 變形加密 → 密文          │ ──▶ 密文 + 標籤(tag)\n附加資料 ─▶ │ GHASH 計算 → 認證標籤 tag     │\n            └─────────────────────────────┘\n接收方：先驗證 tag ✔ → 才解密；tag ✘ → 拒絕\n```\n（依 SP 800-38D §1、§5.2 的描述繪製 [S11 p.9][S11 p.15]）",
+          "misconceptions": ""
+        },
+        {
+          "id": "sym-concept",
+          "title": "對稱式加密（Symmetric Encryption）與金鑰分配問題",
+          "score": 7,
+          "why": [
+            "title/alias:金鑰分配問題",
+            "body:金鑰分配問題×2"
+          ],
+          "sources": [
+            "S02",
+            "S06"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "intro-kerckhoffs"
+          ],
+          "definition": "**對稱式金鑰演算法**（又稱 secret-key algorithm）用**同一把金鑰**加上保護、也解除保護：加密用的金鑰，同時也是解密用的金鑰 [S06 p.30–31]。\n這把金鑰稱為 **secret key（祕密金鑰）**，又稱 symmetric key [S06 p.18]。\nHAC 的定義：知道加密金鑰 e 就能輕易算出解密金鑰 d（反之亦然），而實務上大多 **e = d** [S02 p.16]。",
+          "key_points": "- **金鑰必須保密**，資料才會受到保護 [S06 p.31]；因為 d 能從 e 推出，加密金鑰 e 也必須保密 [S02 p.17]。\n- 用途：加密以提供**機密性**、訊息鑑別以確保**完整性與來源**、金鑰衍生、金鑰包裝、亂數產生 [S06 p.31]。\n- **金鑰分配問題（key distribution problem）**：雙方要先用**安全的方式**協議並交換金鑰，這是對稱式系統的主要難題之一 [S02 p.17]。\n- **金鑰數量爆炸**：每一對通訊者都要一把不同的金鑰。4 個人需要 6 把；**1,000 個人需要 499,500 把** [S06 p.31]。\n- 對稱式加密分成兩大類：**區塊加密（block cipher）** 與 **串流加密（stream cipher）** [S02 p.17]（見 [[sym-block-vs-stream]]）。\n- 古典密碼（Caesar、替換、換位）都屬於對稱式加密 [S02 p.16][S02 p.19]。",
+          "example": "```\nAlice ──[同一把金鑰 K 加密]──▶ 密文 ──(不安全通道)──▶ Bob [同一把金鑰 K 解密]\n          ▲                                                    ▲\n          └────────── K 必須事先經由「安全通道」交給 Bob ──────────┘\n```\n（依 HAC 圖 1.7「加上一條安全通道來交換金鑰」改繪 [S02 p.17]）\n\nn 個人兩兩通訊所需金鑰數 = n(n−1)/2：4 → 6、1,000 → 499,500 [S06 p.31]。",
+          "misconceptions": ""
+        },
+        {
+          "id": "app-hybrid-tls",
+          "title": "密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3",
+          "score": 5,
+          "why": [
+            "body:GCM×3",
+            "body:AES-GCM×2"
+          ],
+          "sources": [
+            "S06",
+            "S10"
+          ],
+          "prerequisites": [
+            "sym-aes",
+            "mode-gcm-aead",
+            "asym-key-exchange",
+            "asym-signature"
+          ],
+          "definition": "**TLS** 的主要目標是在兩個通訊端點之間提供一條**安全通道** [S10 p.6]，具備三種性質 [S10 p.6]：\n- **鑑別（authentication）**：伺服器端一定會被鑑別，可使用 RSA、ECDSA 等非對稱密碼學或預先共享金鑰；\n- **機密性（confidentiality）**：建立連線後的資料只有兩端看得到；\n- **完整性（integrity）**：資料被攻擊者修改一定會被偵測出來。\n\n我們瀏覽 HTTPS 網站時，背後就是 TLS 在保護資料（HTTPS 與 TLS 的關係為本 Wiki 的教學補充）。",
+          "key_points": "- **混合加密（hybrid）**：非對稱演算法太慢、不適合處理大量資料；NIST 指出可以**結合對稱與非對稱演算法**，兼顧效率並減少所需金鑰數量 [S06 p.34–35]。\n- TLS 由兩部分組成 [S10 p.6]：\n  1. **Handshake（交握）協定**：鑑別雙方、協商演算法，並**建立共享金鑰** → 用到 **(EC)DHE 金鑰交換**（[[asym-key-exchange]]）與**憑證簽章**（[[asym-signature]]）；\n  2. **Record（記錄）協定**：用交握得到的金鑰保護之後的所有流量 → 用到**對稱式 AEAD 加密**（如 AES-GCM，[[mode-gcm-aead]]）。\n- **TLS 1.3 的重要改變** [S10 p.8]：\n  - **移除了靜態 RSA 與靜態 Diffie–Hellman 的金鑰交換**，所有公鑰式金鑰交換都提供**前向保密（forward secrecy）**；\n  - 對稱式演算法只保留 **AEAD**。\n- **前向保密**：即使長期金鑰（例如憑證的簽章私鑰）在交握完成後外洩，也不會危及這次連線的 session key [S10 p.143]。\n- 每個 TLS 1.3 實作都必須支援 **TLS_AES_128_GCM_SHA256** [S10 p.102]——也就是 AES-128 + GCM。\n- RSA 在 TLS 1.3 的角色是**簽章**（且必須用 RSASSA-PSS）[S10 p.70]，不是用來「加密並傳送 session key」。",
+          "example": "```\n瀏覽器（Client）                                  網站（Server）\n   │  ① ClientHello + (EC)DHE 公開值  ────────────▶ │\n   │  ◀──────────── ② ServerHello + (EC)DHE 公開值   │   → 雙方各自算出相同的共享金鑰\n   │  ◀──────────── ③ 憑證 + 簽章（RSA-PSS／ECDSA）  │   → 確認「真的是這個網站」\n   │  ④ 之後的網頁資料：AES-GCM 加密 + 認證  ◀══════▶ │   → 機密性 + 完整性\n```\n（依 RFC 8446 §1、§2 的描述簡化繪製 [S10 p.6][S10 p.10]）",
+          "misconceptions": "- 「HTTPS 是用 RSA 加密 session key 再傳給伺服器」——這是舊版 TLS 的靜態 RSA 金鑰傳輸；**TLS 1.3 已移除** [S10 p.8]，改用 (EC)DHE 金鑰交換，RSA 只用於簽章 [S10 p.70]。"
+        },
+        {
+          "id": "mode-ctr",
+          "title": "CTR（Counter）模式",
+          "score": 4,
+          "why": [
+            "body:GCM×3",
+            "body:AES-GCM×1"
+          ],
+          "sources": [
+            "S05"
+          ],
+          "prerequisites": [
+            "mode-overview",
+            "sym-block-vs-stream"
+          ],
+          "definition": "**CTR**：不直接加密明文，而是用區塊加密去加密一連串的**計數器區塊（counter）** T₁, T₂, …，產生的輸出再和明文做 XOR，得到密文；解密時做同樣的事 [S05 p.22]。\n\n- Oⱼ = E_K(Tⱼ)\n- 加密：Cⱼ = Pⱼ ⊕ Oⱼ；解密：Pⱼ = Cⱼ ⊕ Oⱼ  [S05 p.22]\n\n解密時一樣是「加密計數器」產生同一串 Oⱼ，再和密文 XOR，就把明文還原——**解密不需要區塊加密的反函數** [S05 p.22]。\n\n等於把區塊加密變成「產生金鑰串流」的工具，用法很像串流加密（見 [[sym-block-vs-stream]]）。",
+          "key_points": "- **計數器絕對不可重複**：同一把金鑰下，**所有訊息**用過的計數器區塊都必須彼此不同 [S05 p.22]；每則訊息的初始計數器要選得能確保這種唯一性 [S05 p.26]。\n- **加密與解密都可以平行**；任何一個區塊都能獨立解密 [S05 p.22]。\n- **不需要填充**：最後一個區塊可以不滿，只取輸出區塊最前面需要的位元數做 XOR，其餘丟棄 [S05 p.22]。\n- 解密也只用到區塊加密的「正向」函數 [S05 p.22]。\n- TLS 1.3 使用的 **AES-GCM** 就是建立在 CTR 的變形之上（[[mode-gcm-aead]]）。",
+          "example": "```\n 計數器： T1        T2        T3\n          │         │         │\n         E_K       E_K       E_K      ← 三個區塊可以同時算（平行）\n          │         │         │\n P1 ──▶ (⊕)  P2 ──▶ (⊕)  P3 ──▶ (⊕)\n          ▼         ▼         ▼\n          C1        C2        C3\n```\n（依 SP 800-38A §6.5 公式繪製 [S05 p.22]）",
+          "misconceptions": "- 「CTR 的計數器跟 IV 一樣，偶爾重複沒關係」——錯。SP 800-38A 要求同一金鑰下所有計數器都必須互不相同 [S05 p.22]。"
+        }
+      ]
+    },
+    {
+      "slide": 27,
+      "id": "pk-why",
+      "title": "為什麼需要公開金鑰加密？",
+      "terms": [
+        "公開金鑰",
+        "public key",
+        "金鑰分配問題"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "asym-public-key",
+          "title": "公開金鑰密碼學（Asymmetric / Public-Key Cryptography）",
+          "score": 17,
+          "why": [
+            "title/alias:公開金鑰",
+            "body:公開金鑰×3",
+            "title/alias:public key",
+            "body:public key×3",
+            "body:金鑰分配問題×1"
+          ],
+          "sources": [
+            "S02",
+            "S06",
+            "S07"
+          ],
+          "prerequisites": [
+            "sym-concept"
+          ],
+          "definition": "**非對稱式（公開金鑰）演算法**使用**一對金鑰**：**公鑰（public key）** 與 **私鑰（private key）**，兩者在數學上相關 [S06 p.34]。\n- 公鑰可以公開，不會降低安全性；私鑰必須保密 [S06 p.34]。\n- 雖然兩把金鑰相關，但**無法從公鑰有效率地推出私鑰** [S06 p.34]。",
+          "key_points": "- **起源**：1976 年 Diffie 與 Hellman 發表《New Directions in Cryptography》，提出公開金鑰密碼學的革命性概念 [S02 p.2]。\n- 他們的想法：加密金鑰 E 與解密金鑰 D 不同，而且**從 E 算出 D 在計算上不可行**，所以 E 可以公開 [S07 p.1]。\n- 每個人把自己的公開加密金鑰放進「公開目錄」，任何人都能用它加密訊息，**只有持有對應私鑰的接收者能解密** [S07 p.1]——就算兩人從沒見過面，也能祕密通訊 [S07 p.1]。\n- **為什麼需要**：對稱式加密必須先透過安全通道分配金鑰；Diffie–Hellman 指出，這個**金鑰分配問題**的成本與延遲，是商業通訊走向大型網路的主要障礙 [S07 p.1]（見 [[sym-concept]]）。\n- **加密 vs. 簽章**的金鑰用法 [S06 p.34]：\n  - 加密：**用公鑰加密、用私鑰解密**；\n  - 數位簽章：**用私鑰簽章、用公鑰驗證**（見 [[asym-signature]]）。\n- **缺點：慢**。非對稱演算法比對稱式慢很多，所以不拿來處理大量資料 [S06 p.34]——實務上兩者混合使用（見 [[app-hybrid-tls]]）。",
+          "example": "**信箱比喻**（本 Wiki 的教學比喻）：公鑰像是**投信口**，任何人都能把信投進去；私鑰像是**信箱鑰匙**，只有主人能打開取信。對應「公鑰加密、私鑰解密」[S06 p.34]。\n\n```\nBob 的公鑰（公開）  ──▶  Alice 用它加密  ──▶  密文  ──▶  只有 Bob 的私鑰能解開\n```",
+          "misconceptions": ""
+        },
+        {
+          "id": "asym-key-exchange",
+          "title": "Diffie–Hellman 金鑰交換（Key Exchange）",
+          "score": 9,
+          "why": [
+            "body:公開金鑰×1",
+            "title/alias:public key",
+            "body:public key×2",
+            "body:金鑰分配問題×1"
+          ],
+          "sources": [
+            "S02",
+            "S07",
+            "S08",
+            "S10"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**公開金鑰分配（public key distribution）／金鑰交換**：兩個人在**公開、可被竊聽的通道**上來回交換資訊，最後得到**同一把共享金鑰**；竊聽者即使看到全部交換內容，也無法在可行的計算量內算出這把金鑰 [S07 p.1]。\nDiffie 與 Hellman 在 1976 年提出了這種方法，其安全性建立在**離散對數問題**的困難度上 [S02 p.3][S07 p.6]。",
+          "key_points": "- 目的：**不需要事先的安全通道**就能建立對稱式金鑰，解決金鑰分配問題 [S07 p.1]（見 [[sym-concept]]）。\n- 做法（概念）[S07 p.6]：\n  1. 公開一個質數 q 與一個基底 α；\n  2. 每個人各自挑一個**祕密的隨機數** X，只公開 Y = α^X mod q；\n  3. 雙方用「對方公開的 Y」與「自己的祕密 X」，各自算出相同的 K。\n- 由 X 算 Y 很容易，**由 Y 反推 X（取對數）很難**——系統的安全性正取決於這個困難度 [S07 p.6]。\n- 它和 RSA 不同：DH 是讓兩人**協議出一把金鑰**，再拿去給一般的（對稱式）密碼系統使用 [S08 p.7]。\n- **現代應用**：TLS 1.3 的金鑰交換模式之一就是 **(EC)DHE**——建立在有限體或橢圓曲線上的 Diffie–Hellman [S10 p.10]（見 [[app-hybrid-tls]]）。",
+          "example": "小數字教學範例（本 Wiki 依 [S07 p.6] 的公式自行計算，簡報驗證節點會用程式重算；實務上 q 要非常大）：\n\n```\n公開：q = 23，α = 5\nAlice 祕密 X_A = 4 → 公開 Y_A = 5^4 mod 23 = 4\nBob   祕密 X_B = 3 → 公開 Y_B = 5^3 mod 23 = 10\nAlice 算：K = Y_B^X_A mod 23 = 10^4 mod 23 = 18\nBob   算：K = Y_A^X_B mod 23 = 4^3  mod 23 = 18   ← 兩人得到同一把金鑰\n竊聽者只看到 23、5、4、10，要算出 18 必須先解離散對數\n```",
+          "misconceptions": ""
+        },
+        {
+          "id": "sym-concept",
+          "title": "對稱式加密（Symmetric Encryption）與金鑰分配問題",
+          "score": 8,
+          "why": [
+            "body:公開金鑰×1",
+            "title/alias:金鑰分配問題",
+            "body:金鑰分配問題×2"
+          ],
+          "sources": [
+            "S02",
+            "S06"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "intro-kerckhoffs"
+          ],
+          "definition": "**對稱式金鑰演算法**（又稱 secret-key algorithm）用**同一把金鑰**加上保護、也解除保護：加密用的金鑰，同時也是解密用的金鑰 [S06 p.30–31]。\n這把金鑰稱為 **secret key（祕密金鑰）**，又稱 symmetric key [S06 p.18]。\nHAC 的定義：知道加密金鑰 e 就能輕易算出解密金鑰 d（反之亦然），而實務上大多 **e = d** [S02 p.16]。",
+          "key_points": "- **金鑰必須保密**，資料才會受到保護 [S06 p.31]；因為 d 能從 e 推出，加密金鑰 e 也必須保密 [S02 p.17]。\n- 用途：加密以提供**機密性**、訊息鑑別以確保**完整性與來源**、金鑰衍生、金鑰包裝、亂數產生 [S06 p.31]。\n- **金鑰分配問題（key distribution problem）**：雙方要先用**安全的方式**協議並交換金鑰，這是對稱式系統的主要難題之一 [S02 p.17]。\n- **金鑰數量爆炸**：每一對通訊者都要一把不同的金鑰。4 個人需要 6 把；**1,000 個人需要 499,500 把** [S06 p.31]。\n- 對稱式加密分成兩大類：**區塊加密（block cipher）** 與 **串流加密（stream cipher）** [S02 p.17]（見 [[sym-block-vs-stream]]）。\n- 古典密碼（Caesar、替換、換位）都屬於對稱式加密 [S02 p.16][S02 p.19]。",
+          "example": "```\nAlice ──[同一把金鑰 K 加密]──▶ 密文 ──(不安全通道)──▶ Bob [同一把金鑰 K 解密]\n          ▲                                                    ▲\n          └────────── K 必須事先經由「安全通道」交給 Bob ──────────┘\n```\n（依 HAC 圖 1.7「加上一條安全通道來交換金鑰」改繪 [S02 p.17]）\n\nn 個人兩兩通訊所需金鑰數 = n(n−1)/2：4 → 6、1,000 → 499,500 [S06 p.31]。",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 28,
+      "id": "dh",
+      "title": "Diffie–Hellman：在公開場合約定同一把金鑰",
+      "terms": [
+        "Diffie-Hellman",
+        "金鑰交換"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "asym-key-exchange",
+          "title": "Diffie–Hellman 金鑰交換（Key Exchange）",
+          "score": 14,
+          "why": [
+            "title/alias:Diffie-Hellman",
+            "body:Diffie-Hellman×1",
+            "title/alias:金鑰交換",
+            "body:金鑰交換×3"
+          ],
+          "sources": [
+            "S02",
+            "S07",
+            "S08",
+            "S10"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**公開金鑰分配（public key distribution）／金鑰交換**：兩個人在**公開、可被竊聽的通道**上來回交換資訊，最後得到**同一把共享金鑰**；竊聽者即使看到全部交換內容，也無法在可行的計算量內算出這把金鑰 [S07 p.1]。\nDiffie 與 Hellman 在 1976 年提出了這種方法，其安全性建立在**離散對數問題**的困難度上 [S02 p.3][S07 p.6]。",
+          "key_points": "- 目的：**不需要事先的安全通道**就能建立對稱式金鑰，解決金鑰分配問題 [S07 p.1]（見 [[sym-concept]]）。\n- 做法（概念）[S07 p.6]：\n  1. 公開一個質數 q 與一個基底 α；\n  2. 每個人各自挑一個**祕密的隨機數** X，只公開 Y = α^X mod q；\n  3. 雙方用「對方公開的 Y」與「自己的祕密 X」，各自算出相同的 K。\n- 由 X 算 Y 很容易，**由 Y 反推 X（取對數）很難**——系統的安全性正取決於這個困難度 [S07 p.6]。\n- 它和 RSA 不同：DH 是讓兩人**協議出一把金鑰**，再拿去給一般的（對稱式）密碼系統使用 [S08 p.7]。\n- **現代應用**：TLS 1.3 的金鑰交換模式之一就是 **(EC)DHE**——建立在有限體或橢圓曲線上的 Diffie–Hellman [S10 p.10]（見 [[app-hybrid-tls]]）。",
+          "example": "小數字教學範例（本 Wiki 依 [S07 p.6] 的公式自行計算，簡報驗證節點會用程式重算；實務上 q 要非常大）：\n\n```\n公開：q = 23，α = 5\nAlice 祕密 X_A = 4 → 公開 Y_A = 5^4 mod 23 = 4\nBob   祕密 X_B = 3 → 公開 Y_B = 5^3 mod 23 = 10\nAlice 算：K = Y_B^X_A mod 23 = 10^4 mod 23 = 18\nBob   算：K = Y_A^X_B mod 23 = 4^3  mod 23 = 18   ← 兩人得到同一把金鑰\n竊聽者只看到 23、5、4、10，要算出 18 必須先解離散對數\n```",
+          "misconceptions": ""
+        },
+        {
+          "id": "app-hybrid-tls",
+          "title": "密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3",
+          "score": 5,
+          "why": [
+            "body:Diffie-Hellman×2",
+            "body:金鑰交換×3"
+          ],
+          "sources": [
+            "S06",
+            "S10"
+          ],
+          "prerequisites": [
+            "sym-aes",
+            "mode-gcm-aead",
+            "asym-key-exchange",
+            "asym-signature"
+          ],
+          "definition": "**TLS** 的主要目標是在兩個通訊端點之間提供一條**安全通道** [S10 p.6]，具備三種性質 [S10 p.6]：\n- **鑑別（authentication）**：伺服器端一定會被鑑別，可使用 RSA、ECDSA 等非對稱密碼學或預先共享金鑰；\n- **機密性（confidentiality）**：建立連線後的資料只有兩端看得到；\n- **完整性（integrity）**：資料被攻擊者修改一定會被偵測出來。\n\n我們瀏覽 HTTPS 網站時，背後就是 TLS 在保護資料（HTTPS 與 TLS 的關係為本 Wiki 的教學補充）。",
+          "key_points": "- **混合加密（hybrid）**：非對稱演算法太慢、不適合處理大量資料；NIST 指出可以**結合對稱與非對稱演算法**，兼顧效率並減少所需金鑰數量 [S06 p.34–35]。\n- TLS 由兩部分組成 [S10 p.6]：\n  1. **Handshake（交握）協定**：鑑別雙方、協商演算法，並**建立共享金鑰** → 用到 **(EC)DHE 金鑰交換**（[[asym-key-exchange]]）與**憑證簽章**（[[asym-signature]]）；\n  2. **Record（記錄）協定**：用交握得到的金鑰保護之後的所有流量 → 用到**對稱式 AEAD 加密**（如 AES-GCM，[[mode-gcm-aead]]）。\n- **TLS 1.3 的重要改變** [S10 p.8]：\n  - **移除了靜態 RSA 與靜態 Diffie–Hellman 的金鑰交換**，所有公鑰式金鑰交換都提供**前向保密（forward secrecy）**；\n  - 對稱式演算法只保留 **AEAD**。\n- **前向保密**：即使長期金鑰（例如憑證的簽章私鑰）在交握完成後外洩，也不會危及這次連線的 session key [S10 p.143]。\n- 每個 TLS 1.3 實作都必須支援 **TLS_AES_128_GCM_SHA256** [S10 p.102]——也就是 AES-128 + GCM。\n- RSA 在 TLS 1.3 的角色是**簽章**（且必須用 RSASSA-PSS）[S10 p.70]，不是用來「加密並傳送 session key」。",
+          "example": "```\n瀏覽器（Client）                                  網站（Server）\n   │  ① ClientHello + (EC)DHE 公開值  ────────────▶ │\n   │  ◀──────────── ② ServerHello + (EC)DHE 公開值   │   → 雙方各自算出相同的共享金鑰\n   │  ◀──────────── ③ 憑證 + 簽章（RSA-PSS／ECDSA）  │   → 確認「真的是這個網站」\n   │  ④ 之後的網頁資料：AES-GCM 加密 + 認證  ◀══════▶ │   → 機密性 + 完整性\n```\n（依 RFC 8446 §1、§2 的描述簡化繪製 [S10 p.6][S10 p.10]）",
+          "misconceptions": "- 「HTTPS 是用 RSA 加密 session key 再傳給伺服器」——這是舊版 TLS 的靜態 RSA 金鑰傳輸；**TLS 1.3 已移除** [S10 p.8]，改用 (EC)DHE 金鑰交換，RSA 只用於簽章 [S10 p.70]。"
+        }
+      ]
+    },
+    {
+      "slide": 29,
+      "id": "rsa-keys",
+      "title": "RSA（一）：怎麼產生一對金鑰",
+      "terms": [
+        "RSA",
+        "RSA modulus"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "asym-rsa",
+          "title": "RSA：基本運作原理",
+          "score": 14,
+          "why": [
+            "title/alias:RSA",
+            "body:RSA×3",
+            "title/alias:RSA modulus",
+            "body:RSA modulus×1"
+          ],
+          "sources": [
+            "S02",
+            "S08",
+            "S09",
+            "S12"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**RSA**（Rivest、Shamir、Adleman，1978）是第一個實用的公開金鑰加密與簽章方案 [S02 p.3]。\n它的特性是：**公開加密金鑰，並不會因此洩漏對應的解密金鑰** [S08 p.1]。",
+          "key_points": "- **金鑰產生** [S08 p.6–7]：\n  1. 選兩個**很大的隨機質數** p、q，計算 **n = p·q**；\n  2. 選一個與 (p−1)(q−1) 互質的 d；\n  3. 算出 e，使 e·d ≡ 1 (mod (p−1)(q−1))。\n  - **公鑰** = (e, n)，**私鑰** = (d, n)；每個人公開加密金鑰、保留解密金鑰 [S08 p.6]。RFC 8017 也定義 RSA 公鑰由 **模數 n（modulus）** 與 **公開指數 e** 組成 [S09 p.8]。\n- **加密／解密** [S08 p.6]：\n  - 加密：C = M^e mod n\n  - 解密：M = C^d mod n\n- **安全性**：n 公開，但 p、q 因為**大數分解非常困難**而保持隱藏，d 也因此無法從 e 推出 [S08 p.6][S08 p.1]。\n- **金鑰長度要跟上時代**：1978 年論文建議 n 約 200 位十進位數字 [S08 p.9]；NIST 現行對照表：RSA 模數 k = **2048** 位元約等於 112 位元安全強度、**3072** 位元約等於 128 位元（相當 AES-128）[S12 p.67][S12 p.68]。\n- **實務上不直接用 M^e mod n**：RFC 8017 規定新應用必須支援 **RSAES-OAEP**（把訊息先經 OAEP 編碼再做 RSA 運算），舊的 PKCS1-v1_5 只為相容而保留 [S09 p.18][S09 p.19]。\n- 量子電腦實用化後，RSA 等演算法的強度估計會大幅改變 [S12 p.68]。",
+          "example": "RSA 原始論文的小例子 [S08 p.10]（簡報驗證節點會用程式重算）：\n\n```\np = 47，q = 59 → n = 47 × 59 = 2773\n(p−1)(q−1) = 46 × 58 = 2668\n私鑰 d = 157 → 公鑰 e = 17（17 × 157 = 2669 ≡ 1 mod 2668）\n加密 M = 920： C = 920^17 mod 2773 = 948\n解密：         M = 948^157 mod 2773 = 920\n```",
+          "misconceptions": "- 「RSA 就是直接算 C = M^e mod n 就好」——教科書公式只說明原理；RFC 8017 要求新應用使用 RSAES-OAEP 編碼 [S09 p.18]。\n- 「200 位數的 n 就夠安全」——那是 1978 年的建議 [S08 p.9]；現行建議至少 2048 位元 [S12 p.67]。"
+        },
+        {
+          "id": "asym-signature",
+          "title": "數位簽章（Digital Signature）",
+          "score": 8,
+          "why": [
+            "title/alias:RSA",
+            "body:RSA×3"
+          ],
+          "sources": [
+            "S02",
+            "S06",
+            "S08",
+            "S09",
+            "S10"
+          ],
+          "prerequisites": [
+            "asym-public-key"
+          ],
+          "definition": "**數位簽章**：用**私鑰**對訊息產生簽章，任何人都能用對應的**公鑰**驗證 [S06 p.34][S08 p.1]。\nRSA 論文指出：簽章**無法偽造**，簽署者事後也**不能否認**簽過 [S08 p.1]。",
+          "key_points": "- 數位簽章是公開金鑰密碼學最重要的貢獻之一 [S02 p.3]。\n- 金鑰方向與加密**相反**：加密是「公鑰加密、私鑰解密」；簽章是「**私鑰簽、公鑰驗**」[S06 p.34]。\n- 提供的服務：**身分、完整性、來源鑑別** [S06 p.34]，以及**不可否認性**（簽署者無法否認）[S08 p.1]——呼應密碼學四大目標（[[intro-what-is-crypto]]）。\n- 電子簽章必須**同時依賴訊息與簽署者**，否則接收者可以改訊息、或把簽章貼到別的訊息上 [S08 p.4]。\n- 現行標準：RFC 8017 規定新應用必須使用 **RSASSA-PSS** [S09 p.31]；TLS 1.3 的 RSA 簽章也必須使用 RSASSA-PSS [S10 p.70]。",
+          "example": "```\nBob：  訊息 M ──[Bob 的私鑰 簽章]──▶ (M, 簽章 S)\nAlice：(M, S) ──[Bob 的公鑰 驗證]──▶ ✔ 確實是 Bob 簽的，而且 M 沒被改過\n```\n（依 [S06 p.34] 的金鑰用法與 [S08 p.1] 的說明繪製）",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 30,
+      "id": "rsa-encrypt",
+      "title": "RSA（二）：加密與解密",
+      "terms": [
+        "RSA",
+        "OAEP"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "asym-rsa",
+          "title": "RSA：基本運作原理",
+          "score": 16,
+          "why": [
+            "title/alias:RSA",
+            "body:RSA×3",
+            "title/alias:OAEP",
+            "body:OAEP×3"
+          ],
+          "sources": [
+            "S02",
+            "S08",
+            "S09",
+            "S12"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**RSA**（Rivest、Shamir、Adleman，1978）是第一個實用的公開金鑰加密與簽章方案 [S02 p.3]。\n它的特性是：**公開加密金鑰，並不會因此洩漏對應的解密金鑰** [S08 p.1]。",
+          "key_points": "- **金鑰產生** [S08 p.6–7]：\n  1. 選兩個**很大的隨機質數** p、q，計算 **n = p·q**；\n  2. 選一個與 (p−1)(q−1) 互質的 d；\n  3. 算出 e，使 e·d ≡ 1 (mod (p−1)(q−1))。\n  - **公鑰** = (e, n)，**私鑰** = (d, n)；每個人公開加密金鑰、保留解密金鑰 [S08 p.6]。RFC 8017 也定義 RSA 公鑰由 **模數 n（modulus）** 與 **公開指數 e** 組成 [S09 p.8]。\n- **加密／解密** [S08 p.6]：\n  - 加密：C = M^e mod n\n  - 解密：M = C^d mod n\n- **安全性**：n 公開，但 p、q 因為**大數分解非常困難**而保持隱藏，d 也因此無法從 e 推出 [S08 p.6][S08 p.1]。\n- **金鑰長度要跟上時代**：1978 年論文建議 n 約 200 位十進位數字 [S08 p.9]；NIST 現行對照表：RSA 模數 k = **2048** 位元約等於 112 位元安全強度、**3072** 位元約等於 128 位元（相當 AES-128）[S12 p.67][S12 p.68]。\n- **實務上不直接用 M^e mod n**：RFC 8017 規定新應用必須支援 **RSAES-OAEP**（把訊息先經 OAEP 編碼再做 RSA 運算），舊的 PKCS1-v1_5 只為相容而保留 [S09 p.18][S09 p.19]。\n- 量子電腦實用化後，RSA 等演算法的強度估計會大幅改變 [S12 p.68]。",
+          "example": "RSA 原始論文的小例子 [S08 p.10]（簡報驗證節點會用程式重算）：\n\n```\np = 47，q = 59 → n = 47 × 59 = 2773\n(p−1)(q−1) = 46 × 58 = 2668\n私鑰 d = 157 → 公鑰 e = 17（17 × 157 = 2669 ≡ 1 mod 2668）\n加密 M = 920： C = 920^17 mod 2773 = 948\n解密：         M = 948^157 mod 2773 = 920\n```",
+          "misconceptions": "- 「RSA 就是直接算 C = M^e mod n 就好」——教科書公式只說明原理；RFC 8017 要求新應用使用 RSAES-OAEP 編碼 [S09 p.18]。\n- 「200 位數的 n 就夠安全」——那是 1978 年的建議 [S08 p.9]；現行建議至少 2048 位元 [S12 p.67]。"
+        },
+        {
+          "id": "asym-signature",
+          "title": "數位簽章（Digital Signature）",
+          "score": 8,
+          "why": [
+            "title/alias:RSA",
+            "body:RSA×3"
+          ],
+          "sources": [
+            "S02",
+            "S06",
+            "S08",
+            "S09",
+            "S10"
+          ],
+          "prerequisites": [
+            "asym-public-key"
+          ],
+          "definition": "**數位簽章**：用**私鑰**對訊息產生簽章，任何人都能用對應的**公鑰**驗證 [S06 p.34][S08 p.1]。\nRSA 論文指出：簽章**無法偽造**，簽署者事後也**不能否認**簽過 [S08 p.1]。",
+          "key_points": "- 數位簽章是公開金鑰密碼學最重要的貢獻之一 [S02 p.3]。\n- 金鑰方向與加密**相反**：加密是「公鑰加密、私鑰解密」；簽章是「**私鑰簽、公鑰驗**」[S06 p.34]。\n- 提供的服務：**身分、完整性、來源鑑別** [S06 p.34]，以及**不可否認性**（簽署者無法否認）[S08 p.1]——呼應密碼學四大目標（[[intro-what-is-crypto]]）。\n- 電子簽章必須**同時依賴訊息與簽署者**，否則接收者可以改訊息、或把簽章貼到別的訊息上 [S08 p.4]。\n- 現行標準：RFC 8017 規定新應用必須使用 **RSASSA-PSS** [S09 p.31]；TLS 1.3 的 RSA 簽章也必須使用 RSASSA-PSS [S10 p.70]。",
+          "example": "```\nBob：  訊息 M ──[Bob 的私鑰 簽章]──▶ (M, 簽章 S)\nAlice：(M, S) ──[Bob 的公鑰 驗證]──▶ ✔ 確實是 Bob 簽的，而且 M 沒被改過\n```\n（依 [S06 p.34] 的金鑰用法與 [S08 p.1] 的說明繪製）",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 31,
+      "id": "signature",
+      "title": "數位簽章：私鑰簽、公鑰驗",
+      "terms": [
+        "數位簽章",
+        "digital signature"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "asym-signature",
+          "title": "數位簽章（Digital Signature）",
+          "score": 16,
+          "why": [
+            "title/alias:數位簽章",
+            "body:數位簽章×3",
+            "title/alias:digital signature",
+            "body:digital signature×3"
+          ],
+          "sources": [
+            "S02",
+            "S06",
+            "S08",
+            "S09",
+            "S10"
+          ],
+          "prerequisites": [
+            "asym-public-key"
+          ],
+          "definition": "**數位簽章**：用**私鑰**對訊息產生簽章，任何人都能用對應的**公鑰**驗證 [S06 p.34][S08 p.1]。\nRSA 論文指出：簽章**無法偽造**，簽署者事後也**不能否認**簽過 [S08 p.1]。",
+          "key_points": "- 數位簽章是公開金鑰密碼學最重要的貢獻之一 [S02 p.3]。\n- 金鑰方向與加密**相反**：加密是「公鑰加密、私鑰解密」；簽章是「**私鑰簽、公鑰驗**」[S06 p.34]。\n- 提供的服務：**身分、完整性、來源鑑別** [S06 p.34]，以及**不可否認性**（簽署者無法否認）[S08 p.1]——呼應密碼學四大目標（[[intro-what-is-crypto]]）。\n- 電子簽章必須**同時依賴訊息與簽署者**，否則接收者可以改訊息、或把簽章貼到別的訊息上 [S08 p.4]。\n- 現行標準：RFC 8017 規定新應用必須使用 **RSASSA-PSS** [S09 p.31]；TLS 1.3 的 RSA 簽章也必須使用 RSASSA-PSS [S10 p.70]。",
+          "example": "```\nBob：  訊息 M ──[Bob 的私鑰 簽章]──▶ (M, 簽章 S)\nAlice：(M, S) ──[Bob 的公鑰 驗證]──▶ ✔ 確實是 Bob 簽的，而且 M 沒被改過\n```\n（依 [S06 p.34] 的金鑰用法與 [S08 p.1] 的說明繪製）",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 32,
+      "id": "ch6-intro",
+      "title": "第 6 章：綜合應用",
+      "terms": [
+        "public key",
+        "數位簽章",
+        "AES"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "asym-rsa",
+          "title": "RSA：基本運作原理",
+          "score": 10,
+          "why": [
+            "body:public key×1",
+            "body:數位簽章×1",
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S02",
+            "S08",
+            "S09",
+            "S12"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**RSA**（Rivest、Shamir、Adleman，1978）是第一個實用的公開金鑰加密與簽章方案 [S02 p.3]。\n它的特性是：**公開加密金鑰，並不會因此洩漏對應的解密金鑰** [S08 p.1]。",
+          "key_points": "- **金鑰產生** [S08 p.6–7]：\n  1. 選兩個**很大的隨機質數** p、q，計算 **n = p·q**；\n  2. 選一個與 (p−1)(q−1) 互質的 d；\n  3. 算出 e，使 e·d ≡ 1 (mod (p−1)(q−1))。\n  - **公鑰** = (e, n)，**私鑰** = (d, n)；每個人公開加密金鑰、保留解密金鑰 [S08 p.6]。RFC 8017 也定義 RSA 公鑰由 **模數 n（modulus）** 與 **公開指數 e** 組成 [S09 p.8]。\n- **加密／解密** [S08 p.6]：\n  - 加密：C = M^e mod n\n  - 解密：M = C^d mod n\n- **安全性**：n 公開，但 p、q 因為**大數分解非常困難**而保持隱藏，d 也因此無法從 e 推出 [S08 p.6][S08 p.1]。\n- **金鑰長度要跟上時代**：1978 年論文建議 n 約 200 位十進位數字 [S08 p.9]；NIST 現行對照表：RSA 模數 k = **2048** 位元約等於 112 位元安全強度、**3072** 位元約等於 128 位元（相當 AES-128）[S12 p.67][S12 p.68]。\n- **實務上不直接用 M^e mod n**：RFC 8017 規定新應用必須支援 **RSAES-OAEP**（把訊息先經 OAEP 編碼再做 RSA 運算），舊的 PKCS1-v1_5 只為相容而保留 [S09 p.18][S09 p.19]。\n- 量子電腦實用化後，RSA 等演算法的強度估計會大幅改變 [S12 p.68]。",
+          "example": "RSA 原始論文的小例子 [S08 p.10]（簡報驗證節點會用程式重算）：\n\n```\np = 47，q = 59 → n = 47 × 59 = 2773\n(p−1)(q−1) = 46 × 58 = 2668\n私鑰 d = 157 → 公鑰 e = 17（17 × 157 = 2669 ≡ 1 mod 2668）\n加密 M = 920： C = 920^17 mod 2773 = 948\n解密：         M = 948^157 mod 2773 = 920\n```",
+          "misconceptions": "- 「RSA 就是直接算 C = M^e mod n 就好」——教科書公式只說明原理；RFC 8017 要求新應用使用 RSAES-OAEP 編碼 [S09 p.18]。\n- 「200 位數的 n 就夠安全」——那是 1978 年的建議 [S08 p.9]；現行建議至少 2048 位元 [S12 p.67]。"
+        },
+        {
+          "id": "asym-public-key",
+          "title": "公開金鑰密碼學（Asymmetric / Public-Key Cryptography）",
+          "score": 9,
+          "why": [
+            "title/alias:public key",
+            "body:public key×3",
+            "body:數位簽章×1"
+          ],
+          "sources": [
+            "S02",
+            "S06",
+            "S07"
+          ],
+          "prerequisites": [
+            "sym-concept"
+          ],
+          "definition": "**非對稱式（公開金鑰）演算法**使用**一對金鑰**：**公鑰（public key）** 與 **私鑰（private key）**，兩者在數學上相關 [S06 p.34]。\n- 公鑰可以公開，不會降低安全性；私鑰必須保密 [S06 p.34]。\n- 雖然兩把金鑰相關，但**無法從公鑰有效率地推出私鑰** [S06 p.34]。",
+          "key_points": "- **起源**：1976 年 Diffie 與 Hellman 發表《New Directions in Cryptography》，提出公開金鑰密碼學的革命性概念 [S02 p.2]。\n- 他們的想法：加密金鑰 E 與解密金鑰 D 不同，而且**從 E 算出 D 在計算上不可行**，所以 E 可以公開 [S07 p.1]。\n- 每個人把自己的公開加密金鑰放進「公開目錄」，任何人都能用它加密訊息，**只有持有對應私鑰的接收者能解密** [S07 p.1]——就算兩人從沒見過面，也能祕密通訊 [S07 p.1]。\n- **為什麼需要**：對稱式加密必須先透過安全通道分配金鑰；Diffie–Hellman 指出，這個**金鑰分配問題**的成本與延遲，是商業通訊走向大型網路的主要障礙 [S07 p.1]（見 [[sym-concept]]）。\n- **加密 vs. 簽章**的金鑰用法 [S06 p.34]：\n  - 加密：**用公鑰加密、用私鑰解密**；\n  - 數位簽章：**用私鑰簽章、用公鑰驗證**（見 [[asym-signature]]）。\n- **缺點：慢**。非對稱演算法比對稱式慢很多，所以不拿來處理大量資料 [S06 p.34]——實務上兩者混合使用（見 [[app-hybrid-tls]]）。",
+          "example": "**信箱比喻**（本 Wiki 的教學比喻）：公鑰像是**投信口**，任何人都能把信投進去；私鑰像是**信箱鑰匙**，只有主人能打開取信。對應「公鑰加密、私鑰解密」[S06 p.34]。\n\n```\nBob 的公鑰（公開）  ──▶  Alice 用它加密  ──▶  密文  ──▶  只有 Bob 的私鑰能解開\n```",
+          "misconceptions": ""
+        },
+        {
+          "id": "asym-signature",
+          "title": "數位簽章（Digital Signature）",
+          "score": 9,
+          "why": [
+            "body:public key×1",
+            "title/alias:數位簽章",
+            "body:數位簽章×3"
+          ],
+          "sources": [
+            "S02",
+            "S06",
+            "S08",
+            "S09",
+            "S10"
+          ],
+          "prerequisites": [
+            "asym-public-key"
+          ],
+          "definition": "**數位簽章**：用**私鑰**對訊息產生簽章，任何人都能用對應的**公鑰**驗證 [S06 p.34][S08 p.1]。\nRSA 論文指出：簽章**無法偽造**，簽署者事後也**不能否認**簽過 [S08 p.1]。",
+          "key_points": "- 數位簽章是公開金鑰密碼學最重要的貢獻之一 [S02 p.3]。\n- 金鑰方向與加密**相反**：加密是「公鑰加密、私鑰解密」；簽章是「**私鑰簽、公鑰驗**」[S06 p.34]。\n- 提供的服務：**身分、完整性、來源鑑別** [S06 p.34]，以及**不可否認性**（簽署者無法否認）[S08 p.1]——呼應密碼學四大目標（[[intro-what-is-crypto]]）。\n- 電子簽章必須**同時依賴訊息與簽署者**，否則接收者可以改訊息、或把簽章貼到別的訊息上 [S08 p.4]。\n- 現行標準：RFC 8017 規定新應用必須使用 **RSASSA-PSS** [S09 p.31]；TLS 1.3 的 RSA 簽章也必須使用 RSASSA-PSS [S10 p.70]。",
+          "example": "```\nBob：  訊息 M ──[Bob 的私鑰 簽章]──▶ (M, 簽章 S)\nAlice：(M, S) ──[Bob 的公鑰 驗證]──▶ ✔ 確實是 Bob 簽的，而且 M 沒被改過\n```\n（依 [S06 p.34] 的金鑰用法與 [S08 p.1] 的說明繪製）",
+          "misconceptions": ""
+        },
+        {
+          "id": "classical-caesar",
+          "title": "Caesar Cipher（凱撒密碼／位移密碼）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S02",
+            "S03"
+          ],
+          "prerequisites": [
+            "intro-terminology",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**位移密碼（shift cipher）／Caesar 密碼**：把字母表中的每個字母**往後移動固定的 k 位**，是一種限定成「字母位移」的簡單替換密碼 [S03 p.18]。\n用數字表示（A=0、B=1、…、Z=25）：\n\n- 加密：c = (m + k) mod 26\n- 解密：m = (c − k) mod 26  [S03 p.18]\n\n金鑰就是位移量 k。傳說凱撒（Julius Caesar）使用 k = 3 [S03 p.18]。",
+          "key_points": "- 它是 **simple substitution（單表替換）** 的特例：整篇訊息都用同一套對應表 [S03 p.18]（見 [[classical-substitution]]）。\n- 例：k = 1 時，HAL 加密成 IBM [S03 p.18]。\n- HAC 第 1 章用「每個字母往右移 3 位」當作對稱式加密的入門範例，加密與解密用的是同一個祕密（位移量）[S02 p.16]。\n- **致命弱點**：英文只有 26 種位移（s = 26），攻擊者把所有金鑰試一遍就能破解 [S03 p.18]（見 [[classical-limitations]]、[[intro-kerckhoffs]]）。",
+          "example": "```\nk = 3\n明文：H  E  L  L  O\n      ↓+3 ↓+3 ↓+3 ↓+3 ↓+3\n密文：K  H  O  O  R\n```\n（HELLO → KHOOR 由本 Wiki 以公式 c = (m + 3) mod 26 計算，簡報驗證節點會用程式重算。）",
+          "misconceptions": "- 「Caesar 密碼有 25 或 26 把金鑰，所以算安全」——錯。金鑰空間只有 26，用手就能窮舉 [S03 p.18]。"
+        },
+        {
+          "id": "mode-gcm-aead",
+          "title": "GCM 與認證加密（Authenticated Encryption, AEAD）",
+          "score": 8,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3"
+          ],
+          "sources": [
+            "S05",
+            "S11"
+          ],
+          "prerequisites": [
+            "mode-ctr",
+            "intro-what-is-crypto"
+          ],
+          "definition": "**GCM（Galois/Counter Mode）** 是一種**帶有附加資料的認證加密（authenticated encryption with associated data, AEAD）** 演算法 [S11 p.9]。\n它建立在**區塊大小 128 位元**的經核准區塊加密（例如 AES）之上，所以 GCM 是 AES 的一種操作模式 [S11 p.9]。",
+          "key_points": "- **一次提供兩件事** [S11 p.9]：\n  - **機密性**：使用 **CTR 模式的變形**來加密（見 [[mode-ctr]]）；\n  - **真實性／完整性（authenticity）**：用一個通用雜湊函數計算**認證標籤（authentication tag）**。\n- 加密時同時算出標籤；解密時**先驗證標籤，驗證通過才解密** [S11 p.15]。\n- 這補上了 ECB／CBC／CTR 的缺口：前三者只提供**機密性**（SP 800-38A 稱它們為 confidentiality modes [S05 p.5]），無法偵測竄改——呼應密碼學四大目標中的「完整性」（[[intro-what-is-crypto]]）。\n- **IV 不可重複**：同一把金鑰下只要有一個 IV 重複，就可能遭受偽造攻擊；NIST 說這個要求「幾乎和金鑰保密一樣重要」[S11 p.26]。\n- 本頁只作為銜接 CTR 與 TLS 1.3 的橋樑（TLS 1.3 只使用 AEAD 演算法，見 [[app-hybrid-tls]]）。",
+          "example": "```\n            ┌──────────── GCM ────────────┐\n明文 ──▶   │ CTR 變形加密 → 密文          │ ──▶ 密文 + 標籤(tag)\n附加資料 ─▶ │ GHASH 計算 → 認證標籤 tag     │\n            └─────────────────────────────┘\n接收方：先驗證 tag ✔ → 才解密；tag ✘ → 拒絕\n```\n（依 SP 800-38D §1、§5.2 的描述繪製 [S11 p.9][S11 p.15]）",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 33,
+      "id": "https",
+      "title": "全部組合起來：HTTPS 與 TLS 1.3",
+      "terms": [
+        "TLS 1.3",
+        "HTTPS",
+        "憑證"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "app-hybrid-tls",
+          "title": "密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3",
+          "score": 24,
+          "why": [
+            "title/alias:TLS 1.3",
+            "body:TLS 1.3×3",
+            "title/alias:HTTPS",
+            "body:HTTPS×3",
+            "title/alias:憑證",
+            "body:憑證×3"
+          ],
+          "sources": [
+            "S06",
+            "S10"
+          ],
+          "prerequisites": [
+            "sym-aes",
+            "mode-gcm-aead",
+            "asym-key-exchange",
+            "asym-signature"
+          ],
+          "definition": "**TLS** 的主要目標是在兩個通訊端點之間提供一條**安全通道** [S10 p.6]，具備三種性質 [S10 p.6]：\n- **鑑別（authentication）**：伺服器端一定會被鑑別，可使用 RSA、ECDSA 等非對稱密碼學或預先共享金鑰；\n- **機密性（confidentiality）**：建立連線後的資料只有兩端看得到；\n- **完整性（integrity）**：資料被攻擊者修改一定會被偵測出來。\n\n我們瀏覽 HTTPS 網站時，背後就是 TLS 在保護資料（HTTPS 與 TLS 的關係為本 Wiki 的教學補充）。",
+          "key_points": "- **混合加密（hybrid）**：非對稱演算法太慢、不適合處理大量資料；NIST 指出可以**結合對稱與非對稱演算法**，兼顧效率並減少所需金鑰數量 [S06 p.34–35]。\n- TLS 由兩部分組成 [S10 p.6]：\n  1. **Handshake（交握）協定**：鑑別雙方、協商演算法，並**建立共享金鑰** → 用到 **(EC)DHE 金鑰交換**（[[asym-key-exchange]]）與**憑證簽章**（[[asym-signature]]）；\n  2. **Record（記錄）協定**：用交握得到的金鑰保護之後的所有流量 → 用到**對稱式 AEAD 加密**（如 AES-GCM，[[mode-gcm-aead]]）。\n- **TLS 1.3 的重要改變** [S10 p.8]：\n  - **移除了靜態 RSA 與靜態 Diffie–Hellman 的金鑰交換**，所有公鑰式金鑰交換都提供**前向保密（forward secrecy）**；\n  - 對稱式演算法只保留 **AEAD**。\n- **前向保密**：即使長期金鑰（例如憑證的簽章私鑰）在交握完成後外洩，也不會危及這次連線的 session key [S10 p.143]。\n- 每個 TLS 1.3 實作都必須支援 **TLS_AES_128_GCM_SHA256** [S10 p.102]——也就是 AES-128 + GCM。\n- RSA 在 TLS 1.3 的角色是**簽章**（且必須用 RSASSA-PSS）[S10 p.70]，不是用來「加密並傳送 session key」。",
+          "example": "```\n瀏覽器（Client）                                  網站（Server）\n   │  ① ClientHello + (EC)DHE 公開值  ────────────▶ │\n   │  ◀──────────── ② ServerHello + (EC)DHE 公開值   │   → 雙方各自算出相同的共享金鑰\n   │  ◀──────────── ③ 憑證 + 簽章（RSA-PSS／ECDSA）  │   → 確認「真的是這個網站」\n   │  ④ 之後的網頁資料：AES-GCM 加密 + 認證  ◀══════▶ │   → 機密性 + 完整性\n```\n（依 RFC 8446 §1、§2 的描述簡化繪製 [S10 p.6][S10 p.10]）",
+          "misconceptions": "- 「HTTPS 是用 RSA 加密 session key 再傳給伺服器」——這是舊版 TLS 的靜態 RSA 金鑰傳輸；**TLS 1.3 已移除** [S10 p.8]，改用 (EC)DHE 金鑰交換，RSA 只用於簽章 [S10 p.70]。"
+        }
+      ]
+    },
+    {
+      "slide": 34,
+      "id": "summary",
+      "title": "總結：從古典密碼到現代密碼學",
+      "terms": [
+        "AES",
+        "公開金鑰",
+        "TLS 1.3",
+        "classical cipher weaknesses"
+      ],
+      "needs_wiki": true,
+      "hits": [
+        {
+          "id": "app-hybrid-tls",
+          "title": "密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3",
+          "score": 11,
+          "why": [
+            "body:AES×3",
+            "title/alias:TLS 1.3",
+            "body:TLS 1.3×3"
+          ],
+          "sources": [
+            "S06",
+            "S10"
+          ],
+          "prerequisites": [
+            "sym-aes",
+            "mode-gcm-aead",
+            "asym-key-exchange",
+            "asym-signature"
+          ],
+          "definition": "**TLS** 的主要目標是在兩個通訊端點之間提供一條**安全通道** [S10 p.6]，具備三種性質 [S10 p.6]：\n- **鑑別（authentication）**：伺服器端一定會被鑑別，可使用 RSA、ECDSA 等非對稱密碼學或預先共享金鑰；\n- **機密性（confidentiality）**：建立連線後的資料只有兩端看得到；\n- **完整性（integrity）**：資料被攻擊者修改一定會被偵測出來。\n\n我們瀏覽 HTTPS 網站時，背後就是 TLS 在保護資料（HTTPS 與 TLS 的關係為本 Wiki 的教學補充）。",
+          "key_points": "- **混合加密（hybrid）**：非對稱演算法太慢、不適合處理大量資料；NIST 指出可以**結合對稱與非對稱演算法**，兼顧效率並減少所需金鑰數量 [S06 p.34–35]。\n- TLS 由兩部分組成 [S10 p.6]：\n  1. **Handshake（交握）協定**：鑑別雙方、協商演算法，並**建立共享金鑰** → 用到 **(EC)DHE 金鑰交換**（[[asym-key-exchange]]）與**憑證簽章**（[[asym-signature]]）；\n  2. **Record（記錄）協定**：用交握得到的金鑰保護之後的所有流量 → 用到**對稱式 AEAD 加密**（如 AES-GCM，[[mode-gcm-aead]]）。\n- **TLS 1.3 的重要改變** [S10 p.8]：\n  - **移除了靜態 RSA 與靜態 Diffie–Hellman 的金鑰交換**，所有公鑰式金鑰交換都提供**前向保密（forward secrecy）**；\n  - 對稱式演算法只保留 **AEAD**。\n- **前向保密**：即使長期金鑰（例如憑證的簽章私鑰）在交握完成後外洩，也不會危及這次連線的 session key [S10 p.143]。\n- 每個 TLS 1.3 實作都必須支援 **TLS_AES_128_GCM_SHA256** [S10 p.102]——也就是 AES-128 + GCM。\n- RSA 在 TLS 1.3 的角色是**簽章**（且必須用 RSASSA-PSS）[S10 p.70]，不是用來「加密並傳送 session key」。",
+          "example": "```\n瀏覽器（Client）                                  網站（Server）\n   │  ① ClientHello + (EC)DHE 公開值  ────────────▶ │\n   │  ◀──────────── ② ServerHello + (EC)DHE 公開值   │   → 雙方各自算出相同的共享金鑰\n   │  ◀──────────── ③ 憑證 + 簽章（RSA-PSS／ECDSA）  │   → 確認「真的是這個網站」\n   │  ④ 之後的網頁資料：AES-GCM 加密 + 認證  ◀══════▶ │   → 機密性 + 完整性\n```\n（依 RFC 8446 §1、§2 的描述簡化繪製 [S10 p.6][S10 p.10]）",
+          "misconceptions": "- 「HTTPS 是用 RSA 加密 session key 再傳給伺服器」——這是舊版 TLS 的靜態 RSA 金鑰傳輸；**TLS 1.3 已移除** [S10 p.8]，改用 (EC)DHE 金鑰交換，RSA 只用於簽章 [S10 p.70]。"
+        },
+        {
+          "id": "mode-gcm-aead",
+          "title": "GCM 與認證加密（Authenticated Encryption, AEAD）",
+          "score": 11,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3",
+            "body:TLS 1.3×3"
+          ],
+          "sources": [
+            "S05",
+            "S11"
+          ],
+          "prerequisites": [
+            "mode-ctr",
+            "intro-what-is-crypto"
+          ],
+          "definition": "**GCM（Galois/Counter Mode）** 是一種**帶有附加資料的認證加密（authenticated encryption with associated data, AEAD）** 演算法 [S11 p.9]。\n它建立在**區塊大小 128 位元**的經核准區塊加密（例如 AES）之上，所以 GCM 是 AES 的一種操作模式 [S11 p.9]。",
+          "key_points": "- **一次提供兩件事** [S11 p.9]：\n  - **機密性**：使用 **CTR 模式的變形**來加密（見 [[mode-ctr]]）；\n  - **真實性／完整性（authenticity）**：用一個通用雜湊函數計算**認證標籤（authentication tag）**。\n- 加密時同時算出標籤；解密時**先驗證標籤，驗證通過才解密** [S11 p.15]。\n- 這補上了 ECB／CBC／CTR 的缺口：前三者只提供**機密性**（SP 800-38A 稱它們為 confidentiality modes [S05 p.5]），無法偵測竄改——呼應密碼學四大目標中的「完整性」（[[intro-what-is-crypto]]）。\n- **IV 不可重複**：同一把金鑰下只要有一個 IV 重複，就可能遭受偽造攻擊；NIST 說這個要求「幾乎和金鑰保密一樣重要」[S11 p.26]。\n- 本頁只作為銜接 CTR 與 TLS 1.3 的橋樑（TLS 1.3 只使用 AEAD 演算法，見 [[app-hybrid-tls]]）。",
+          "example": "```\n            ┌──────────── GCM ────────────┐\n明文 ──▶   │ CTR 變形加密 → 密文          │ ──▶ 密文 + 標籤(tag)\n附加資料 ─▶ │ GHASH 計算 → 認證標籤 tag     │\n            └─────────────────────────────┘\n接收方：先驗證 tag ✔ → 才解密；tag ✘ → 拒絕\n```\n（依 SP 800-38D §1、§5.2 的描述繪製 [S11 p.9][S11 p.15]）",
+          "misconceptions": ""
+        },
+        {
+          "id": "asym-rsa",
+          "title": "RSA：基本運作原理",
+          "score": 10,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3",
+            "body:公開金鑰×1",
+            "body:TLS 1.3×1"
+          ],
+          "sources": [
+            "S02",
+            "S08",
+            "S09",
+            "S12"
+          ],
+          "prerequisites": [
+            "asym-public-key",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**RSA**（Rivest、Shamir、Adleman，1978）是第一個實用的公開金鑰加密與簽章方案 [S02 p.3]。\n它的特性是：**公開加密金鑰，並不會因此洩漏對應的解密金鑰** [S08 p.1]。",
+          "key_points": "- **金鑰產生** [S08 p.6–7]：\n  1. 選兩個**很大的隨機質數** p、q，計算 **n = p·q**；\n  2. 選一個與 (p−1)(q−1) 互質的 d；\n  3. 算出 e，使 e·d ≡ 1 (mod (p−1)(q−1))。\n  - **公鑰** = (e, n)，**私鑰** = (d, n)；每個人公開加密金鑰、保留解密金鑰 [S08 p.6]。RFC 8017 也定義 RSA 公鑰由 **模數 n（modulus）** 與 **公開指數 e** 組成 [S09 p.8]。\n- **加密／解密** [S08 p.6]：\n  - 加密：C = M^e mod n\n  - 解密：M = C^d mod n\n- **安全性**：n 公開，但 p、q 因為**大數分解非常困難**而保持隱藏，d 也因此無法從 e 推出 [S08 p.6][S08 p.1]。\n- **金鑰長度要跟上時代**：1978 年論文建議 n 約 200 位十進位數字 [S08 p.9]；NIST 現行對照表：RSA 模數 k = **2048** 位元約等於 112 位元安全強度、**3072** 位元約等於 128 位元（相當 AES-128）[S12 p.67][S12 p.68]。\n- **實務上不直接用 M^e mod n**：RFC 8017 規定新應用必須支援 **RSAES-OAEP**（把訊息先經 OAEP 編碼再做 RSA 運算），舊的 PKCS1-v1_5 只為相容而保留 [S09 p.18][S09 p.19]。\n- 量子電腦實用化後，RSA 等演算法的強度估計會大幅改變 [S12 p.68]。",
+          "example": "RSA 原始論文的小例子 [S08 p.10]（簡報驗證節點會用程式重算）：\n\n```\np = 47，q = 59 → n = 47 × 59 = 2773\n(p−1)(q−1) = 46 × 58 = 2668\n私鑰 d = 157 → 公鑰 e = 17（17 × 157 = 2669 ≡ 1 mod 2668）\n加密 M = 920： C = 920^17 mod 2773 = 948\n解密：         M = 948^157 mod 2773 = 920\n```",
+          "misconceptions": "- 「RSA 就是直接算 C = M^e mod n 就好」——教科書公式只說明原理；RFC 8017 要求新應用使用 RSAES-OAEP 編碼 [S09 p.18]。\n- 「200 位數的 n 就夠安全」——那是 1978 年的建議 [S08 p.9]；現行建議至少 2048 位元 [S12 p.67]。"
+        },
+        {
+          "id": "sym-aes",
+          "title": "AES（Advanced Encryption Standard）",
+          "score": 9,
+          "why": [
+            "title/alias:AES",
+            "body:AES×3",
+            "body:TLS 1.3×1"
+          ],
+          "sources": [
+            "S01",
+            "S04",
+            "S06",
+            "S12"
+          ],
+          "prerequisites": [
+            "sym-concept",
+            "sym-block-vs-stream",
+            "basics-bits-xor-mod"
+          ],
+          "definition": "**AES** 是 NIST 標準化的**對稱式區塊加密演算法**，可以加密與解密數位資料 [S04 p.4]。\n它使用 **128、192 或 256 位元**的金鑰，對 **128 位元**的資料區塊做加解密 [S04 p.4]。",
+          "key_points": "- **怎麼來的**：NIST 在 1997 年公開徵求候選演算法，2000 年宣布選出 **Rijndael** 作為 AES [S04 p.9]——正是 Kerckhoffs 原則「演算法公開、經過公開審查」的實踐 [S01 p.268]（見 [[intro-kerckhoffs]]）。\n- **三個版本**：AES-128、AES-192、AES-256，數字代表**金鑰長度**；**區塊大小一律 128 位元** [S04 p.9]。（Rijndael 本身支援其他區塊大小，但沒有納入標準 [S04 p.9]。）\n- **輪數（rounds）**：AES-128 做 10 輪、AES-192 做 12 輪、AES-256 做 14 輪 [S04 p.19]。\n- **每一輪的四個步驟**（作用在 4×4 位元組的 state 上）[S04 p.20]：\n  1. **SubBytes**：用替換表（S-box）替換每個位元組——非線性的「替換」[S04 p.21]\n  2. **ShiftRows**：把 state 的後三列循環位移——「換位」[S04 p.22]\n  3. **MixColumns**：把每一欄的資料混合在一起 [S04 p.20]\n  4. **AddRoundKey**：用 XOR 把該輪的 round key 加進 state [S04 p.24]\n  其中有一輪會省略一個步驟 [S04 p.10]。\n- **解密（InvCipher）**：把加密的步驟換成各自的反運算（InvSubBytes、InvShiftRows、InvMixColumns 與 AddRoundKey），並**依相反順序**執行 [S04 p.26]。\n- FIPS 197 附錄 B 提供 AES-128 一步一步的完整實例，下方「實例」整理了第 1 輪 [S04 p.9][S04 p.42]。\n- **取代 DES**：AES 是為了取代 DES 與 TDEA 而開發，是新產品**首選**的區塊加密演算法 [S06 p.33]；DES 因電腦運算力進步、強度不足，已在 **2005 年**被撤銷核准 [S06 p.32]。\n- **安全強度**：AES-128／192／256 分別提供 128／192／256 位元的安全強度；低於 112 位元的組合已不再核准用於加密 [S12 p.68]。",
+          "example": "```\n明文區塊（128 bits）\n   │  AddRoundKey（初始）\n   ▼\n┌─ 第 1 ～ Nr 輪 ───────────────────┐\n│ SubBytes → ShiftRows → MixColumns → AddRoundKey │ ×Nr（最後一輪省略一個步驟）\n└──────────────────────────────────┘\n   ▼\n密文區塊（128 bits）       Nr = 10 / 12 / 14\n```\n（依 FIPS 197 §5.1 的步驟順序與 Table 3 的輪數繪製 [S04 p.19][S04 p.20]）\n\n### 實例：FIPS 197 附錄 B，AES-128 第 1 輪 [S04 p.42]\n\n- 輸入：`32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34`；金鑰：`2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c` [S04 p.42]\n- 16 個位元組**依「欄」**填入 4×4 的 state：前 4 個位元組（32 43 f6 a8）成為第 1 欄。\n\n| 步驟 | state（逐列，由上到下） | 看哪一格 |\n|---|---|---|\n| 初始 AddRoundKey（輸入 ⊕ 金鑰） | `19 a0 9a e9 / 3d f4 c6 f8 / e3 e2 8d 48 / be 2b 2a 08` | 32 ⊕ 2b = 19 |\n| ① SubBytes | `d4 e0 b8 1e / 27 bf b4 41 / 11 98 5d 52 / ae f1 e5 30` | 19 查 S-box：列看前半 1、欄看後半 9 → d4（查表規則見 [S04 p.22]） |\n| ② ShiftRows | `d4 e0 b8 1e / bf b4 41 27 / 5d 52 11 98 / 30 ae f1 e5` | 第 r 列往左循環移 r 格：`27 bf b4 41` → `bf b4 41 27` |\n| ③ MixColumns | `04 e0 48 28 / 66 cb f8 06 / 81 19 d3 26 / e5 9a 7a 4c` | 第 1 欄 `d4 bf 5d 30` → `04 66 81 e5`；04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30（式 5.8，[S04 p.23]） |\n| ④ AddRoundKey（round key 1：`a0 88 23 2a / fa 54 a3 6c / fe 2c 39 76 / 17 b1 39 05`） | `a4 68 6b 02 / 9c 9f 5b 6a / 7f 35 ea 50 / f2 2b 43 49` | 04 ⊕ a0 = a4 |\n\n**解密時**倒著走：再 XOR 同一把 round key（得回 `04 e0 48 28…`）→ InvMixColumns → InvShiftRows（每列往右移回）→ InvSubBytes（反查 S-box），最後回到 `19 a0 9a e9…` [S04 p.26]。\n\n表中每個數值都與 FIPS 197 附錄 B 相同；Content Validation 另以獨立的 AES 參考實作（`Workflow/validators/aes_ref.py`）從輸入與金鑰重算，並確認解密方向能還原。",
+          "misconceptions": "- 「AES-256 的區塊是 256 位元」——錯。256 指的是**金鑰長度**，三種 AES 的區塊大小都是 128 位元 [S04 p.9]。\n- 「DES 仍是目前的加密標準」——錯。DES 已於 2005 年撤銷核准 [S06 p.32]。"
+        },
+        {
+          "id": "asym-public-key",
+          "title": "公開金鑰密碼學（Asymmetric / Public-Key Cryptography）",
+          "score": 8,
+          "why": [
+            "title/alias:公開金鑰",
+            "body:公開金鑰×3"
+          ],
+          "sources": [
+            "S02",
+            "S06",
+            "S07"
+          ],
+          "prerequisites": [
+            "sym-concept"
+          ],
+          "definition": "**非對稱式（公開金鑰）演算法**使用**一對金鑰**：**公鑰（public key）** 與 **私鑰（private key）**，兩者在數學上相關 [S06 p.34]。\n- 公鑰可以公開，不會降低安全性；私鑰必須保密 [S06 p.34]。\n- 雖然兩把金鑰相關，但**無法從公鑰有效率地推出私鑰** [S06 p.34]。",
+          "key_points": "- **起源**：1976 年 Diffie 與 Hellman 發表《New Directions in Cryptography》，提出公開金鑰密碼學的革命性概念 [S02 p.2]。\n- 他們的想法：加密金鑰 E 與解密金鑰 D 不同，而且**從 E 算出 D 在計算上不可行**，所以 E 可以公開 [S07 p.1]。\n- 每個人把自己的公開加密金鑰放進「公開目錄」，任何人都能用它加密訊息，**只有持有對應私鑰的接收者能解密** [S07 p.1]——就算兩人從沒見過面，也能祕密通訊 [S07 p.1]。\n- **為什麼需要**：對稱式加密必須先透過安全通道分配金鑰；Diffie–Hellman 指出，這個**金鑰分配問題**的成本與延遲，是商業通訊走向大型網路的主要障礙 [S07 p.1]（見 [[sym-concept]]）。\n- **加密 vs. 簽章**的金鑰用法 [S06 p.34]：\n  - 加密：**用公鑰加密、用私鑰解密**；\n  - 數位簽章：**用私鑰簽章、用公鑰驗證**（見 [[asym-signature]]）。\n- **缺點：慢**。非對稱演算法比對稱式慢很多，所以不拿來處理大量資料 [S06 p.34]——實務上兩者混合使用（見 [[app-hybrid-tls]]）。",
+          "example": "**信箱比喻**（本 Wiki 的教學比喻）：公鑰像是**投信口**，任何人都能把信投進去；私鑰像是**信箱鑰匙**，只有主人能打開取信。對應「公鑰加密、私鑰解密」[S06 p.34]。\n\n```\nBob 的公鑰（公開）  ──▶  Alice 用它加密  ──▶  密文  ──▶  只有 Bob 的私鑰能解開\n```",
+          "misconceptions": ""
+        }
+      ]
+    },
+    {
+      "slide": 35,
+      "id": "references",
+      "title": "參考資料",
+      "terms": [],
+      "needs_wiki": false,
+      "hits": []
+    }
+  ]
+}

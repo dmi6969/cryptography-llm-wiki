@@ -1,0 +1,328 @@
+<!-- 每張投影片的圖（由 render_slides.py 依 slide id 取用）。只放圖本身，圖名由內容檔的 visual.name 產生。 -->
+
+<template id="v-roadmap">
+  <ol class="road">
+    <li><b>1</b>基礎觀念</li><li><b>2</b>古典密碼</li><li><b>3</b>對稱式加密</li>
+    <li><b>4</b>操作模式</li><li><b>5</b>公開金鑰加密</li><li><b>6</b>綜合應用：HTTPS</li>
+  </ol>
+  <p class="road-note">每一章：原理 → 為什麼需要／好處與限制 → 現實中怎麼做</p>
+</template>
+
+<template id="v-why">
+  <div class="goal-grid">
+    <div class="goal panel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span class="gl">機密性</span><span class="gd">卡號不能被看到</span></div>
+    <div class="goal panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="gl">完整性</span><span class="gd">金額不能被偷改</span></div>
+    <div class="goal panel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.8-1.6 1.8-2 3-2s2.2.4 3 2M14 10h4M14 13h3"/></svg><span class="gl">鑑別</span><span class="gd">確認是真的商店</span></div>
+    <div class="goal panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M14.5 4.5l3 3L8 17H5v-3z"/></svg><span class="gl">不可否認性</span><span class="gd">商店不能否認收到訂單</span></div>
+  </div>
+</template>
+
+<template id="v-terms">
+  <div class="flow">
+    <div class="node">Alice：明文 <span class="mono">HELLO</span></div>
+    <div class="node op">加密（用金鑰）</div>
+    <div class="node ct">密文 KHOOR</div>
+    <div class="node op">解密（用金鑰）</div>
+    <div class="node">Bob：明文 <span class="mono">HELLO</span></div>
+  </div>
+  <div class="channel"><span>網路（任何人都能偷聽）</span><span>偷聽的人只看得到密文</span></div>
+</template>
+
+<template id="v-kerckhoffs">
+  <div class="ks">
+    <div class="ks-row"><span class="ks-name">Caesar 密碼</span><div class="ks-bar"><i style="width:6%"></i></div><span class="ks-v">26 種：幾秒就試完</span></div>
+    <div class="ks-row"><span class="ks-name">好的現代密碼</span><div class="ks-bar"><i style="width:100%"></i></div><span class="ks-v">多到全世界電腦一起試也試不完</span></div>
+  </div>
+  <div class="lockbox"><span class="pill pub">演算法：公開</span><span class="pill key">金鑰：保密</span></div>
+</template>
+
+<template id="v-tools">
+  <div class="tools">
+    <div class="clock-wrap">
+      <p class="vt">mod 7 時鐘</p>
+      <div class="clock" aria-label="0 到 6 排成一圈">
+        <span style="--i:0">0</span><span style="--i:1">1</span><span style="--i:2">2</span><span style="--i:3">3</span><span style="--i:4">4</span><span style="--i:5">5</span><span class="hit" style="--i:6">6</span>
+      </div>
+      <p class="vnote mono">20 = 2 × 7 + 6 → 20 mod 7 = 6</p>
+    </div>
+    <div>
+      <p class="vt">XOR 對照表</p>
+      <table class="xor">
+        <tr><th>⊕</th><th>0</th><th>1</th></tr>
+        <tr><th>0</th><td>0</td><td class="one">1</td></tr>
+        <tr><th>1</th><td class="one">1</td><td>0</td></tr>
+      </table>
+      <p class="vnote mono">1 ⊕ 1 = 0，再 ⊕ 1 = 1（變回來）</p>
+    </div>
+  </div>
+</template>
+
+<template id="v-caesar">
+  <div class="seg" role="group" aria-label="切換加密或解密">
+    <button type="button" id="caesar-mode-enc" aria-pressed="true">加密 c = m + k</button>
+    <button type="button" id="caesar-mode-dec" aria-pressed="false">解密 m = c − k</button>
+  </div>
+  <div class="demo-row"><label for="caesar-input" id="caesar-in-label">明文</label>
+    <input id="caesar-input" type="text" value="HELLO" maxlength="16" autocomplete="off" spellcheck="false" aria-label="輸入要加密或解密的英文"></div>
+  <div class="demo-row"><label for="caesar-shift">位移 k</label>
+    <input id="caesar-shift" type="range" min="0" max="25" step="1" value="3"><span class="kval" id="caesar-k">3</span></div>
+  <div class="demo-row"><label id="caesar-out-label">密文</label><output id="caesar-output" for="caesar-input caesar-shift">KHOOR</output></div>
+  <div class="alpha-wrap"><div class="alpha" id="caesar-alpha" aria-hidden="true"></div></div>
+</template>
+
+<template id="v-substitution">
+  <div class="sub-wrap"><table class="subst">
+    <tr><th>明文</th><td>A</td><td>B</td><td>C</td><td>D</td><td class="h">E</td><td>F</td><td>G</td><td class="h">H</td><td>I</td><td>J</td><td>K</td><td class="h">L</td><td>M</td></tr>
+    <tr><th>密文</th><td>Q</td><td>W</td><td>E</td><td>R</td><td class="h">T</td><td>Y</td><td>U</td><td class="h">I</td><td>O</td><td>P</td><td>A</td><td class="h">S</td><td>D</td></tr>
+    <tr><th>明文</th><td>N</td><td class="h">O</td><td>P</td><td>Q</td><td>R</td><td>S</td><td>T</td><td>U</td><td>V</td><td>W</td><td>X</td><td>Y</td><td>Z</td></tr>
+    <tr><th>密文</th><td>F</td><td class="h">G</td><td>H</td><td>J</td><td>K</td><td>L</td><td>Z</td><td>X</td><td>C</td><td>V</td><td>B</td><td>N</td><td>M</td></tr>
+  </table></div>
+  <p class="vnote">用這張表：<span class="mono">HELLO → ITSSG</span>（兩個 L 都變成 S）</p>
+</template>
+
+<template id="v-vigenere">
+  <div class="sub-wrap"><table class="vig">
+    <tr><th>明文</th><td>T</td><td>H</td><td>I</td><td>S</td><td>C</td><td>I</td><td>P</td><td>H</td><td class="h">E</td><td>R</td><td>I</td><td>S</td><td>C</td><td class="h2">E</td><td>R</td></tr>
+    <tr class="k"><th>位移</th><td>3</td><td>7</td><td>10</td><td>3</td><td>7</td><td>10</td><td>3</td><td>7</td><td>10</td><td>3</td><td>7</td><td>10</td><td>3</td><td>7</td><td>10</td></tr>
+    <tr><th>密文</th><td>W</td><td>O</td><td>S</td><td>V</td><td>J</td><td>S</td><td>S</td><td>O</td><td class="h">O</td><td>U</td><td>P</td><td>C</td><td>F</td><td class="h2">L</td><td>B</td></tr>
+  </table></div>
+  <p class="vnote">兩個 E 位置不同、位移不同：一個變成 O，一個變成 L</p>
+</template>
+
+<template id="v-transposition">
+  <div class="tp">
+    <div class="tp-row"><span class="tp-h">位置</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+    <div class="tp-row"><span class="tp-h">明文</span><span>C</span><span>A</span><span>E</span><span>S</span><span>A</span><span class="h">R</span></div>
+    <div class="tp-row k"><span class="tp-h">依序取</span><span>6</span><span>4</span><span>1</span><span>3</span><span>5</span><span>2</span></div>
+    <div class="tp-row ct"><span class="tp-h">密文</span><span class="h">R</span><span>S</span><span>C</span><span>E</span><span>A</span><span>A</span></div>
+  </div>
+  <p class="vnote">字母還是 C、A、E、S、A、R，只是位置換了</p>
+</template>
+
+<template id="v-classical-break">
+  <div class="break">
+    <div class="bk"><b>Caesar</b><span>金鑰只有 26 種</span><em>→ 暴力破解：全部試一遍</em></div>
+    <div class="bk"><b>替換密碼</b><span>字母出現次數不變</span><em>→ 頻率分析：最常見的多半是 E</em></div>
+    <div class="bk"><b>多表替換</b><span>金鑰長度固定、重複使用</span><em>→ 先找長度，再分組做頻率分析</em></div>
+  </div>
+</template>
+
+<template id="v-sym-principle">
+  <div class="sym">
+    <div class="actor"><span>Alice</span><span class="keychip">金鑰 K</span></div>
+    <div class="wire"><span>密文</span></div>
+    <div class="actor"><span>Bob</span><span class="keychip">金鑰 K</span></div>
+  </div>
+  <p class="samekey">同一把金鑰 K</p>
+  <ol class="roundtrip">
+    <li><b>加密</b>明文 <span class="mono">HELLO</span> ＋ 金鑰 K（位移 3）→ 密文 <span class="mono ct">KHOOR</span></li>
+    <li><b>解密</b>密文 <span class="mono ct">KHOOR</span> ＋ 同一把 K → 明文 <span class="mono">HELLO</span></li>
+  </ol>
+</template>
+
+<template id="v-sym-pros">
+  <table class="tbl">
+    <thead><tr><th>通訊人數 n</th><th class="num">需要的金鑰數 N</th></tr></thead>
+    <tbody><tr><td>4 人</td><td class="num">6</td></tr><tr><td>1,000 人</td><td class="num">499,500</td></tr></tbody>
+  </table>
+  <div class="pc"><div class="pro">✔ 好處：快，適合大量資料</div><div class="con">✘ 難題：金鑰要先安全送到、數量暴增</div></div>
+</template>
+
+<template id="v-block-stream">
+  <div class="bs">
+    <p class="vt">區塊加密</p>
+    <div class="bs-row"><span class="blkc">HELL</span><span class="blkc">OWOR</span><span class="blkc">LD..</span></div>
+    <div class="bs-row arrows"><span>↓ 加密</span><span>↓ 加密</span><span>↓ 加密</span></div>
+    <div class="bs-row"><span class="blkc ct">9F2A</span><span class="blkc ct">C70E</span><span class="blkc ct">51BD</span></div>
+    <p class="vt">串流加密</p>
+    <div class="bs-row st"><span>H⊕k₁</span><span>E⊕k₂</span><span>L⊕k₃</span><span>L⊕k₄</span><span>O⊕k₅</span></div>
+    <p class="vnote">k₁、k₂、k₃… 是金鑰產生的一串值（金鑰串流）；右上方的密文只是示意</p>
+  </div>
+</template>
+
+<template id="v-bytes">
+  <div class="bytes">
+    <div class="bitrow"><span>1</span><span>0</span><span>1</span><span>0</span><span class="sep"></span><span>0</span><span>0</span><span>1</span><span>1</span></div>
+    <div class="bitlab"><span>前 4 個位元 1010 → a</span><span>後 4 個位元 0011 → 3</span></div>
+    <p class="bigx mono">10100011 = a3</p>
+    <div class="by-grid" aria-label="16 個位元組排成 4×4">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <p class="vnote">16 個位元組 = 128 個位元，排成 4 × 4</p>
+  </div>
+</template>
+
+<template id="v-aes-overview">
+  <ol class="tl3"><li><b>1977</b>DES 核准</li><li><b>2000</b>選出 AES</li><li><b>2005</b>DES 撤銷</li></ol>
+  <table class="tbl">
+    <thead><tr><th>版本</th><th class="num">金鑰長度</th><th class="num">區塊大小</th></tr></thead>
+    <tbody>
+      <tr><td>AES-128</td><td class="num">128 位元</td><td class="num">128 位元</td></tr>
+      <tr><td>AES-192</td><td class="num">192 位元</td><td class="num">128 位元</td></tr>
+      <tr><td>AES-256</td><td class="num">256 位元</td><td class="num">128 位元</td></tr>
+    </tbody>
+  </table>
+</template>
+
+<template id="v-aes-steps">
+  <div class="s4">
+    <div class="s4c"><b>① SubBytes</b><span class="mono">19 → d4</span><small>查 S-box 替換</small></div>
+    <div class="s4c"><b>② ShiftRows</b><span class="mono">27 bf b4 41 → bf b4 41 27</span><small>第 2 列左移 1 格</small></div>
+    <div class="s4c"><b>③ MixColumns</b><span class="mono">d4 bf 5d 30 → 04 66 81 e5</span><small>一直欄混在一起</small></div>
+    <div class="s4c key"><b>④ AddRoundKey</b><span class="mono">04 ⊕ a0 = a4</span><small>和 round key 做 XOR</small></div>
+  </div>
+  <p class="vnote">↻ 重複做：AES-128 做 10 輪、AES-192 做 12 輪、AES-256 做 14 輪</p>
+</template>
+
+<template id="v-aes-example">
+  <div class="aes-steps" role="group" aria-label="AES 第 1 輪逐步圖解">
+    <span class="aes-dir">加密（第 1 輪）</span>
+    <button type="button" class="aes-step" data-step="0">輸入</button>
+    <button type="button" class="aes-step key" data-step="1">⊕ 金鑰</button>
+    <button type="button" class="aes-step" data-step="2">① SubBytes</button>
+    <button type="button" class="aes-step" data-step="3">② ShiftRows</button>
+    <button type="button" class="aes-step" data-step="4">③ MixColumns</button>
+    <button type="button" class="aes-step key" data-step="5">④ AddRoundKey</button>
+    <span class="aes-dir dec">解密（倒著走回去）</span>
+    <button type="button" class="aes-step key dec" data-step="6">AddRoundKey</button>
+    <button type="button" class="aes-step dec" data-step="7">InvMixColumns</button>
+    <button type="button" class="aes-step dec" data-step="8">InvShiftRows</button>
+    <button type="button" class="aes-step dec" data-step="9">InvSubBytes</button>
+  </div>
+  <div class="aes-stage">
+    <div class="gwrap"><span class="glabel" id="aes-before-label">之前</span><div class="grid" id="aes-before"></div></div>
+    <div class="aes-op"><span id="aes-op">→</span><div class="grid mini" id="aes-with" aria-label="金鑰"></div></div>
+    <div class="gwrap"><span class="glabel" id="aes-after-label">之後</span><div class="grid" id="aes-after"></div></div>
+  </div>
+  <p class="aes-explain" id="aes-explain" aria-live="polite"></p>
+</template>
+
+<template id="v-aes-use">
+  <div class="dir">
+    <p class="vt">加密（每一輪）</p>
+    <div class="dir-row"><span>SubBytes</span><i>→</i><span>ShiftRows</span><i>→</i><span>MixColumns</span><i>→</i><span class="key">AddRoundKey</span></div>
+    <p class="vt dec">解密（倒著做回去）</p>
+    <div class="dir-row dec"><span class="key">AddRoundKey</span><i>→</i><span>InvMixColumns</span><i>→</i><span>InvShiftRows</span><i>→</i><span>InvSubBytes</span></div>
+  </div>
+</template>
+
+<template id="v-modes-why">
+  <div class="canvases two">
+    <figure><canvas id="ecb-orig" width="96" height="64" aria-label="原圖：一個鎖頭圖案"></canvas><figcaption>原圖</figcaption></figure>
+    <figure><canvas id="ecb-ecb" width="96" height="64" aria-label="ECB 加密後仍看得出鎖頭輪廓"></canvas><figcaption class="bad">ECB 加密後</figcaption></figure>
+  </div>
+  <p class="vnote">每個 4 × 4 的小方塊是一個區塊；相同的區塊加密後顏色也相同</p>
+</template>
+
+<template id="v-cbc">
+  <div class="mode-tabs" role="tablist" aria-label="CBC 圖解">
+    <button type="button" class="mode-tab" role="tab" data-tab="0" aria-selected="true">效果</button>
+    <button type="button" class="mode-tab" role="tab" data-tab="1" aria-selected="false">加密流程</button>
+    <button type="button" class="mode-tab" role="tab" data-tab="2" aria-selected="false">解密流程</button>
+  </div>
+  <div class="mode-panel" role="tabpanel" data-panel="0">
+    <div class="canvases one"><figure><canvas id="ecb-cbc" width="96" height="64" aria-label="CBC 加密後看起來像雜訊"></canvas><figcaption class="good">同一張鎖頭圖，CBC 加密後</figcaption></figure></div>
+    <p class="pcap">每一塊都受前一塊影響，看不出原圖輪廓</p>
+  </div>
+  <div class="mode-panel" role="tabpanel" data-panel="1" hidden>
+    <div class="chain">
+      <div class="blk"><span class="b pt">P₁</span><i>↓</i><span class="b x">⊕ IV</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b ct">C₁</span></div>
+      <div class="link">C₁ →</div>
+      <div class="blk"><span class="b pt">P₂</span><i>↓</i><span class="b x">⊕ C₁</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b ct">C₂</span></div>
+      <div class="link">C₂ →</div>
+      <div class="blk"><span class="b pt">P₃</span><i>↓</i><span class="b x">⊕ C₂</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b ct">C₃</span></div>
+    </div>
+    <p class="pcap">每一塊要等前一塊加密完才能算，所以加密只能一塊接一塊</p>
+  </div>
+  <div class="mode-panel" role="tabpanel" data-panel="2" hidden>
+    <div class="chain">
+      <div class="blk"><span class="b ct">C₁</span><i>↓</i><span class="b k">D<sub>K</sub></span><i>↓</i><span class="b x">⊕ IV</span><i>↓</i><span class="b pt">P₁</span></div>
+      <div class="link">C₁ →</div>
+      <div class="blk"><span class="b ct">C₂</span><i>↓</i><span class="b k">D<sub>K</sub></span><i>↓</i><span class="b x">⊕ C₁</span><i>↓</i><span class="b pt">P₂</span></div>
+      <div class="link">C₂ →</div>
+      <div class="blk"><span class="b ct">C₃</span><i>↓</i><span class="b k">D<sub>K</sub></span><i>↓</i><span class="b x">⊕ C₂</span><i>↓</i><span class="b pt">P₃</span></div>
+    </div>
+    <p class="pcap">密文全部都拿到了，所以每一塊可以同時解密</p>
+  </div>
+</template>
+
+<template id="v-ctr-gcm">
+  <div class="chain three">
+    <div class="blk"><span class="b cnt">T₁</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b x">⊕ P₁</span><i>↓</i><span class="b ct">C₁</span></div>
+    <div class="link sep"></div>
+    <div class="blk"><span class="b cnt">T₂</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b x">⊕ P₂</span><i>↓</i><span class="b ct">C₂</span></div>
+    <div class="link sep"></div>
+    <div class="blk"><span class="b cnt">T₃</span><i>↓</i><span class="b k">E<sub>K</sub></span><i>↓</i><span class="b x">⊕ P₃</span><i>↓</i><span class="b ct">C₃</span></div>
+  </div>
+  <div class="gcm"><b>GCM</b> = CTR 加密 ＋ 認證標籤 <span class="tagbox">標籤對得上 ✔ 才解密</span></div>
+</template>
+
+<template id="v-pk-why">
+  <div class="mb">
+    <div class="mbc pub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a4 4 0 0 1 8 0v9H4z"/><path d="M12 10h8v9h-8"/><path d="M6 14h4"/></svg><b>公鑰 ＝ 投信口</b><span>誰都可以把信投進去（加密）</span></div>
+    <div class="mbc key"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M21 12v2"/></svg><b>私鑰 ＝ 信箱鑰匙</b><span>只有主人能打開取信（解密）</span></div>
+  </div>
+</template>
+
+<template id="v-dh">
+  <table class="tbl dh">
+    <thead><tr><th></th><th>Alice</th><th>Bob</th></tr></thead>
+    <tbody>
+      <tr><td>公開的 q、α</td><td colspan="2" class="mono">q = 23，α = 5</td></tr>
+      <tr><td>祕密數字 X</td><td class="mono secret">X = 4</td><td class="mono secret">X = 3</td></tr>
+      <tr><td>公開 Y = α<sup>X</sup> mod q</td><td class="mono pub">5<sup>4</sup> mod 23 = 4</td><td class="mono pub">5<sup>3</sup> mod 23 = 10</td></tr>
+      <tr class="shared"><td>算出 K</td><td class="mono">10<sup>4</sup> mod 23 → <span class="nowrap">K = 18</span></td><td class="mono">4<sup>3</sup> mod 23 → <span class="nowrap">K = 18</span></td></tr>
+    </tbody>
+  </table>
+  <p class="vnote">偷聽的人只看到 23、5、4、10；真正的 q 要非常大</p>
+</template>
+
+<template id="v-rsa-keys">
+  <ol class="rk">
+    <li><span>選質數</span><span class="mono">p = 47，q = 59</span></li>
+    <li><span>算 n</span><span class="mono">n = 47 × 59 = 2773</span></li>
+    <li><span>算 φ</span><span class="mono">φ = 46 × 58 = 2668</span></li>
+    <li class="key"><span>選 d</span><span class="mono">d = 157（和 2668 互質）</span></li>
+    <li class="pub"><span>算 e</span><span class="mono">e = 17（17 × 157 mod 2668 = 1）</span></li>
+  </ol>
+  <p class="rkey"><span class="pubk">公鑰 (17, 2773)</span><span class="privk">私鑰 (157, 2773)</span></p>
+</template>
+
+<template id="v-rsa-encrypt">
+  <div class="rsa-flow">
+    <div class="party"><b>Alice（傳送者）</b><span>明文 <span class="mono">M = 920</span></span><span class="tag pubk">用 Bob 的公鑰 (17, 2773)</span><span class="mono">920<sup>17</sup> mod 2773 = 948</span></div>
+    <div class="send"><span class="mono ct">C = 948</span><span class="arrow" aria-hidden="true">→</span><small>偷聽的人看到也沒用</small></div>
+    <div class="party"><b>Bob（接收者）</b><span class="tag privk">用自己的私鑰 (157, 2773)</span><span class="mono">948<sup>157</sup> mod 2773 = 920</span><span>得回 <span class="mono">M = 920</span></span></div>
+  </div>
+</template>
+
+<template id="v-signature">
+  <div class="sig">
+    <div class="party"><b>Bob 簽章</b><span>訊息 M</span><span class="tag privk">用 Bob 的私鑰算出簽章 S</span></div>
+    <div class="send"><span class="mono">(M, S)</span><span class="arrow" aria-hidden="true">→</span></div>
+    <div class="party"><b>任何人驗證</b><span class="tag pubk">用 Bob 的公鑰檢查 S</span><span class="okv">✔ 是 Bob 簽的、M 沒被改</span></div>
+  </div>
+</template>
+
+<template id="v-https">
+  <div class="tls">
+    <div class="end">瀏覽器</div>
+    <div class="msg key">① 打招呼 ＋ Diffie–Hellman 公開值 →</div>
+    <div class="end">網站</div>
+    <div class="msg r key">← ② 回應 ＋ Diffie–Hellman 公開值</div>
+    <div class="msg r">← ③ 憑證 ＋ 數位簽章</div>
+    <div class="msg data">⇄ ④ 網頁資料：AES-GCM 加密</div>
+  </div>
+  <p class="vnote">①② 算出同一把金鑰（交握）；③ 確認是真的網站；④ 之後的資料都受保護</p>
+</template>
+
+<template id="v-summary">
+  <div class="chain2">
+    <div class="c2"><span class="pb">古典密碼：金鑰太少、藏不住字母規律</span><i>→</i><span class="sol">AES<small>第 3 章 對稱式加密</small></span></div>
+    <div class="c2"><span class="pb">AES 一次只能加密一個區塊</span><i>→</i><span class="sol">CBC、CTR、GCM<small>第 4 章 操作模式</small></span></div>
+    <div class="c2"><span class="pb">金鑰要怎麼先交給對方？</span><i>→</i><span class="sol">Diffie–Hellman、RSA<small>第 5 章 公開金鑰加密</small></span></div>
+    <div class="c2"><span class="pb">怎麼確認對方是真的？</span><i>→</i><span class="sol">數位簽章與憑證<small>第 5、6 章</small></span></div>
+    <div class="c2"><span class="pb">全部要一起運作</span><i>→</i><span class="sol">HTTPS／TLS 1.3<small>第 6 章 綜合應用</small></span></div>
+  </div>
+  <p class="principle">不變的原則：安全來自 <span class="k">金鑰</span>，而不是隱藏演算法。</p>
+</template>
