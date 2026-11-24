@@ -1,0 +1,2614 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>Cryptography LLM Wiki</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: reference wiki — sticky header, left index of 36 pages grouped by topic, one page shown at a time.
+   Same palette as the slides: blue = data/links, gold = keys & source quotes. */
+:root {
+  --bg: #F3F5F9; --surface: #FFFFFF; --ink: #0F1B2D; --muted: #56657B; --line: #D5DCE6;
+  --accent: #2352D6; --accent-soft: #E2E9FC; --key: #A86400; --key-soft: #FAEED8;
+  --font-display: "Sora", "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  --font-body: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0B1220; --surface: #131C2F; --ink: #E6EBF3; --muted: #9AA8BE; --line: #26334C;
+    --accent: #85A7FF; --accent-soft: #1B2A52; --key: #F0B44C; --key-soft: #3B2A0D; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0B1220; --surface: #131C2F; --ink: #E6EBF3; --muted: #9AA8BE; --line: #26334C;
+  --accent: #85A7FF; --accent-soft: #1B2A52; --key: #F0B44C; --key-soft: #3B2A0D; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.7; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+a { color: var(--accent); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line);
+  padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.top .name { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.top .name b { color: var(--accent); }
+.top .sub { font-size: 13px; color: var(--muted); }
+.wrap { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 28px; max-width: 1240px; margin: 0 auto;
+  padding-block: 20px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); align-self: start; max-height: calc(100vh - 90px); overflow-y: auto; font-size: 14px; }
+nav .ng { margin: 14px 0 4px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+nav ul { list-style: none; margin: 0; padding: 0; }
+nav a { display: block; padding: 4px 10px; border-radius: 8px; color: var(--ink); text-decoration: none; line-height: 1.45; }
+nav a:hover { background: var(--accent-soft); }
+nav a.cur { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+details.navbox > summary { display: none; }
+main { min-width: 0; }
+.page { display: none; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px clamp(16px, 3vw, 36px) 32px; }
+.page.on { display: block; }
+.crumb { margin: 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; color: var(--accent); text-transform: uppercase; }
+h1 { font-family: var(--font-display); font-size: clamp(22px, 2.6vw, 30px); line-height: 1.3; margin: 4px 0 14px; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-size: 19px; margin: 28px 0 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+h3 { font-size: 16px; margin: 20px 0 6px; }
+p, li { max-width: 72ch; }
+.meta { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0 0 8px; padding: 12px 14px; border-radius: 10px; background: var(--bg); font-size: 14px; }
+.meta dt { color: var(--muted); }
+.meta dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.meta .rt { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+table { border-collapse: collapse; font-size: 14px; display: block; overflow-x: auto; max-width: 100%; }
+th, td { border-bottom: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { color: var(--muted); font-weight: 500; }
+code { font-family: var(--font-mono); font-size: .88em; background: var(--bg); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+pre { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-size: 13px; line-height: 1.55; }
+pre code { background: none; padding: 0; }
+pre.mermaid { background: var(--surface); }
+blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--accent); background: var(--bg); border-radius: 0 8px 8px 0; color: var(--muted); }
+li.q { list-style: none; margin: 0 0 10px -18px; padding: 8px 12px; border-left: 3px solid var(--key); background: var(--key-soft); border-radius: 0 8px 8px 0; }
+li.q .qref { display: block; font-family: var(--font-mono); font-size: 12px; color: var(--key); }
+li.q q { font-family: Georgia, "Times New Roman", serif; font-size: 15px; }
+.wl { text-decoration: none; border-bottom: 1px dotted var(--accent); }
+@media (max-width: 860px) {
+  .wrap { grid-template-columns: 1fr; gap: 14px; }
+  nav { position: static; max-height: none; }
+  details.navbox > summary { display: block; cursor: pointer; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-weight: 600; }
+}
+</style>
+
+<header class="top">
+  <span class="name">Cryptography <b>LLM Wiki</b></span>
+  <span class="sub">22 個知識節點 · 12 篇來源（NIST、IETF RFC、大學教材、原始論文）· 每條原文引文都經 Wiki Validation 逐字比對</span>
+</header>
+<div class="wrap">
+  <nav aria-label="Wiki 目錄"><details class="navbox" id="navbox" open><summary>目錄</summary>
+<p class="ng">總覽</p><ul><li><a href="#knowledge-map" data-target="knowledge-map">知識地圖（索引）</a></li><li><a href="#sources-list" data-target="sources-list">資料來源清單</a></li><li><a href="#schema" data-target="schema">Wiki 規範</a></li><li><a href="#log" data-target="log">Wiki 操作紀錄</a></li></ul>
+<p class="ng">T1 Introduction</p><ul><li><a href="#intro-what-is-crypto" data-target="intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></li><li><a href="#intro-terminology" data-target="intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a></li><li><a href="#intro-kerckhoffs" data-target="intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a></li></ul>
+<p class="ng">T2 Classical</p><ul><li><a href="#classical-caesar" data-target="classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a></li><li><a href="#classical-substitution" data-target="classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a></li><li><a href="#classical-transposition" data-target="classical-transposition">換位密碼（Transposition Cipher）</a></li><li><a href="#classical-limitations" data-target="classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></li></ul>
+<p class="ng">T3 Symmetric</p><ul><li><a href="#sym-concept" data-target="sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></li><li><a href="#sym-block-vs-stream" data-target="sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a></li><li><a href="#sym-aes" data-target="sym-aes">AES（Advanced Encryption Standard）</a></li></ul>
+<p class="ng">T4 Modes</p><ul><li><a href="#mode-overview" data-target="mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a></li><li><a href="#mode-ecb" data-target="mode-ecb">ECB（Electronic Codebook）模式</a></li><li><a href="#mode-cbc" data-target="mode-cbc">CBC（Cipher Block Chaining）模式</a></li><li><a href="#mode-ctr" data-target="mode-ctr">CTR（Counter）模式</a></li><li><a href="#mode-gcm-aead" data-target="mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></li></ul>
+<p class="ng">T5 Asymmetric &amp; Apps</p><ul><li><a href="#asym-public-key" data-target="asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a></li><li><a href="#asym-key-exchange" data-target="asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a></li><li><a href="#asym-rsa" data-target="asym-rsa">RSA：基本運作原理</a></li><li><a href="#asym-signature" data-target="asym-signature">數位簽章（Digital Signature）</a></li><li><a href="#app-hybrid-tls" data-target="app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></li></ul>
+<p class="ng">T6 基礎工具與教學法</p><ul><li><a href="#basics-bits-xor-mod" data-target="basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></li><li><a href="#teaching-how-others-explain" data-target="teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></li></ul>
+<p class="ng">來源頁</p><ul><li><a href="#S01" data-target="S01">S01 RFC 4949: Internet Security Glossary, Version 2</a></li><li><a href="#S02" data-target="S02">S02 Handbook of Applied Cryptography, Chapter 1: Overview of Cryptography</a></li><li><a href="#S03" data-target="S03">S03 Handbook of Applied Cryptography, Chapter 7: Block Ciphers</a></li><li><a href="#S04" data-target="S04">S04 FIPS 197 (Update 1): Advanced Encryption Standard (AES)</a></li><li><a href="#S05" data-target="S05">S05 NIST SP 800-38A: Recommendation for Block Cipher Modes of Operation: Methods and Techniques</a></li><li><a href="#S06" data-target="S06">S06 NIST SP 800-175B Rev. 1: Guideline for Using Cryptographic Standards in the Federal Government: Cryptographic Mechanisms</a></li><li><a href="#S07" data-target="S07">S07 New Directions in Cryptography</a></li><li><a href="#S08" data-target="S08">S08 A Method for Obtaining Digital Signatures and Public-Key Cryptosystems</a></li><li><a href="#S09" data-target="S09">S09 RFC 8017: PKCS #1: RSA Cryptography Specifications Version 2.2</a></li><li><a href="#S10" data-target="S10">S10 RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3</a></li><li><a href="#S11" data-target="S11">S11 NIST SP 800-38D: Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC</a></li><li><a href="#S12" data-target="S12">S12 NIST SP 800-57 Part 1 Rev. 5: Recommendation for Key Management: Part 1 – General</a></li><li><a href="#S13" data-target="S13">S13 The Joy of Cryptography</a></li><li><a href="#S14" data-target="S14">S14 Crypto 101</a></li><li><a href="#S15" data-target="S15">S15 What is encryption? | Cloudflare Learning Center</a></li></ul>
+  </details></nav>
+  <main id="main">
+<article class="page on" id="knowledge-map"><p class="crumb">總覽</p><h1>知識地圖（索引）</h1><blockquote>
+<p>Cryptography LLM Wiki 的總索引：6 個主題、22 個概念節點、15 篇來源頁。
+每個節點的技術敘述都標註 <code>[Sxx p.N]</code>，並在「來源引文」段落附原文逐字摘錄（由 Wiki Validation 自動比對原文）。
+規範見 <a href="WIKI_SCHEMA.md">WIKI_SCHEMA.md</a>；操作紀錄見 <a href="log.md">log.md</a>；來源清單見 <a href="sources.md">sources.md</a>。</p>
+</blockquote>
+<h2>學習路徑（初學者建議順序）</h2>
+<ol>
+<li>為什麼需要密碼學 → 2. 基本術語與基礎工具（位元、XOR、mod）→ 3. 古典密碼與它的弱點 → 4. 對稱式加密與 AES →</li>
+<li>操作模式 → 6. 公開金鑰、金鑰交換、RSA、數位簽章 → 7. 全部組合起來：HTTPS／TLS 1.3</li>
+</ol>
+<h2>索引</h2>
+<h3>T1 Introduction to Cryptography</h3>
+<table>
+<thead>
+<tr>
+<th>節點</th>
+<th>一句話摘要</th>
+<th>主要來源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></td>
+<td>密碼學的定義與四大目標（機密性、完整性、鑑別、不可否認性）</td>
+<td>S01, S02</td>
+</tr>
+<tr>
+<td><a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a></td>
+<td>明文、密文、金鑰、加密、解密；Alice／Bob／攻擊者的通訊模型</td>
+<td>S01, S02</td>
+</tr>
+<tr>
+<td><a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a></td>
+<td>演算法可公開、只有金鑰要保密；金鑰空間要大到無法暴力破解</td>
+<td>S01, S02</td>
+</tr>
+</tbody>
+</table>
+<h3>T2 Classical Cryptography</h3>
+<table>
+<thead>
+<tr>
+<th>節點</th>
+<th>一句話摘要</th>
+<th>主要來源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a></td>
+<td>每個字母位移 k 位；只有 26 把金鑰</td>
+<td>S02, S03</td>
+</tr>
+<tr>
+<td><a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a></td>
+<td>換字母不換位置：單表、同音、多表（Vigenère）</td>
+<td>S02, S03</td>
+</tr>
+<tr>
+<td><a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a></td>
+<td>換位置不換字母：區塊內重新排列</td>
+<td>S02, S03</td>
+</tr>
+<tr>
+<td><a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></td>
+<td>金鑰空間小 → 窮舉；保留頻率 → 頻率分析</td>
+<td>S02, S03</td>
+</tr>
+</tbody>
+</table>
+<h3>T3 Symmetric Encryption</h3>
+<table>
+<thead>
+<tr>
+<th>節點</th>
+<th>一句話摘要</th>
+<th>主要來源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></td>
+<td>加解密用同一把金鑰；金鑰分配與金鑰數量問題</td>
+<td>S02, S06</td>
+</tr>
+<tr>
+<td><a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a></td>
+<td>區塊加密一次一塊；串流加密用金鑰串流逐符號加密</td>
+<td>S02, S06</td>
+</tr>
+<tr>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+<td>128 位元區塊；128／192／256 位元金鑰；10／12／14 輪</td>
+<td>S04, S06, S12</td>
+</tr>
+</tbody>
+</table>
+<h3>T4 Block Cipher Modes</h3>
+<table>
+<thead>
+<tr>
+<th>節點</th>
+<th>一句話摘要</th>
+<th>主要來源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a></td>
+<td>為什麼需要操作模式；IV 與填充</td>
+<td>S03, S05</td>
+</tr>
+<tr>
+<td><a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a></td>
+<td>每塊獨立加密 → 相同明文區塊產生相同密文（洩漏圖樣）</td>
+<td>S03, S05</td>
+</tr>
+<tr>
+<td><a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a></td>
+<td>與前一個密文區塊 XOR 鏈結；IV 必須無法預測</td>
+<td>S01, S03, S05</td>
+</tr>
+<tr>
+<td><a class="wl" href="#mode-ctr">CTR（Counter）模式</a></td>
+<td>加密計數器再 XOR；可平行、免填充、計數器不可重複</td>
+<td>S05</td>
+</tr>
+<tr>
+<td><a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></td>
+<td>CTR 變形 + 認證標籤 = 機密性 + 完整性（TLS 1.3 使用）</td>
+<td>S05, S11</td>
+</tr>
+</tbody>
+</table>
+<h3>T5 Asymmetric Cryptography &amp; Applications</h3>
+<table>
+<thead>
+<tr>
+<th>節點</th>
+<th>一句話摘要</th>
+<th>主要來源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a></td>
+<td>公鑰公開、私鑰保密；公鑰加密、私鑰解密</td>
+<td>S02, S06, S07</td>
+</tr>
+<tr>
+<td><a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a></td>
+<td>Diffie–Hellman：在公開通道上協議出共享金鑰</td>
+<td>S02, S07, S08, S10</td>
+</tr>
+<tr>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a></td>
+<td>n = p·q，C = M^e mod n；安全性來自大數分解；實務用 OAEP</td>
+<td>S02, S08, S09, S12</td>
+</tr>
+<tr>
+<td><a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></td>
+<td>私鑰簽章、公鑰驗證；提供完整性、鑑別、不可否認性</td>
+<td>S02, S06, S08, S09, S10</td>
+</tr>
+<tr>
+<td><a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></td>
+<td>TLS 1.3：(EC)DHE 交換金鑰 + 憑證簽章 + AES-GCM 加密</td>
+<td>S06, S10</td>
+</tr>
+</tbody>
+</table>
+<h3>T6 教學補充：基礎工具與別人怎麼教</h3>
+<table>
+<thead>
+<tr>
+<th>節點</th>
+<th>一句話摘要</th>
+<th>主要來源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></td>
+<td>位元、位元組、十六進位、XOR（相同→0、不同→1）、mod（取餘數）</td>
+<td>S04, S08, S13, S14</td>
+</tr>
+<tr>
+<td><a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></td>
+<td>大學教科書、入門書、Cloudflare 怎麼介紹加密；本簡報的教學原則</td>
+<td>S13, S14, S15</td>
+</tr>
+</tbody>
+</table>
+<h3>來源頁</h3>
+<p><a class="wl" href="#S01">S01</a> RFC 4949 · <a class="wl" href="#S02">S02</a> HAC Ch.1 · <a class="wl" href="#S03">S03</a> HAC Ch.7 · <a class="wl" href="#S04">S04</a> FIPS 197 · <a class="wl" href="#S05">S05</a> SP 800-38A · <a class="wl" href="#S06">S06</a> SP 800-175B ·
+<a class="wl" href="#S07">S07</a> Diffie–Hellman 1976 · <a class="wl" href="#S08">S08</a> RSA 1978 · <a class="wl" href="#S09">S09</a> RFC 8017 · <a class="wl" href="#S10">S10</a> RFC 8446 · <a class="wl" href="#S11">S11</a> SP 800-38D · <a class="wl" href="#S12">S12</a> SP 800-57 Pt.1 ·
+<a class="wl" href="#S13">S13</a> The Joy of Cryptography · <a class="wl" href="#S14">S14</a> Crypto 101 · <a class="wl" href="#S15">S15</a> Cloudflare：What is encryption?</p>
+<h2>知識圖</h2>
+<p>實線：概念關聯（relations）；虛線：先備知識（prerequisites）。</p>
+<pre class="mermaid">graph TD
+  subgraph T1[T1 Introduction]
+    WHAT[intro-what-is-crypto]
+    TERM[intro-terminology]
+    KERCK[intro-kerckhoffs]
+  end
+  subgraph T2[T2 Classical]
+    CAESAR[classical-caesar]
+    SUBST[classical-substitution]
+    TRANS[classical-transposition]
+    LIMIT[classical-limitations]
+  end
+  subgraph T3[T3 Symmetric]
+    SYM[sym-concept]
+    BLOCK[sym-block-vs-stream]
+    AES[sym-aes]
+  end
+  subgraph T4[T4 Modes]
+    MODES[mode-overview]
+    ECB[mode-ecb]
+    CBC[mode-cbc]
+    CTR[mode-ctr]
+    GCM[mode-gcm-aead]
+  end
+  subgraph T6[T6 基礎工具與教學法]
+    TOOLS[basics-bits-xor-mod]
+    TEACH[teaching-how-others-explain]
+  end
+  subgraph T5[T5 Asymmetric &amp; Apps]
+    PK[asym-public-key]
+    DH[asym-key-exchange]
+    RSA[asym-rsa]
+    SIG[asym-signature]
+    TLS[app-hybrid-tls]
+  end
+
+  WHAT -.-&gt; TERM -.-&gt; KERCK
+  TERM -.-&gt; CAESAR &amp; SUBST &amp; TRANS
+  CAESAR -- instance-of --&gt; SUBST
+  SUBST -- contrasts-with --&gt; TRANS
+  CAESAR &amp; SUBST &amp; TRANS -.-&gt; LIMIT
+  KERCK -.-&gt; LIMIT
+  LIMIT -- limitation-motivates --&gt; AES
+  TERM -.-&gt; SYM -.-&gt; BLOCK -.-&gt; AES
+  SUBST &amp; TRANS -- part-of --&gt; BLOCK
+  AES -.-&gt; MODES
+  MODES -.-&gt; ECB -.-&gt; CBC
+  ECB -- contrasts-with --&gt; CBC
+  BLOCK -.-&gt; CTR
+  CTR -- builds-on --&gt; GCM
+  SYM -- limitation-motivates --&gt; PK
+  PK -.-&gt; DH &amp; RSA &amp; SIG
+  RSA -- used-by --&gt; SIG
+  DH -- used-by --&gt; TLS
+  SIG -- used-by --&gt; TLS
+  GCM -- used-by --&gt; TLS
+  AES -- used-by --&gt; TLS
+  SIG -- related --&gt; WHAT
+  TERM -.-&gt; TOOLS
+  TOOLS -- used-by --&gt; CAESAR &amp; AES &amp; CBC &amp; RSA
+  TEACH -- related --&gt; WHAT &amp; TOOLS
+</pre>
+<h2>簡報對應（Wiki → Slides，35 張）</h2>
+<table>
+<thead>
+<tr>
+<th>投影片</th>
+<th>對應節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 Cryptography 101</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2 今天的路線圖</td>
+<td><a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></td>
+</tr>
+<tr>
+<td>3 為什麼需要密碼學？</td>
+<td><a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></td>
+</tr>
+<tr>
+<td>4 密碼學在做什麼？基本名詞</td>
+<td><a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a></td>
+</tr>
+<tr>
+<td>5 演算法可以公開，金鑰必須保密</td>
+<td><a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a></td>
+</tr>
+<tr>
+<td>6 兩個數學小工具：mod 與 XOR</td>
+<td><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></td>
+</tr>
+<tr>
+<td>7 第 2 章：古典密碼</td>
+<td><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a>、<a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a></td>
+</tr>
+<tr>
+<td>8 Caesar 密碼：每個字母往後移 k 位</td>
+<td><a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a></td>
+</tr>
+<tr>
+<td>9 替換密碼：把整個字母表打亂</td>
+<td><a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a></td>
+</tr>
+<tr>
+<td>10 多表替換：Vigenère 密碼</td>
+<td><a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a></td>
+</tr>
+<tr>
+<td>11 換位密碼：字母不變，位置打亂</td>
+<td><a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a></td>
+</tr>
+<tr>
+<td>12 古典密碼怎麼被破解？</td>
+<td><a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></td>
+</tr>
+<tr>
+<td>13 第 3 章：對稱式加密</td>
+<td><a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></td>
+</tr>
+<tr>
+<td>14 對稱式加密：同一把金鑰鎖上也打開</td>
+<td><a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></td>
+</tr>
+<tr>
+<td>15 對稱式加密的好處與難題</td>
+<td><a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></td>
+</tr>
+<tr>
+<td>16 兩種做法：區塊加密與串流加密</td>
+<td><a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a></td>
+</tr>
+<tr>
+<td>17 電腦裡的資料：位元、位元組、十六進位</td>
+<td><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></td>
+</tr>
+<tr>
+<td>18 現實中的對稱式加密：AES</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>19 AES 每一輪的四個步驟</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>20 AES 實例：一步一步看資料怎麼變</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>21 AES 怎麼解密？現在用在哪裡？</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>22 第 4 章：操作模式</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>23 為什麼需要操作模式？先看 ECB 的問題</td>
+<td><a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>、<a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a></td>
+</tr>
+<tr>
+<td>24 CBC：把區塊一個接一個串起來</td>
+<td><a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a></td>
+</tr>
+<tr>
+<td>25 CTR 與 GCM：現在網路上用的模式</td>
+<td><a class="wl" href="#mode-ctr">CTR（Counter）模式</a>、<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></td>
+</tr>
+<tr>
+<td>26 第 5 章：公開金鑰加密</td>
+<td><a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a>、<a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></td>
+</tr>
+<tr>
+<td>27 為什麼需要公開金鑰加密？</td>
+<td><a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a></td>
+</tr>
+<tr>
+<td>28 Diffie–Hellman：在公開場合約定同一把金鑰</td>
+<td><a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a></td>
+</tr>
+<tr>
+<td>29 RSA（一）：怎麼產生一對金鑰</td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a></td>
+</tr>
+<tr>
+<td>30 RSA（二）：加密與解密</td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a></td>
+</tr>
+<tr>
+<td>31 數位簽章：私鑰簽、公鑰驗</td>
+<td><a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></td>
+</tr>
+<tr>
+<td>32 第 6 章：綜合應用</td>
+<td><a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></td>
+</tr>
+<tr>
+<td>33 全部組合起來：HTTPS 與 TLS 1.3</td>
+<td><a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></td>
+</tr>
+<tr>
+<td>34 總結：從古典密碼到現代密碼學</td>
+<td><a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a>、<a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>、<a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>、<a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a>、<a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>、<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a>、<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>、<a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></td>
+</tr>
+<tr>
+<td>35 參考資料</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></article>
+<article class="page" id="sources-list"><p class="crumb">總覽</p><h1>資料來源清單</h1><blockquote>
+<p>本檔由 <code>Workflow/graph.py</code> 依 <code>config/sources.json</code>、<code>raw/manifest.json</code>、<code>raw/ingest_report.json</code> 與概念頁自動產生。SHA-256 可用來確認 ingest 的是同一份檔案。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>標題</th>
+<th>作者／發布者</th>
+<th>年份</th>
+<th>網址</th>
+<th>用途</th>
+<th>取得狀態</th>
+<th>抽取頁數</th>
+<th>SHA-256（前 16 碼）</th>
+<th>對應知識節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S01</td>
+<td>RFC 4949: Internet Security Glossary, Version 2</td>
+<td>R. Shirey (IETF)</td>
+<td>2007</td>
+<td><a href="https://www.rfc-editor.org/rfc/rfc4949.txt">https://www.rfc-editor.org/rfc/rfc4949.txt</a></td>
+<td>標準術語定義（plaintext、ciphertext、encryption、key、symmetric / asymmetric cryptography 等）</td>
+<td>HTTP 200</td>
+<td>366</td>
+<td><code>32d1e3837ae5a7d2</code></td>
+<td><a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a>, <a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a>, <a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a>, <a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>, <a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>S02</td>
+<td>Handbook of Applied Cryptography, Chapter 1: Overview of Cryptography</td>
+<td>A. Menezes, P. van Oorschot, S. Vanstone (CRC Press; hosted by University of Waterloo CACR)</td>
+<td>1996</td>
+<td><a href="https://cacr.uwaterloo.ca/hac/about/chap1.pdf">https://cacr.uwaterloo.ca/hac/about/chap1.pdf</a></td>
+<td>大學教材：密碼學目標、基本術語、對稱式加密、替換與換位密碼、公開金鑰概念</td>
+<td>HTTP 200</td>
+<td>49</td>
+<td><code>5de3d24deb279f5b</code></td>
+<td><a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>, <a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>, <a class="wl" href="#asym-rsa">RSA：基本運作原理</a>, <a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>, <a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>, <a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a>, <a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a>, <a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a>, <a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a>, <a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a>, <a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a>, <a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>, <a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></td>
+</tr>
+<tr>
+<td>S03</td>
+<td>Handbook of Applied Cryptography, Chapter 7: Block Ciphers</td>
+<td>A. Menezes, P. van Oorschot, S. Vanstone (CRC Press; hosted by University of Waterloo CACR)</td>
+<td>1996</td>
+<td><a href="https://cacr.uwaterloo.ca/hac/about/chap7.pdf">https://cacr.uwaterloo.ca/hac/about/chap7.pdf</a></td>
+<td>大學教材：古典密碼與其弱點、區塊加密的操作模式（ECB、CBC 等）</td>
+<td>HTTP 200</td>
+<td>61</td>
+<td><code>d8eb02f9aeb407f9</code></td>
+<td><a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>, <a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a>, <a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a>, <a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a>, <a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>, <a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>, <a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a></td>
+</tr>
+<tr>
+<td>S04</td>
+<td>FIPS 197 (Update 1): Advanced Encryption Standard (AES)</td>
+<td>NIST</td>
+<td>2023</td>
+<td><a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf">https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf</a></td>
+<td>AES 官方標準：區塊大小、金鑰長度、輪數、輪函數</td>
+<td>HTTP 200</td>
+<td>46</td>
+<td><code>62c86eb567f13edb</code></td>
+<td><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a>, <a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>S05</td>
+<td>NIST SP 800-38A: Recommendation for Block Cipher Modes of Operation: Methods and Techniques</td>
+<td>M. Dworkin (NIST)</td>
+<td>2001</td>
+<td><a href="https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf">https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf</a></td>
+<td>ECB、CBC、CTR 等操作模式的官方定義與 IV／計數器要求</td>
+<td>HTTP 200</td>
+<td>66</td>
+<td><code>66821162de1e7130</code></td>
+<td><a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>, <a class="wl" href="#mode-ctr">CTR（Counter）模式</a>, <a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>, <a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a>, <a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a></td>
+</tr>
+<tr>
+<td>S06</td>
+<td>NIST SP 800-175B Rev. 1: Guideline for Using Cryptographic Standards in the Federal Government: Cryptographic Mechanisms</td>
+<td>E. Barker (NIST)</td>
+<td>2020</td>
+<td><a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-175Br1.pdf">https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-175Br1.pdf</a></td>
+<td>對稱與非對稱機制概覽、金鑰建立與金鑰管理的現代觀點</td>
+<td>HTTP 200</td>
+<td>91</td>
+<td><code>715d140154622ff0</code></td>
+<td><a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a>, <a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>, <a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>, <a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>, <a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>, <a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></td>
+</tr>
+<tr>
+<td>S07</td>
+<td>New Directions in Cryptography</td>
+<td>W. Diffie, M. E. Hellman (IEEE Trans. Information Theory; hosted by Stanford)</td>
+<td>1976</td>
+<td><a href="https://ee.stanford.edu/~hellman/publications/24.pdf">https://ee.stanford.edu/~hellman/publications/24.pdf</a></td>
+<td>公開金鑰密碼學與金鑰交換概念的原始論文</td>
+<td>HTTP 200</td>
+<td>11</td>
+<td><code>03fa2f493a1448a3</code></td>
+<td><a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>, <a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a></td>
+</tr>
+<tr>
+<td>S08</td>
+<td>A Method for Obtaining Digital Signatures and Public-Key Cryptosystems</td>
+<td>R. L. Rivest, A. Shamir, L. Adleman (Communications of the ACM; hosted by MIT)</td>
+<td>1978</td>
+<td><a href="https://people.csail.mit.edu/rivest/Rsapaper.pdf">https://people.csail.mit.edu/rivest/Rsapaper.pdf</a></td>
+<td>RSA 原始論文：金鑰產生、加解密、數位簽章</td>
+<td>HTTP 200</td>
+<td>15</td>
+<td><code>f7b1f78d9a7cbeb8</code></td>
+<td><a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>, <a class="wl" href="#asym-rsa">RSA：基本運作原理</a>, <a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>, <a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></td>
+</tr>
+<tr>
+<td>S09</td>
+<td>RFC 8017: PKCS #1: RSA Cryptography Specifications Version 2.2</td>
+<td>K. Moriarty, B. Kaliski, J. Jonsson, A. Rusch (IETF)</td>
+<td>2016</td>
+<td><a href="https://www.rfc-editor.org/rfc/rfc8017.txt">https://www.rfc-editor.org/rfc/rfc8017.txt</a></td>
+<td>RSA 現行標準：RSA 公鑰／私鑰定義、RSAES-OAEP、RSASSA-PSS</td>
+<td>HTTP 200</td>
+<td>79</td>
+<td><code>1e72dc473d18df3f</code></td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a>, <a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></td>
+</tr>
+<tr>
+<td>S10</td>
+<td>RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3</td>
+<td>E. Rescorla (IETF)</td>
+<td>2018</td>
+<td><a href="https://www.rfc-editor.org/rfc/rfc8446.txt">https://www.rfc-editor.org/rfc/rfc8446.txt</a></td>
+<td>現代網路應用：TLS 1.3 的金鑰交換、憑證簽章與 AEAD 加密</td>
+<td>HTTP 200</td>
+<td>161</td>
+<td><code>47871bc8820a2c3b</code></td>
+<td><a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a>, <a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>, <a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></td>
+</tr>
+<tr>
+<td>S11</td>
+<td>NIST SP 800-38D: Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC</td>
+<td>M. Dworkin (NIST)</td>
+<td>2007</td>
+<td><a href="https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf">https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf</a></td>
+<td>GCM（以 CTR 為基礎的認證加密），銜接 CTR 與 TLS 1.3</td>
+<td>HTTP 200</td>
+<td>39</td>
+<td><code>d99f3921ccebca04</code></td>
+<td><a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></td>
+</tr>
+<tr>
+<td>S12</td>
+<td>NIST SP 800-57 Part 1 Rev. 5: Recommendation for Key Management: Part 1 – General</td>
+<td>E. Barker (NIST)</td>
+<td>2020</td>
+<td><a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57pt1r5.pdf">https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57pt1r5.pdf</a></td>
+<td>現行金鑰強度建議（例如 AES 與 RSA 金鑰長度對應的安全強度）</td>
+<td>HTTP 200</td>
+<td>171</td>
+<td><code>cc32391022c1382a</code></td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a>, <a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>S13</td>
+<td>The Joy of Cryptography</td>
+<td>Mike Rosulek (Oregon State University)</td>
+<td>2021</td>
+<td><a href="https://joyofcryptography.com/pdf/book.pdf">https://joyofcryptography.com/pdf/book.pdf</a></td>
+<td>大學部教科書：看大學課程如何從零介紹 XOR、mod、區塊加密與操作模式（教學法參考＋名詞定義）</td>
+<td>HTTP 200</td>
+<td>286</td>
+<td><code>68fcdc7cf0874fd5</code></td>
+<td><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a>, <a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></td>
+</tr>
+<tr>
+<td>S14</td>
+<td>Crypto 101</td>
+<td>Laurens Van Houtven</td>
+<td>2017</td>
+<td><a href="https://www.crypto101.io/Crypto101.pdf">https://www.crypto101.io/Crypto101.pdf</a></td>
+<td>入門書：看入門教材如何安排主題順序（先 XOR、再區塊加密、再操作模式）（教學法參考）</td>
+<td>HTTP 200</td>
+<td>223</td>
+<td><code>527c06ac5a3e3c8f</code></td>
+<td><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a>, <a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></td>
+</tr>
+<tr>
+<td>S15</td>
+<td>What is encryption?</td>
+<td>Cloudflare Learning Center</td>
+<td>Cloudflare</td>
+<td>2024</td>
+<td><a href="https://www.cloudflare.com/learning/ssl/what-is-encryption/">https://www.cloudflare.com/learning/ssl/what-is-encryption/</a></td>
+<td>科技公司給一般大眾的說明：看業界如何用白話介紹加密、金鑰、對稱與非對稱（教學法參考）</td>
+<td>HTTP 200</td>
+<td>1</td>
+<td><code>4375c87f31bbfe4a</code></td>
+</tr>
+</tbody>
+</table>
+<p>來源頁（每篇一頁的摘要與使用章節）：<code>Wiki/sources/</code>。原始檔與抽取文字在 <code>Wiki/raw/</code>（僅保留於本機，HAC 章節的授權僅允許個人保存，不公開散布）。</p>
+<p>取得時間：2026-11-24T19:12:52+08:00 ～ 2026-11-24T21:06:49+08:00</p></article>
+<article class="page" id="schema"><p class="crumb">總覽</p><h1>Wiki 規範</h1><p>本 Wiki 採用 Karpathy 提出的 LLM Wiki 三層模式：</p>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th>位置</th>
+<th>誰維護</th>
+<th>規則</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原始資料（Raw sources）</td>
+<td><code>Wiki/raw/</code></td>
+<td>程式（fetch / ingest 節點）</td>
+<td>不可修改；記錄 SHA-256；僅保留於本機</td>
+</tr>
+<tr>
+<td>Wiki 頁面</td>
+<td><code>Wiki/sources/</code>、<code>Wiki/concepts/</code>、<code>knowledge_map.md</code>、<code>facts.json</code></td>
+<td>LLM agent（與使用者討論後撰寫）</td>
+<td>必須遵守下方格式，所有技術敘述可追溯到原文</td>
+</tr>
+<tr>
+<td>規範（Schema）</td>
+<td>本檔 + <code>Workflow/config/*.json</code></td>
+<td>使用者與 agent 共同約定</td>
+<td>修改需在 <code>log.md</code> 記錄</td>
+</tr>
+</tbody>
+</table>
+<p>操作：<strong>Ingest</strong>（加入來源並更新頁面）、<strong>Query</strong>（為簡報查詢 Wiki）、<strong>Lint</strong>（Wiki Validation）。
+<code>log.md</code> 為只追加的操作紀錄；<code>knowledge_map.md</code> 兼作索引（index）。</p>
+<h2>頁面類型</h2>
+<h3>1. 來源頁 <code>Wiki/sources/Sxx-&lt;slug&gt;.md</code></h3>
+<pre><code class="language-yaml">---
+id: S04
+type: source
+title: &lt;必須與 config/sources.json 完全一致&gt;
+url: &lt;必須與 config/sources.json 完全一致&gt;
+nodes: [sym-aes, ...]   # 使用本來源的概念節點
+---
+</code></pre>
+<p>必要段落：<code>## 摘要</code>、<code>## 本 Wiki 使用的章節</code>（列出章節／PDF 頁碼）。</p>
+<h3>2. 概念頁 <code>Wiki/concepts/&lt;id&gt;.md</code></h3>
+<pre><code class="language-yaml">---
+id: classical-caesar           # 與檔名相同
+title: Caesar Cipher（凱撒密碼）
+topic: T2                      # T1–T5
+aliases: [Caesar cipher, shift cipher, 凱撒密碼]
+sources: [S02, S03]            # 每個來源都必須至少有一條引文
+prerequisites: [intro-terminology]
+relations:
+  - {type: instance-of, target: classical-substitution}
+facts: {}                      # 只能使用 facts.json 中已登錄的事實鍵
+---
+</code></pre>
+<p>必要段落：<code>## 定義</code>、<code>## 重點</code>（每點標註 <code>[Sxx p.N]</code>）、<code>## 關聯</code>（使用 <code>&lt;a class="wl" href="#id"&gt;id&lt;/a&gt;</code>）、<code>## 來源引文</code>。
+選用段落：<code>## 範例</code>、<code>## 常見誤解</code>（誤解只能寫在這裡，並說明為何錯誤）。</p>
+<h3>引文格式（Lint 會逐字比對原文）</h3>
+<pre><code>- [S04 p.15 §5] &quot;The AES algorithm takes ... &quot;
+</code></pre>
+<ul>
+<li><code>p.N</code> 為 <strong>抽取文字中的頁碼</strong>（PDF 第 N 頁；RFC 為第 N 頁），不是書上印的頁碼。</li>
+<li>引號內必須是原文逐字摘錄（允許空白、斷行連字號、標點差異）；不得改寫。</li>
+<li>章節號（§）為選填，方便人工查閱。</li>
+</ul>
+<h2>關聯型別</h2>
+<p><code>prerequisite</code>（先備）、<code>instance-of</code>（是…的一種）、<code>part-of</code>（是…的一部分）、
+<code>limitation-motivates</code>（其限制促成…）、<code>contrasts-with</code>（對比）、<code>used-by</code>（被…使用）、
+<code>builds-on</code>（建立在…之上）、<code>related</code>（一般相關）。</p>
+<h2>撰寫原則</h2>
+<ol>
+<li>只寫來源中有依據的內容；來源沒有的，不寫或標示為「本 Wiki 的教學補充」並說明理由。</li>
+<li>舊來源（1976–1996）中的參數建議若已過時，必須以 NIST 現行文件（S12 等）為準並註明。</li>
+<li>名詞採台灣用語：加密／解密、明文／密文、金鑰、對稱式加密、公開金鑰、區塊加密、串流加密、操作模式、初始向量（IV）、數位簽章。</li>
+</ol></article>
+<article class="page" id="log"><p class="crumb">總覽</p><h1>Wiki 操作紀錄</h1><p>格式：<code>## [時間] 操作 | 說明</code></p>
+<h2>[2026-11-24 19:13] fetch | 取得 12/12 篇來源</h2>
+<h2>[2026-11-24 19:13] ingest | 抽取文字 12/12 篇</h2>
+<h2>[2026-11-24 19:35] organize | batch 1 Introduction to Cryptography：Batch 1（T1 Introduction）：讀 S01 RFC 4949 條目（cryptography/encryption/key/key space/cipher/brute force/security by obscurity 等）與 S02 HAC §1.1–1.4；建立 intro-what-is-crypto、intro-terminology、intro-kerckhoffs、來源頁 S01/S02、facts.json 初版、knowledge_map 初版。決策：HAC 稱 DES 仍為標準（1996）已過時，以 RFC 4949（AES 取代 DES）為準並加時效註記；HAC 的 key pair (e,d) 與公鑰私鑰對區分說明；authentication 譯為「鑑別」、攻擊者用 Adversary（來源無 Eve）。使用者指示後續由 agent 自行完成，不再逐批確認。</h2>
+<h2>[2026-11-24 19:37] organize | batch 2 Classical Cryptography：Batch 2（T2 Classical）：讀 S02 HAC §1.5.1–1.5.3 與 S03 HAC §7.3.1–7.3.5；建立 classical-caesar、classical-substitution（含 homophonic、Vigenère、Kasiski）、classical-transposition、classical-limitations 與來源頁 S03，更新 S02 來源頁，facts.json 新增 caesar.key_count=26、caesar.julius_key=3、substitution.key_count_english=26!。發現 PDF 把 Vigenère 的重音拆成獨立符號（Vigen+重音+ere），在 textnorm 加入去重音正規化，避免引文比對誤判。</h2>
+<h2>[2026-11-24 19:40] ingest-fix | batch 3 整理時發現 S04（FIPS 197 upd1）PDF 的 fi 連字 ToUnicode 錯誤：pypdf、pdfminer.six、PyMuPDF 抽出結果都相同（specified→specifed），屬於來源檔本身問題。原 ingest 檢查只看字數與關鍵字，沒有發現。修正：textnorm 新增連字遺失偵測與 fi→f 摺疊比對；ingest 節點新增 ligature-loss 警告（檢查提前到 ingest）。</h2>
+<h2>[2026-11-24 19:43] organize | batch 3 Symmetric Encryption：Batch 3（T3 Symmetric）：讀 S02 HAC §1.5.1/1.5.4/1.5.5、S04 FIPS 197（Abstract、§1、Table 3、§5.1–5.1.4）、S06 SP 800-175B §3.2–3.2.1.4、S12 SP 800-57 Table 2；建立 sym-concept（含金鑰分配問題、1000 人需 499,500 把金鑰）、sym-block-vs-stream、sym-aes；來源頁 S04/S06/S12；facts 新增 aes.block_bits/key_bits/rounds/selected_year、des.withdrawn_year；misconceptions 新增 AES 區塊大小、DES 仍是標準。S06 指出 DES 於 2005 撤銷，進一步證實 batch 1 的時效判斷。本批發現並處理 S04 的 fi 連字遺失（詳見 log.md ingest-fix）。另將 intro-what-is-crypto 的時效註記移到『常見誤解』段落，避免與誤解規則衝突。</h2>
+<h2>[2026-11-24 19:46] organize | batch 4 Block Cipher Modes：Batch 4（T4 Modes）：讀 S05 SP 800-38A（Abstract、§5.3 IV、§6.1 ECB、§6.2 CBC、§6.5 CTR、App.A 填充、App.B.2 計數器唯一性）、S03 HAC §7.2.2（ECB／CBC 性質、Remark 7.12）、S11 SP 800-38D（§1、§5.2、§8 IV 唯一性）；建立 mode-overview、mode-ecb、mode-cbc、mode-ctr、mode-gcm-aead 與來源頁 S05/S11，更新 S03；facts 新增 modes.sp800_38a、gcm.block_bits；misconceptions 新增 ECB 安全、IV 必須保密（用否定字排除避免誤判）。自我檢查時發現 mode-gcm-aead 內文引用 S05 但 frontmatter 未列，已補上來源與引文。</h2>
+<h2>[2026-11-24 19:53] organize | batch 5 Asymmetric Cryptography &amp; Applications：Batch 5（T5 Asymmetric &amp; Apps）：讀 S07 Diffie–Hellman §I/§III、S08 RSA（Abstract、§IV、§V、§VII、§VIII 範例）、S09 RFC 8017 §3.1/§7/§7.1/§8、S10 RFC 8446 §1/§1.2/§2/§4.4.3/§9.1/App.E.1、S06 §3.3、S12 Table 2；建立 asym-public-key、asym-key-exchange、asym-rsa、asym-signature、app-hybrid-tls 與來源頁 S07–S10，更新 S06/S12；facts 新增 rsa.example（論文 p=47,q=59）、rsa.paper_recommended_digits=200、rsa.k_for_112bit=2048、rsa.k_for_128bit=3072、tls13.*；misconception 新增 TLS1.3 RSA 金鑰傳輸。DH 小數字範例為自行計算，不放進 facts（無原文可引），改由 Content Validation 重算。完成 knowledge_map（索引 + Mermaid + 簡報對應）。另先寫好 query.py、slide_outline.json、content_check.py（在生成內容之前訂好檢查規則）。</h2>
+<h2>[2026-11-24 19:53] lint | 第 1 次 Wiki Validation：未通過，errors=1 warnings=0 → retry</h2>
+<h2>[2026-11-24 19:53] organize | 修正（retry 1）：Wiki 修正 retry 1：W5 引文比對失敗——app-hybrid-tls 引用 S06 的一句話橫跨 p.34–35，中間夾著 NIST 的頁首（NIST SP 800-175B REV. 1 … This publication is available …），所以無法逐字比對。修正：把引文拆成 p.34 與 p.35 兩條逐字引文，內文標註改為 [S06 p.34–35]。</h2>
+<h2>[2026-11-24 19:53] lint | 第 2 次 Wiki Validation：通過，errors=0 warnings=0 → pass</h2>
+<h2>[2026-11-24 19:53] query | 為 12 張投影片查詢 Wiki；無結果：無</h2>
+<h2>[2026-11-24 20:05] fetch | 取得 12/12 篇來源</h2>
+<h2>[2026-11-24 20:05] ingest | 抽取文字 12/12 篇</h2>
+<h2>[2026-11-24 20:05] organize | incremental（retry 0）：增量模式：ingest 重新抽取文字，SHA-256 與 run-01 相同（來源未變），S04 連字遺失已由 ingest 警告並由 Lint 的 fi→f 摺疊處理；Wiki 頁面不需要更新。</h2>
+<h2>[2026-11-24 20:05] lint | 第 1 次 Wiki Validation：通過，errors=0 warnings=0 → pass</h2>
+<h2>[2026-11-24 20:05] query | 為 12 張投影片查詢 Wiki；無結果：無</h2>
+<h2>[2026-11-24 20:33] fetch | 取得 12/12 篇來源</h2>
+<h2>[2026-11-24 20:33] ingest | 抽取文字 12/12 篇</h2>
+<h2>[2026-11-24 20:33] organize | incremental（retry 0）：增量模式：Wiki 不需要更新（本次只改簡報外觀）。</h2>
+<h2>[2026-11-24 20:33] lint | 第 1 次 Wiki Validation：通過，errors=0 warnings=0 → pass</h2>
+<h2>[2026-11-24 20:33] query | 為 12 張投影片查詢 Wiki；無結果：無</h2>
+<h2>[2026-11-24 20:40] fetch | 取得 12/12 篇來源</h2>
+<h2>[2026-11-24 20:40] ingest | 抽取文字 12/12 篇</h2>
+<h2>[2026-11-24 20:42] organize | incremental（retry 0）：使用者回饋：加密／解密過程要有更多圖解，AES 四步要有具體實例。Wiki 更新：sym-aes 新增 FIPS 197 附錄 B（AES-128 第 1 輪）完整實例——初始 AddRoundKey、SubBytes、ShiftRows、MixColumns、AddRoundKey 各步的 4×4 state 與逐格說明（19→d4、列位移、04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30、04 ⊕ a0 = a4），以及解密方向（反運算、倒序，§5.3）；新增 13 條原文引文、facts aes.example_input / aes.example_key。數值先以獨立 AES 參考實作（validators/aes_ref.py）重算，與附錄 B 全部一致。mode-cbc 新增解密公式與 SP 800-38A §6.2 解密原文；mode-ctr 補上解密公式與完整原文。S04 來源頁補充 §5.3 與 Appendix B。</h2>
+<h2>[2026-11-24 20:42] lint | 第 1 次 Wiki Validation：通過，errors=0 warnings=0 → pass</h2>
+<h2>[2026-11-24 20:42] query | 為 12 張投影片查詢 Wiki；無結果：無</h2>
+<h2>[2026-11-24 20:50] fetch | 取得 12/12 篇來源</h2>
+<h2>[2026-11-24 20:51] ingest | 抽取文字 12/12 篇</h2>
+<h2>[2026-11-24 20:51] organize | incremental（retry 0）：增量模式：Wiki 不需更新。</h2>
+<h2>[2026-11-24 20:51] lint | 第 1 次 Wiki Validation：通過，errors=0 warnings=0 → pass</h2>
+<h2>[2026-11-24 20:51] query | 為 12 張投影片查詢 Wiki；無結果：無</h2>
+<h2>[2026-11-24 21:05] fetch | 取得 14/15 篇來源；失敗 ['S15']</h2>
+<h2>[2026-11-24 21:06] ingest | 抽取文字 14/15 篇；失敗 ['S15']</h2>
+<h2>[2026-11-24 21:06] fetch | 取得 15/15 篇來源</h2>
+<h2>[2026-11-24 21:07] ingest | 抽取文字 15/15 篇</h2>
+<h2>[2026-11-24 21:09] organize | batch 6 教學補充：基礎工具與別人怎麼教：Batch 6（使用者回饋：名詞要先解釋、看別人怎麼介紹加密）：新增來源 S13 The Joy of Cryptography（Oregon State 大學部教科書）、S14 Crypto 101（入門書）、S15 Cloudflare What is encryption?（給大眾的說明）。新增節點 basics-bits-xor-mod（位元、位元組、十六進位、XOR、mod，含定義與例子）與 teaching-how-others-explain（比較三種教材的介紹順序，歸納本簡報的 5 條教學原則：先介紹工具與名詞、每個主題依『原理→為什麼／好處與限制→現實怎麼做』分頁講完、公式每個符號都要說明、從最簡單例子開始、用比喻再接回正式名詞）。classical-caesar、sym-aes、mode-cbc、asym-key-exchange、asym-rsa 的先備概念加入 basics-bits-xor-mod，讓 C5 會檢查『先介紹 mod／XOR 再使用』。knowledge_map 新增 T6。（batch lint：3 errors）</h2>
+<h2>[2026-11-24 21:10] organize | batch 6 教學補充：基礎工具與別人怎麼教：Batch 6 重做（batch lint 第 1 次未過）：v2 的 batch 快速檢查第一次在實際執行中攔下問題——3 條引文太短（少於 20 字元，無法有效比對）：FIPS 197 的 'Bit A binary digit: 0 or 1.'（刪除，位元定義改由 p.13 的完整句子支撐）、Joy of Cryptography 的 mod 例子（擴充為含 21 % 7 的完整例句）、目錄的 '0.2 Modular Arithmetic'（與上一條合併成連續的目錄片段）。（batch lint：通過）</h2>
+<h2>[2026-11-24 21:10] lint | 第 1 次 Wiki Validation：通過，errors=0 warnings=0 → pass</h2>
+<h2>[2026-11-24 21:10] query | 為 12 張投影片查詢 Wiki；無結果：無</h2>
+<h2>[2026-11-24 21:34] fetch | 取得 15/15 篇來源</h2>
+<h2>[2026-11-24 21:35] ingest | 抽取文字 15/15 篇</h2>
+<h2>[2026-11-24 21:35] organize | incremental（retry 0）：增量模式：使用者回饋『公式沒有用正常的數學排版』只影響簡報呈現，Wiki 不需更新。</h2>
+<h2>[2026-11-24 21:35] lint | 第 1 次 Wiki Validation：通過，errors=0 warnings=0 → pass</h2>
+<h2>[2026-11-24 21:35] query | 為 30 張投影片查詢 Wiki；無結果：無</h2>
+<h2>[2026-11-24 21:46] fetch | 取得 15/15 篇來源</h2>
+<h2>[2026-11-24 21:46] ingest | 抽取文字 15/15 篇</h2>
+<h2>[2026-11-24 21:46] organize | incremental（retry 0）：增量模式：使用者回饋『多一些起承轉合、章與章切換要提醒』屬於教學編排，Wiki 不需更新。這次先更新大綱（35 張，第 2～6 章開頭加承上啟下轉場頁）再讓 Graph 查詢，避免 run-07 的順序錯誤。</h2>
+<h2>[2026-11-24 21:46] lint | 第 1 次 Wiki Validation：通過，errors=0 warnings=0 → pass</h2>
+<h2>[2026-11-24 21:46] query | 為 35 張投影片查詢 Wiki；無結果：無</h2></article>
+<article class="page" id="intro-what-is-crypto"><p class="crumb">T1 Introduction</p><h1>密碼學是什麼？為什麼需要它？</h1><dl class="meta"><dt>主題</dt><dd>T1</dd><dt>來源</dt><dd><a class="wl" href="#S01">S01</a>、<a class="wl" href="#S02">S02</a></dd><dt>先備概念</dt><dd>—</dd><dt>關聯</dt><dd><span class="rt">related</span> <a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a>、<span class="rt">related</span> <a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></dd></dl><h2>定義</h2>
+<p><strong>密碼學（cryptography）</strong> 是研究「與資訊安全相關的數學技術」的學問，目標包括機密性、資料完整性、實體鑑別與資料來源鑑別 [S02 p.5]。
+RFC 4949 的白話說法：把資料轉換成<strong>看不懂的形式</strong>、<strong>防止資料被偷偷竄改</strong>、<strong>防止未經授權的使用</strong>；如果轉換可逆，也負責把資料還原 [S01 p.90]。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>為什麼需要</strong>：密碼學原本主要服務軍事、外交與政府；1960 年代電腦與通訊普及後，民間也開始需要保護數位資訊 [S02 p.2]。</li>
+<li><strong>密碼學的四大目標</strong>（HAC 的框架）[S02 p.5]：
+  1. <strong>機密性（confidentiality）</strong>：只有被授權的人能看到內容 [S02 p.5][S01 p.94]
+  2. <strong>資料完整性（data integrity）</strong>：能偵測資料是否被未授權地修改 [S02 p.5][S01 p.95]
+  3. <strong>鑑別（authentication，確認身分或來源）</strong>：確認通訊對象是誰、資料從哪裡來 [S02 p.5][S01 p.26]
+  4. <strong>不可否認性（non-repudiation）</strong>：讓人無法否認自己做過的承諾或動作 [S02 p.5][S01 p.200]</li>
+<li>密碼學的本質是「預防與偵測作弊及其他惡意行為」[S02 p.5]。</li>
+<li>密碼學不是保護資訊的唯一方法，而是其中一組技術 [S02 p.5]。</li>
+<li>不同目標由不同工具達成：加密主要負責機密性；完整性、不可否認性需要雜湊函數、數位簽章等其他工具 [S02 p.5]（見 <a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>）。</li>
+</ul>
+<h2>範例</h2>
+<ul>
+<li>網路購物時：信用卡號不能被看到（機密性）、訂單金額不能被改（完整性）、要確定連到的是真正的商店（鑑別）、商店不能事後否認收到訂單（不可否認性）。——本 Wiki 的教學補充例子，對應四大目標的定義 [S02 p.5]。</li>
+</ul>
+<h2>常見誤解</h2>
+<ul>
+<li><strong>時效註記</strong>：HAC 寫於 1996 年，書中提到 DES「仍是許多金融機構的標準」[S02 p.2]；較新的 RFC 4949（2007）則記載 NIST 以公開程序選出 AES 來取代 DES [S01 p.268]。本 Wiki 以較新的來源為準，不把 DES 當成現行標準（見 <a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>）。</li>
+</ul>
+<h2>關聯</h2>
+<ul>
+<li>下一步先認識基本術語：<a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a></li>
+<li>「不可否認性」靠數位簽章達成：<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.5 §1.2 Def.1.1</span><q>Cryptography is the study of mathematical techniques related to aspects of information security such as confidentiality, data integrity, entity authentication, and data origin authentication.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.5 §1.2</span><q>Cryptography is not the only means of providing information security, but rather one set of techniques.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.5 §1.2</span><q>Confidentiality is a service used to keep the content of information from all but those authorized to have it.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.5 §1.2</span><q>Data integrity is a service which addresses the unauthorized alteration of data.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.5 §1.2</span><q>Authentication is a service related to identification.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.5 §1.2</span><q>Non-repudiation is a service which prevents an entity from denying previous commitments or actions.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.5 §1.2</span><q>Cryptography is about the prevention and detection of cheating and other malicious activities.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.5 §1.2</span><q>Examples of primitives include encryption schemes</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.2 §1.1</span><q>The proliferation of computers and communications systems in the 1960s brought with it a demand from the private sector for means to protect information in digital form and to provide security services.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.2 §1.1</span><q>It remains the standard means for securing electronic commerce for many financial institutions around the world.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.90 cryptography</span><q>The mathematical science that deals with transforming data to render its meaning unintelligible (i.e., to hide its semantic content), prevent its undetected alteration, or prevent its unauthorized use.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.94 data confidentiality</span><q>The property that data is not disclosed to system entities unless they have been authorized to know the data.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.95 data integrity</span><q>The property that data has not been changed, destroyed, or lost in an unauthorized or accidental manner.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.26 authentication</span><q>The process of verifying a claim that a system entity or system resource has a certain attribute value.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.200 non-repudiation service</span><q>A security service that provide protection against false denial of involvement in an association</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.268 security by obscurity</span><q>For example, NIST used a long, public process to select AES to replace DES.</q></li>
+</ul></article>
+<article class="page" id="intro-terminology"><p class="crumb">T1 Introduction</p><h1>基本術語：明文、密文、金鑰、加密與解密</h1><dl class="meta"><dt>主題</dt><dd>T1</dd><dt>來源</dt><dd><a class="wl" href="#S01">S01</a>、<a class="wl" href="#S02">S02</a></dd><dt>先備概念</dt><dd><a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></dd><dt>關聯</dt><dd><span class="rt">related</span> <a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a>、<span class="rt">related</span> <a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a>、<span class="rt">related</span> <a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a></dd></dl><h2>定義</h2>
+<table>
+<thead>
+<tr>
+<th>術語</th>
+<th>意思</th>
+<th>來源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>明文（plaintext）</strong></td>
+<td>要被加密的原始資料</td>
+<td>[S01 p.225][S02 p.12]</td>
+</tr>
+<tr>
+<td><strong>密文（ciphertext）</strong></td>
+<td>加密後、意義已無法直接理解的資料</td>
+<td>[S01 p.62][S02 p.12]</td>
+</tr>
+<tr>
+<td><strong>加密（encryption）</strong></td>
+<td>把明文轉換成密文，藏住原本的意義</td>
+<td>[S01 p.119]</td>
+</tr>
+<tr>
+<td><strong>解密（decryption）</strong></td>
+<td>加密的反向過程，把密文還原成明文</td>
+<td>[S01 p.119][S02 p.12]</td>
+</tr>
+<tr>
+<td><strong>金鑰（key）</strong></td>
+<td>控制加密演算法「怎麼轉換」的輸入參數</td>
+<td>[S01 p.171][S02 p.12]</td>
+</tr>
+<tr>
+<td><strong>金鑰空間（key space）</strong></td>
+<td>所有可能金鑰的集合（範圍）</td>
+<td>[S01 p.177][S02 p.12]</td>
+</tr>
+<tr>
+<td><strong>密碼／加密法（cipher）</strong></td>
+<td>用來加密與解密的演算法；HAC 稱「加密方案」</td>
+<td>[S01 p.61][S02 p.13]</td>
+</tr>
+</tbody>
+</table>
+<h2>重點</h2>
+<ul>
+<li><strong>兩方通訊模型</strong>：Alice（傳送者）加密後透過<strong>不安全的通道</strong>送給 Bob（接收者），中間的<strong>攻擊者（adversary）</strong>想破壞這個安全服務 [S02 p.14]。</li>
+<li>不安全的通道上，旁人可以<strong>讀取、插入、刪除、重排</strong>訊息 [S02 p.14]。</li>
+<li>加密要能還原：每一把加密金鑰都必須對應到一把解密金鑰，使解密後得到原本的明文 [S02 p.13]。</li>
+<li>HAC 把加密金鑰 e 和解密金鑰 d 合稱「key pair」，並註明 <strong>e 和 d 可以相同</strong> [S02 p.13]——相同時就是<strong>對稱式加密</strong>（<a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a>）；「公鑰／私鑰對」是另一回事，屬於非對稱式加密（<a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>）。</li>
+<li><strong>密碼分析（cryptanalysis）</strong>：研究如何破解密碼技術；<strong>cryptology</strong> 是密碼學與密碼分析的合稱 [S02 p.16]。</li>
+<li>密碼技術一般分成兩大類：<strong>對稱式金鑰（symmetric-key）</strong> 與 <strong>公開金鑰（public-key）</strong> [S02 p.16]。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>明文  HELLO  ──加密(金鑰 k)──▶  密文  KHOOR  ──解密(金鑰 k)──▶  HELLO
+</code></pre>
+<p>（以位移 3 的 Caesar 密碼示意，詳見 <a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>。）</p>
+<h2>關聯</h2>
+<ul>
+<li>為什麼「只有金鑰需要保密」：<a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a></li>
+<li>e = d 的情況：<a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a>；公鑰與私鑰：<a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.12 §1.4</span><q>An element of M is called a plaintext message or simply a plaintext.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.12 §1.4</span><q>alphabet of definition for M. An element of C is called a ciphertext.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.12 §1.4</span><q>denotes a set called the key space. An element of K is called a key.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.12 §1.4</span><q>The process of applying the transformation Dd to a ciphertext c is usually referred to as decrypting c or the decryption of c.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.13 §1.4</span><q>An encryption scheme is sometimes referred to as a cipher.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.13 §1.4</span><q>Note that e and d could be the same.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.14 §1.4</span><q>An adversary is an entity in a two-party communication which is neither the sender nor receiver, and which tries to defeat the information security service being provided between the sender and receiver.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.14 §1.4</span><q>An unsecured channel is one from which parties other than those for which the information is intended can reorder, delete, insert, or read.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.16 §1.4</span><q>Cryptanalysis is the study of mathematical techniques for attempting to defeat cryptographic techniques</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.16 §1.4</span><q>Cryptology is the study of cryptography (Definition 1.1) and cryptanalysis.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.16 §1.4</span><q>Cryptographic techniques are typically divided into two generic types: symmetric-key and public-key.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.225 plain text</span><q>Data that is input to an encryption process.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.62 cipher text</span><q>Data that has been transformed by encryption so that its semantic information content (i.e., its meaning) is no longer intelligible or directly available.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.119 encryption</span><q>Cryptographic transformation of data (called 'plain text') into a different form (called 'cipher text') that conceals the data's original meaning and prevents the original form from being used.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.119 encryption</span><q>The corresponding reverse process is 'decryption', a transformation that restores encrypted data to its original form.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.171 key</span><q>An input parameter used to vary a transformation function performed by a cryptographic algorithm.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.177 key space</span><q>The range of possible values of a cryptographic key; or the number of distinct transformations supported by a particular cryptographic algorithm.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.61 cipher</span><q>A cryptographic algorithm for encryption and decryption.</q></li>
+</ul></article>
+<article class="page" id="intro-kerckhoffs"><p class="crumb">T1 Introduction</p><h1>Kerckhoffs 原則、金鑰空間與暴力破解</h1><dl class="meta"><dt>主題</dt><dd>T1</dd><dt>來源</dt><dd><a class="wl" href="#S01">S01</a>、<a class="wl" href="#S02">S02</a></dd><dt>先備概念</dt><dd><a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a></dd><dt>關聯</dt><dd><span class="rt">related</span> <a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a>、<span class="rt">related</span> <a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></dd><dt>關鍵事實（與 facts.json 一致）</dt><dd><code>{&quot;kerckhoffs.year&quot;: 1883}</code></dd></dl><h2>定義</h2>
+<p><strong>Kerckhoffs 原則</strong>：密碼系統的設計（演算法）可以公開，<strong>安全性只應建立在金鑰的保密上</strong> [S02 p.15]。
+這是 Kerckhoffs 在 1883 年提出的六項要求中的第 2 點 [S02 p.15]。</p>
+<h2>重點</h2>
+<ul>
+<li>密碼學的基本前提：演算法、明文／密文空間等都是公開的，通訊雙方<strong>唯一要保密的是所用的金鑰</strong> [S02 p.15]。</li>
+<li>歷史證明，想把演算法本身保密非常困難 [S02 p.15]；RFC 4949 也指出「靠隱藏設計來求安全（security by obscurity）」在密碼學界早已不被接受 [S01 p.268]。</li>
+<li>只靠公開、經過長期同儕審查的演算法；例如 NIST 以<strong>公開程序</strong>選出 AES 取代 DES [S01 p.268]。</li>
+<li><strong>暴力破解／窮舉搜尋（exhaustive search, brute force）</strong>：把每一把可能的金鑰都試一遍 [S02 p.15][S01 p.41]。</li>
+<li>因此<strong>金鑰空間必須夠大</strong>，讓窮舉在計算上不可行 [S02 p.15]。</li>
+<li>「破解」的時間尺度取決於資料要保密多久：股票交易指令可能只需保密幾分鐘，國家機密可能要永久保密 [S02 p.15]。</li>
+</ul>
+<h2>範例</h2>
+<ul>
+<li>鎖匠都知道門鎖的構造（演算法公開），但沒有你的鑰匙（金鑰）仍打不開——本 Wiki 的教學比喻，對應 Kerckhoffs 第 2 點 [S02 p.15]。</li>
+<li>金鑰空間對比：Caesar 密碼只有 25 種有意義的位移（<a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>），AES-128 有 2^128 種金鑰（<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>）。</li>
+</ul>
+<h2>關聯</h2>
+<ul>
+<li>金鑰空間太小是古典密碼的致命傷：<a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></li>
+<li>現代密碼（AES）是公開徵選的：<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.15 §1.4</span><q>When two parties wish to communicate securely using an encryption scheme, the only thing that they keep secret is the particular key pair (e, d) which they are using</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.15 §1.4</span><q>History has shown that maintaining the secrecy of the transformations is very difficult indeed.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.15 §1.4</span><q>This is called an exhaustive search of the key space.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.15 §1.4</span><q>the number of keys (i.e., the size of the key space) should be large enough to make this approach computationally infeasible.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.15 §1.4</span><q>compromise of the system details should not inconvenience the correspondents</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.15 §1.4</span><q>This list of requirements was articulated in 1883 and, for the most part, remains useful today.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.15 §1.4</span><q>Point 2 allows that the class of encryption transformations being used be publicly known and that the security of the system should reside only in the key chosen.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.15 §1.4</span><q>For example, an instruction to buy a certain stock may only need to be kept secret for a few minutes whereas state secrets may need to remain confidential indefinitely.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.41 brute force</span><q>A cryptanalysis technique or other kind of attack method involving an exhaustive procedure that tries a large number of possible solutions to the problem.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.268 security by obscurity</span><q>This approach has long been discredited in cryptography, where the phrase refers to trying to keep an algorithm secret, rather than just concealing the keys</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.268 security by obscurity</span><q>For example, NIST used a long, public process to select AES to replace DES.</q></li>
+</ul></article>
+<article class="page" id="classical-caesar"><p class="crumb">T2 Classical</p><h1>Caesar Cipher（凱撒密碼／位移密碼）</h1><dl class="meta"><dt>主題</dt><dd>T2</dd><dt>來源</dt><dd><a class="wl" href="#S02">S02</a>、<a class="wl" href="#S03">S03</a></dd><dt>先備概念</dt><dd><a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a>、<a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></dd><dt>關聯</dt><dd><span class="rt">instance-of</span> <a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a>、<span class="rt">related</span> <a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></dd><dt>關鍵事實（與 facts.json 一致）</dt><dd><code>{&quot;caesar.key_count&quot;: 26, &quot;caesar.julius_key&quot;: 3}</code></dd></dl><h2>定義</h2>
+<p><strong>位移密碼（shift cipher）／Caesar 密碼</strong>：把字母表中的每個字母<strong>往後移動固定的 k 位</strong>，是一種限定成「字母位移」的簡單替換密碼 [S03 p.18]。
+用數字表示（A=0、B=1、…、Z=25）：</p>
+<ul>
+<li>加密：c = (m + k) mod 26</li>
+<li>解密：m = (c − k) mod 26  [S03 p.18]</li>
+</ul>
+<p>金鑰就是位移量 k。傳說凱撒（Julius Caesar）使用 k = 3 [S03 p.18]。</p>
+<h2>重點</h2>
+<ul>
+<li>它是 <strong>simple substitution（單表替換）</strong> 的特例：整篇訊息都用同一套對應表 [S03 p.18]（見 <a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a>）。</li>
+<li>例：k = 1 時，HAL 加密成 IBM [S03 p.18]。</li>
+<li>HAC 第 1 章用「每個字母往右移 3 位」當作對稱式加密的入門範例，加密與解密用的是同一個祕密（位移量）[S02 p.16]。</li>
+<li><strong>致命弱點</strong>：英文只有 26 種位移（s = 26），攻擊者把所有金鑰試一遍就能破解 [S03 p.18]（見 <a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a>、<a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a>）。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>k = 3
+明文：H  E  L  L  O
+      ↓+3 ↓+3 ↓+3 ↓+3 ↓+3
+密文：K  H  O  O  R
+</code></pre>
+<p>（HELLO → KHOOR 由本 Wiki 以公式 c = (m + 3) mod 26 計算，簡報驗證節點會用程式重算。）</p>
+<h2>常見誤解</h2>
+<ul>
+<li>「Caesar 密碼有 25 或 26 把金鑰，所以算安全」——錯。金鑰空間只有 26，用手就能窮舉 [S03 p.18]。</li>
+</ul>
+<h2>關聯</h2>
+<ul>
+<li>是 <a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a> 的一種</li>
+<li>弱點分析：<a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.18 §7.3.2 Ex.7.48</span><q>A shift cipher is a simple substitution cipher with the permutation e constrained to an alphabetic shift through k characters for some fixed k.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.18 §7.3.2 Ex.7.48</span><q>For English text, s = 26, and characters A through Z are associated with integers 0 through 25.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.18 §7.3.2 Ex.7.48</span><q>For k = 1, the message m = HAL is encrypted to c = IBM. According to folklore, Julius Caesar used the key k = 3.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.18 §7.3.2</span><q>The shift cipher can be trivially broken because there are only s</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.18 §7.3.2</span><q>keys (e.g., s = 26) to exhaustively search.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.16 §1.5 Ex.1.25</span><q>suppose that the key e is chosen to be the permutation which maps each letter to the one which is three positions to its right</q></li>
+</ul></article>
+<article class="page" id="classical-substitution"><p class="crumb">T2 Classical</p><h1>替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</h1><dl class="meta"><dt>主題</dt><dd>T2</dd><dt>來源</dt><dd><a class="wl" href="#S02">S02</a>、<a class="wl" href="#S03">S03</a></dd><dt>先備概念</dt><dd><a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a></dd><dt>關聯</dt><dd><span class="rt">contrasts-with</span> <a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a>、<span class="rt">related</span> <a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a>、<span class="rt">part-of</span> <a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a></dd><dt>關鍵事實（與 facts.json 一致）</dt><dd><code>{&quot;substitution.key_count_english&quot;: &quot;26!&quot;}</code></dd></dl><h2>定義</h2>
+<p><strong>替換密碼</strong>：把符號（或一組符號）<strong>換成其他符號</strong>，字母的位置不變 [S02 p.18]。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>單表替換（simple / mono-alphabetic substitution）</strong>：整篇用同一張對應表（字母表的一個排列）替換每個字母 [S02 p.18][S03 p.18]。Caesar 是其中「只能位移」的特例（<a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>）。</li>
+<li>英文單表替換的金鑰數是 <strong>26!</strong>（約 4 × 10²⁶），金鑰空間非常大 [S02 p.18]——<strong>但仍不安全</strong>：字母頻率分布會原封不動留在密文裡，只要觀察適量密文就能推出金鑰 [S02 p.18]。</li>
+<li><strong>同音替換（homophonic）</strong>：一個明文字母可對應多個密文符號、隨機挑選，用來把密文字母頻率「拉平」，代價是密文變長 [S02 p.19][S03 p.19]。</li>
+<li><strong>多表替換（polyalphabetic）</strong>：不同位置使用不同的對應表，同一個明文字母會變成不同密文字母 [S03 p.20]。<strong>Vigenère 密碼</strong>就是輪流使用 t 個位移密碼（t 為金鑰長度）[S03 p.20]。</li>
+<li>多表替換<strong>沒有難破很多</strong>：一旦找出金鑰長度 t，就能把密文分成 t 組，每組各自做頻率分析 [S02 p.19]；Kasiski 方法可用重複出現的密文片段推出金鑰長度 [S03 p.26–27]。</li>
+</ul>
+<h2>範例</h2>
+<p>HAC 的 Vigenère 例子（t = 3，三個位移量為 3、7、10）[S02 p.19]：</p>
+<pre><code>明文：THI SCI PHE RIS CER TAI NLY NOT SEC URE
+密文：WOS VJS SOO UPC FLB WHS QSI QVD VLM XYO
+</code></pre>
+<p>同一個字母 E 被加密成 O 和 L 兩種結果 [S02 p.19]。</p>
+<h2>常見誤解</h2>
+<ul>
+<li>「金鑰空間有 26! 那麼大，一定安全」——錯。HAC 指出單表替換即使金鑰空間極大，仍可用頻率分析輕易破解 [S02 p.18]。</li>
+</ul>
+<h2>關聯</h2>
+<ul>
+<li>對比：<a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a>（換位置，不換字母）</li>
+<li>弱點：<a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></li>
+<li>替換與換位是區塊加密的兩個基本類別：<a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.18 §1.5.2</span><q>Substitution ciphers are block ciphers which replace symbols (or groups of symbols) by other symbols or groups of symbols.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.18 §1.5.2</span><q>Ee is called a simple substitution cipher or a mono-alphabetic substitution cipher.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.18 §1.5.2</span><q>Simple substitution ciphers over small block sizes provide inadequate security even when the key space is extremely large.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.18 §1.5.2</span><q>If the alphabet is the English alphabet as in Example 1.25, then the size of the key space is 26!</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.18 §1.5.2</span><q>This follows from the simple observation that the distribution of letter frequencies is preserved in the ciphertext.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.19 §1.5.2</span><q>A homophonic cipher can be used to make the frequency of occurrence of ciphertext symbols more uniform, at the expense of data expansion.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.19 §1.5.2 Ex.1.31</span><q>m = THI SCI PHE RIS CER TAI NLY NOT SEC URE</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.19 §1.5.2 Ex.1.31</span><q>c = Ee(m) = WOS VJS SOO UPC FLB WHS QSI QVD VLM XYO</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.19 §1.5.2</span><q>Polyalphabetic ciphers have the advantage over simple substitution ciphers that symbol frequencies are not preserved. In the example above, the letter E is encrypted to both O and L.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.19 §1.5.2</span><q>However, polyalphabetic ciphers are not significantly more difficult to cryptanalyze, the approach being similar to the simple substitution cipher.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.18 §7.3.2</span><q>A simple substitution cipher or mono-alphabetic substitution cipher employs a permutation e over A</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.19 §7.3.2</span><q>Homophonic substitution results in ciphertext data expansion.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.20 §7.3.3</span><q>Under different alphabets, the same plaintext character is thus encrypted to different ciphertext characters, precluding simple frequency analysis as per mono-alphabetic substitution</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.20 §7.3.3</span><q>The simple Vigenère uses t shift ciphers (see Example 7.48)</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.26 §7.3.5</span><q>Kasiski's method provides a general technique for cryptanalyzing polyalphabetic ciphers with repeated keywords, such as the simple Vigenère cipher</q></li>
+</ul></article>
+<article class="page" id="classical-transposition"><p class="crumb">T2 Classical</p><h1>換位密碼（Transposition Cipher）</h1><dl class="meta"><dt>主題</dt><dd>T2</dd><dt>來源</dt><dd><a class="wl" href="#S02">S02</a>、<a class="wl" href="#S03">S03</a></dd><dt>先備概念</dt><dd><a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a></dd><dt>關聯</dt><dd><span class="rt">contrasts-with</span> <a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a>、<span class="rt">related</span> <a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a>、<span class="rt">part-of</span> <a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a></dd></dl><h2>定義</h2>
+<p><strong>簡單換位密碼</strong>：不改變字母本身，只<strong>重新排列一個區塊內字母的位置</strong> [S02 p.19]。
+把明文分成每 t 個字元一組，對每組套用同一個排列 e（1～t 的一種排列）；解密時用反向排列 [S03 p.17]。</p>
+<h2>重點</h2>
+<ul>
+<li>金鑰是排列 e；週期為 t 時，金鑰空間大小為 t! [S03 p.17]。</li>
+<li>HAC 例子：t = 6、e = (6 4 1 3 5 2)，CAESAR 加密成 RSCEAA，解密用反排列 (3 6 4 2 5 1) [S03 p.17]。</li>
+<li><strong>弱點</strong>：換位只改位置，<strong>每種字母出現的次數完全不變</strong>，因此很容易被分析 [S02 p.19]；也因為保留了字元頻率分布，很容易被辨認出是換位密碼 [S03 p.17]。</li>
+<li>替換與換位單獨使用的安全性都不高，但兩者組合（product cipher）是現代區塊加密設計的基礎概念之一 [S02 p.20]（見 <a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>）。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>位置： 1 2 3 4 5 6
+明文： C A E S A R
+e = (6 4 1 3 5 2)：依序取第 6、4、1、3、5、2 個字母
+密文： R S C E A A
+</code></pre>
+<p>[S03 p.17]</p>
+<h2>關聯</h2>
+<ul>
+<li>對比：<a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a>（換字母，不換位置）</li>
+<li>弱點：<a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.19 §1.5.2</span><q>Another class of symmetric-key ciphers is the simple transposition cipher, which simply permutes the symbols in a block.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.19 §1.5.2</span><q>A simple transposition cipher preserves the number of symbols of a given type within a block, and thus is easily cryptanalyzed.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.17 §7.3.1</span><q>For a simple transposition cipher with fixed period t, encryption involves grouping the plaintext into blocks of t characters, and applying to each block a single permutation e on the numbers 1 through t.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.17 §7.3.1</span><q>the key space K has cardinality t! for a given value t.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.17 §7.3.1 Ex.7.43</span><q>The message m = CAESAR is encrypted to c = RSCEAA.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.17 §7.3.1 Note 7.47</span><q>they are easily recognized because they preserve the frequency distribution of each character.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.20 §1.5.3</span><q>Simple substitution and transposition ciphers individually do not provide a very high level</q></li>
+</ul></article>
+<article class="page" id="classical-limitations"><p class="crumb">T2 Classical</p><h1>古典密碼的限制：金鑰空間太小與頻率分析</h1><dl class="meta"><dt>主題</dt><dd>T2</dd><dt>來源</dt><dd><a class="wl" href="#S02">S02</a>、<a class="wl" href="#S03">S03</a></dd><dt>先備概念</dt><dd><a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>、<a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a>、<a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a>、<a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a></dd><dt>關聯</dt><dd><span class="rt">limitation-motivates</span> <a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>、<span class="rt">related</span> <a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a></dd><dt>關鍵事實（與 facts.json 一致）</dt><dd><code>{&quot;caesar.key_count&quot;: 26}</code></dd></dl><h2>定義</h2>
+<p><strong>古典密碼</strong>指在二十世紀後半以前發明、流傳已久的加密技術，大多是簡單替換與簡單換位的變形 [S03 p.16]。
+HAC 明確指出：這些技術<strong>在今天只具歷史與教學價值</strong>，無法抵抗現代密碼分析，<strong>不適合實際使用</strong> [S03 p.17]。</p>
+<h2>重點</h2>
+<ol>
+<li><strong>金鑰空間太小 → 暴力破解</strong>：位移密碼只有 26 把金鑰，可以輕易窮舉 [S03 p.18]（見 <a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a>）。</li>
+<li><strong>頻率分析</strong>：自然語言有冗餘，例如英文中 E 遠比 Z 常見、Q 後面幾乎都是 U [S03 p.24]。單表替換不會改變整體的字母頻率分布，所以把密文字母頻率和語言的字母頻率表比對，就能對應回明文字母 [S03 p.18]。</li>
+<li><strong>金鑰空間大也不夠</strong>：英文單表替換有 26! 把金鑰，仍可透過頻率被破解 [S02 p.18]；經驗上大約 <strong>25 個密文字元</strong>就足以讓熟練的分析者還原明文 [S03 p.25]。HAC 的結論：金鑰空間夠大是安全的<strong>必要條件，但通常不是充分條件</strong> [S02 p.22]。</li>
+<li><strong>換位密碼</strong>保留了每種字元的出現次數，一樣容易被分析 [S02 p.19][S03 p.17]。</li>
+<li><strong>多表替換（Vigenère）</strong>：找出金鑰長度後，可以分組做頻率分析 [S02 p.19]；Kasiski 方法利用重複的密文片段推出金鑰長度 [S03 p.26]。</li>
+</ol>
+<p><strong>→ 現代密碼學的教訓</strong>：需要<strong>巨大的金鑰空間</strong>，而且密文<strong>不能洩漏明文的統計特徵</strong>。這正是 AES 這類現代區塊加密的設計目標（<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>）。</p>
+<h2>範例</h2>
+<ul>
+<li>Caesar 密文「KHOOR」：把 25 種位移逐一試過，就會看到唯一有意義的「HELLO」（本 Wiki 教學補充，依據 [S03 p.18] 的窮舉說法）。</li>
+</ul>
+<h2>關聯</h2>
+<ul>
+<li>被分析的對象：<a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>、<a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a>、<a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a></li>
+<li>促成現代設計：<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.16 §7.3</span><q>The term classical ciphers refers to encryption techniques which have become well-known over time, and generally created prior to the second half of the twentieth century</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.16 §7.3</span><q>Many classical techniques are variations of simple substitution and simple transposition.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.17 §7.3</span><q>However, since these techniques are neither sophisticated nor secure against current cryptanalytic capabilities, they are not generally suitable for practical use.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.18 §7.3.2</span><q>The shift cipher can be trivially broken because there are only s</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.18 §7.3.2 Note 7.50</span><q>Mono-alphabetic substitution alters the frequency of individual plaintext characters, but does not alter the frequency distribution of the overall character set.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.18 §7.3.2 Note 7.50</span><q>comparing ciphertext character frequencies to a table of expected letter frequencies (unigram statistics) in the plaintext language allows associations between ciphertext and plaintext characters.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.24 §7.3.5</span><q>All natural languages are redundant.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.24 §7.3.5</span><q>in English the letter 'E' appears far more frequently than 'Z', 'Q' is almost always followed by 'U'</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.25 §7.3.5 Fact 7.68</span><q>as few as 25 ciphertext characters suffices to allow a skilled cryptanalyst to recover the plaintext.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.26 §7.3.5</span><q>Kasiski's method provides a general technique for cryptanalyzing polyalphabetic ciphers with repeated keywords</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.18 §1.5.2</span><q>yet the key being used can be determined quite easily by examining a modest amount of ciphertext.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.19 §1.5.2</span><q>a frequency analysis can be done on each group.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.22 §1.5.5 Fact 1.40</span><q>A necessary, but usually not sufficient, condition for an encryption scheme to be secure is that the key space be large enough to preclude exhaustive search.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.19 §1.5.2</span><q>A simple transposition cipher preserves the number of symbols of a given type within a block, and thus is easily cryptanalyzed.</q></li>
+</ul></article>
+<article class="page" id="sym-concept"><p class="crumb">T3 Symmetric</p><h1>對稱式加密（Symmetric Encryption）與金鑰分配問題</h1><dl class="meta"><dt>主題</dt><dd>T3</dd><dt>來源</dt><dd><a class="wl" href="#S02">S02</a>、<a class="wl" href="#S06">S06</a></dd><dt>先備概念</dt><dd><a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a>、<a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a></dd><dt>關聯</dt><dd><span class="rt">related</span> <a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>、<span class="rt">limitation-motivates</span> <a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<span class="rt">contrasts-with</span> <a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a></dd></dl><h2>定義</h2>
+<p><strong>對稱式金鑰演算法</strong>（又稱 secret-key algorithm）用<strong>同一把金鑰</strong>加上保護、也解除保護：加密用的金鑰，同時也是解密用的金鑰 [S06 p.30–31]。
+這把金鑰稱為 <strong>secret key（祕密金鑰）</strong>，又稱 symmetric key [S06 p.18]。
+HAC 的定義：知道加密金鑰 e 就能輕易算出解密金鑰 d（反之亦然），而實務上大多 <strong>e = d</strong> [S02 p.16]。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>金鑰必須保密</strong>，資料才會受到保護 [S06 p.31]；因為 d 能從 e 推出，加密金鑰 e 也必須保密 [S02 p.17]。</li>
+<li>用途：加密以提供<strong>機密性</strong>、訊息鑑別以確保<strong>完整性與來源</strong>、金鑰衍生、金鑰包裝、亂數產生 [S06 p.31]。</li>
+<li><strong>金鑰分配問題（key distribution problem）</strong>：雙方要先用<strong>安全的方式</strong>協議並交換金鑰，這是對稱式系統的主要難題之一 [S02 p.17]。</li>
+<li><strong>金鑰數量爆炸</strong>：每一對通訊者都要一把不同的金鑰。4 個人需要 6 把；<strong>1,000 個人需要 499,500 把</strong> [S06 p.31]。</li>
+<li>對稱式加密分成兩大類：<strong>區塊加密（block cipher）</strong> 與 <strong>串流加密（stream cipher）</strong> [S02 p.17]（見 <a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>）。</li>
+<li>古典密碼（Caesar、替換、換位）都屬於對稱式加密 [S02 p.16][S02 p.19]。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>Alice ──[同一把金鑰 K 加密]──▶ 密文 ──(不安全通道)──▶ Bob [同一把金鑰 K 解密]
+          ▲                                                    ▲
+          └────────── K 必須事先經由「安全通道」交給 Bob ──────────┘
+</code></pre>
+<p>（依 HAC 圖 1.7「加上一條安全通道來交換金鑰」改繪 [S02 p.17]）</p>
+<p>n 個人兩兩通訊所需金鑰數 = n(n−1)/2：4 → 6、1,000 → 499,500 [S06 p.31]。</p>
+<h2>關聯</h2>
+<ul>
+<li>兩大類型：<a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>；代表演算法：<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></li>
+<li>金鑰分配問題促成了公開金鑰密碼學：<a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.16 §1.5.1 Def.1.24</span><q>The encryption scheme is said to be symmetric-key if for each associated encryption/decryption key pair (e, d), it is computationally 'easy' to determine d knowing only e, and to determine e from d.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.16 §1.5.1</span><q>Since e = d in most practical symmetric-key encryption schemes, the term symmetric-key becomes appropriate.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.17 §1.5.1</span><q>One of the major issues with symmetric-key systems is to find an efficient method to agree upon and exchange keys securely. This problem is referred to as the key distribution problem</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.17 §1.5.1</span><q>However, in symmetric-key encryption, this means that the key e must also be kept secret, as d can be deduced from e.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.17 §1.5.1</span><q>There are two classes of symmetric-key encryption schemes which are commonly distinguished: block ciphers and stream ciphers.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.16 §1.5.1</span><q>Example 1.25 illustrates the idea of symmetric-key encryption.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.19 §1.5.2</span><q>Another class of symmetric-key ciphers is the simple transposition cipher</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.30 §3.2</span><q>Symmetric-key algorithms (sometimes called secret-key algorithms) use a single key to both apply cryptographic protection and to remove or check the protection</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.31 §3.2</span><q>encrypt data (i.e., apply protection) is also used to decrypt the encrypted data (i.e., remove the protection).</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.31 §3.2</span><q>The key must be kept secret if the data is to remain protected.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.31 §3.2</span><q>Encryption to provide data confidentiality (see Section 4.1)</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.31 §3.2</span><q>If, instead, there are 1,000 entities that wish to communicate with each other, there are 499,500 possible pair-wise relationships</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.31 §3.2</span><q>There are six possible pair-wise relationships (A-B, A-C, A-D, B-C, B-D, and C-D), so at least six keys are required.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.18 §2.1</span><q>A single cryptographic key that is used with a symmetric (secret key) algorithm</q></li>
+</ul></article>
+<article class="page" id="sym-block-vs-stream"><p class="crumb">T3 Symmetric</p><h1>區塊加密（Block Cipher）與串流加密（Stream Cipher）</h1><dl class="meta"><dt>主題</dt><dd>T3</dd><dt>來源</dt><dd><a class="wl" href="#S02">S02</a>、<a class="wl" href="#S06">S06</a></dd><dt>先備概念</dt><dd><a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></dd><dt>關聯</dt><dd><span class="rt">related</span> <a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>、<span class="rt">related</span> <a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a></dd></dl><h2>定義</h2>
+<ul>
+<li><strong>區塊加密（block cipher）</strong>：把明文切成<strong>固定長度的區塊</strong>，一次加密一個區塊 [S02 p.17]。</li>
+<li><strong>串流加密（stream cipher）</strong>：可以看成區塊長度為 1 的簡單區塊加密，但<strong>每個符號的加密方式都可以不同</strong>，由一串<strong>金鑰串流（keystream）</strong> 決定 [S02 p.21]。</li>
+</ul>
+<h2>重點</h2>
+<ul>
+<li>大多數知名的對稱式加密技術都是區塊加密 [S02 p.17]。替換密碼與換位密碼是區塊加密的兩個重要類別，<strong>product cipher</strong> 則把兩者組合起來 [S02 p.17]。</li>
+<li>單獨使用替換或換位的安全性都不高 [S02 p.20]；現代區塊加密（例如 AES）就是反覆組合「替換」與「排列/混合」步驟（見 <a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>）。</li>
+<li>串流加密的優點：傳輸錯誤多時<strong>不會擴散錯誤</strong>；也適合一次只能處理一個符號的設備 [S02 p.21]。</li>
+<li>金鑰串流可以隨機產生，或由一個小的種子（seed）經演算法產生（keystream generator）[S02 p.22]。</li>
+<li>NIST：區塊加密演算法要搭配<strong>經核准的操作模式（mode of operation）</strong> 使用 [S06 p.32]（見 <a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>）。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>區塊加密： [HELLOWOR][LD______] → 每塊固定長度，各自送進加密函數
+串流加密： H⊕k1  E⊕k2  L⊕k3  L⊕k4 …  → 每個符號配一個金鑰串流符號
+</code></pre>
+<p>（示意圖，⊕ 表示與金鑰串流組合；依 [S02 p.17][S02 p.21] 的定義繪製）</p>
+<h2>關聯</h2>
+<ul>
+<li>代表演算法：<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>（區塊加密）</li>
+<li>區塊加密需要操作模式：<a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>；CTR 模式能把區塊加密當成串流加密使用：<a class="wl" href="#mode-ctr">CTR（Counter）模式</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.17 §1.5.1 Def.1.26</span><q>A block cipher is an encryption scheme which breaks up the plaintext messages to be transmitted into strings (called blocks) of a fixed length t over an alphabet A, and encrypts one block at a time.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.17 §1.5.1</span><q>Most well-known symmetric-key encryption techniques are block ciphers.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.17 §1.5.1</span><q>Two important classes of block ciphers are substitution ciphers and transposition ciphers</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.20 §1.5.3</span><q>Simple substitution and transposition ciphers individually do not provide a very high level</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.21 §1.5.4</span><q>Stream ciphers form an important class of symmetric-key encryption schemes. They are, in one sense, very simple block ciphers having block length equal to one.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.21 §1.5.4</span><q>What makes them useful is the fact that the encryption transformation can change for each symbol of plaintext being encrypted.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.21 §1.5.4</span><q>In situations where transmission errors are highly probable, stream ciphers are advantageous because they have no error propagation.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.22 §1.5.4</span><q>The keystream could be generated at random, or by an algorithm which generates the keystream from an initial small keystream (called a seed)</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.32 §3.2.1</span><q>A block cipher algorithm is used with a single key in an approved mode of operation to both apply cryptographic protection (e.g., encrypt) and to subsequently process the protected information (e.g., decrypt).</q></li>
+</ul></article>
+<article class="page" id="sym-aes"><p class="crumb">T3 Symmetric</p><h1>AES（Advanced Encryption Standard）</h1><dl class="meta"><dt>主題</dt><dd>T3</dd><dt>來源</dt><dd><a class="wl" href="#S01">S01</a>、<a class="wl" href="#S04">S04</a>、<a class="wl" href="#S06">S06</a>、<a class="wl" href="#S12">S12</a></dd><dt>先備概念</dt><dd><a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a>、<a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>、<a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></dd><dt>關聯</dt><dd><span class="rt">instance-of</span> <a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>、<span class="rt">used-by</span> <a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<span class="rt">used-by</span> <a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></dd><dt>關鍵事實（與 facts.json 一致）</dt><dd><code>{&quot;aes.block_bits&quot;: 128, &quot;aes.key_bits&quot;: [128, 192, 256], &quot;aes.rounds&quot;: {&quot;AES-128&quot;: 10, &quot;AES-192&quot;: 12, &quot;AES-256&quot;: 14}, &quot;aes.selected_year&quot;: 2000, &quot;des.withdrawn_year&quot;: 2005, &quot;aes.example_input&quot;: &quot;3243f6a8885a308d313198a2e0370734&quot;, &quot;aes.example_key&quot;: &quot;2b7e151628aed2a6abf7158809cf4f3c&quot;}</code></dd></dl><h2>定義</h2>
+<p><strong>AES</strong> 是 NIST 標準化的<strong>對稱式區塊加密演算法</strong>，可以加密與解密數位資料 [S04 p.4]。
+它使用 <strong>128、192 或 256 位元</strong>的金鑰，對 <strong>128 位元</strong>的資料區塊做加解密 [S04 p.4]。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>怎麼來的</strong>：NIST 在 1997 年公開徵求候選演算法，2000 年宣布選出 <strong>Rijndael</strong> 作為 AES [S04 p.9]——正是 Kerckhoffs 原則「演算法公開、經過公開審查」的實踐 [S01 p.268]（見 <a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a>）。</li>
+<li><strong>三個版本</strong>：AES-128、AES-192、AES-256，數字代表<strong>金鑰長度</strong>；<strong>區塊大小一律 128 位元</strong> [S04 p.9]。（Rijndael 本身支援其他區塊大小，但沒有納入標準 [S04 p.9]。）</li>
+<li><strong>輪數（rounds）</strong>：AES-128 做 10 輪、AES-192 做 12 輪、AES-256 做 14 輪 [S04 p.19]。</li>
+<li><strong>每一輪的四個步驟</strong>（作用在 4×4 位元組的 state 上）[S04 p.20]：
+  1. <strong>SubBytes</strong>：用替換表（S-box）替換每個位元組——非線性的「替換」[S04 p.21]
+  2. <strong>ShiftRows</strong>：把 state 的後三列循環位移——「換位」[S04 p.22]
+  3. <strong>MixColumns</strong>：把每一欄的資料混合在一起 [S04 p.20]
+  4. <strong>AddRoundKey</strong>：用 XOR 把該輪的 round key 加進 state [S04 p.24]
+  其中有一輪會省略一個步驟 [S04 p.10]。</li>
+<li><strong>解密（InvCipher）</strong>：把加密的步驟換成各自的反運算（InvSubBytes、InvShiftRows、InvMixColumns 與 AddRoundKey），並<strong>依相反順序</strong>執行 [S04 p.26]。</li>
+<li>FIPS 197 附錄 B 提供 AES-128 一步一步的完整實例，下方「實例」整理了第 1 輪 [S04 p.9][S04 p.42]。</li>
+<li><strong>取代 DES</strong>：AES 是為了取代 DES 與 TDEA 而開發，是新產品<strong>首選</strong>的區塊加密演算法 [S06 p.33]；DES 因電腦運算力進步、強度不足，已在 <strong>2005 年</strong>被撤銷核准 [S06 p.32]。</li>
+<li><strong>安全強度</strong>：AES-128／192／256 分別提供 128／192／256 位元的安全強度；低於 112 位元的組合已不再核准用於加密 [S12 p.68]。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>明文區塊（128 bits）
+   │  AddRoundKey（初始）
+   ▼
+┌─ 第 1 ～ Nr 輪 ───────────────────┐
+│ SubBytes → ShiftRows → MixColumns → AddRoundKey │ ×Nr（最後一輪省略一個步驟）
+└──────────────────────────────────┘
+   ▼
+密文區塊（128 bits）       Nr = 10 / 12 / 14
+</code></pre>
+<p>（依 FIPS 197 §5.1 的步驟順序與 Table 3 的輪數繪製 [S04 p.19][S04 p.20]）</p>
+<h3>實例：FIPS 197 附錄 B，AES-128 第 1 輪 [S04 p.42]</h3>
+<ul>
+<li>輸入：<code>32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34</code>；金鑰：<code>2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c</code> [S04 p.42]</li>
+<li>16 個位元組<strong>依「欄」</strong>填入 4×4 的 state：前 4 個位元組（32 43 f6 a8）成為第 1 欄。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>步驟</th>
+<th>state（逐列，由上到下）</th>
+<th>看哪一格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始 AddRoundKey（輸入 ⊕ 金鑰）</td>
+<td><code>19 a0 9a e9 / 3d f4 c6 f8 / e3 e2 8d 48 / be 2b 2a 08</code></td>
+<td>32 ⊕ 2b = 19</td>
+</tr>
+<tr>
+<td>① SubBytes</td>
+<td><code>d4 e0 b8 1e / 27 bf b4 41 / 11 98 5d 52 / ae f1 e5 30</code></td>
+<td>19 查 S-box：列看前半 1、欄看後半 9 → d4（查表規則見 [S04 p.22]）</td>
+</tr>
+<tr>
+<td>② ShiftRows</td>
+<td><code>d4 e0 b8 1e / bf b4 41 27 / 5d 52 11 98 / 30 ae f1 e5</code></td>
+<td>第 r 列往左循環移 r 格：<code>27 bf b4 41</code> → <code>bf b4 41 27</code></td>
+</tr>
+<tr>
+<td>③ MixColumns</td>
+<td><code>04 e0 48 28 / 66 cb f8 06 / 81 19 d3 26 / e5 9a 7a 4c</code></td>
+<td>第 1 欄 <code>d4 bf 5d 30</code> → <code>04 66 81 e5</code>；04 = 02•d4 ⊕ 03•bf ⊕ 5d ⊕ 30（式 5.8，[S04 p.23]）</td>
+</tr>
+<tr>
+<td>④ AddRoundKey（round key 1：<code>a0 88 23 2a / fa 54 a3 6c / fe 2c 39 76 / 17 b1 39 05</code>）</td>
+<td><code>a4 68 6b 02 / 9c 9f 5b 6a / 7f 35 ea 50 / f2 2b 43 49</code></td>
+<td>04 ⊕ a0 = a4</td>
+</tr>
+</tbody>
+</table>
+<p><strong>解密時</strong>倒著走：再 XOR 同一把 round key（得回 <code>04 e0 48 28…</code>）→ InvMixColumns → InvShiftRows（每列往右移回）→ InvSubBytes（反查 S-box），最後回到 <code>19 a0 9a e9…</code> [S04 p.26]。</p>
+<p>表中每個數值都與 FIPS 197 附錄 B 相同；Content Validation 另以獨立的 AES 參考實作（<code>Workflow/validators/aes_ref.py</code>）從輸入與金鑰重算，並確認解密方向能還原。</p>
+<h2>常見誤解</h2>
+<ul>
+<li>「AES-256 的區塊是 256 位元」——錯。256 指的是<strong>金鑰長度</strong>，三種 AES 的區塊大小都是 128 位元 [S04 p.9]。</li>
+<li>「DES 仍是目前的加密標準」——錯。DES 已於 2005 年撤銷核准 [S06 p.32]。</li>
+</ul>
+<h2>關聯</h2>
+<ul>
+<li>是一種區塊加密：<a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a></li>
+<li>實際使用時要搭配操作模式：<a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></li>
+<li>在 HTTPS/TLS 1.3 中用來加密資料：<a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.4 §3</span><q>The AES algorithm is a symmetric block cipher that can encrypt (encipher) and decrypt (decipher) digital information.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.4 §3</span><q>The AES algorithm is capable of using cryptographic keys of 128, 192, and 256 bits to encrypt and decrypt data in blocks of 128 bits.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.3 Abstract</span><q>In 2000, NIST announced the selection of the Rijndael block cipher family as the winner of the Advanced Encryption Standard (AES) competition.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.9 §1</span><q>In 1997, NIST initiated the Advanced Encryption Standard (AES) development effort [1] and called for the public to submit candidate algorithms for block ciphers.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.9 §1</span><q>This Standard specifies three instantiations of Rijndael: AES-128, AES-192, and AES-256, where the suffix indicates the bit length of the key.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.9 §1</span><q>The block size (i.e., the length of the data inputs and outputs) is 128 bits in each case.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.9 §1</span><q>Rijndael supports additional block sizes and key lengths that are not adopted in this Standard.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.19 §4/§5 Eq.5.1</span><q>AES-128(in , key) = CIPHER(in, 10, KEYEXPANSION(key)) AES-192(in, key) = CIPHER(in, 12, KEYEXPANSION(key)) AES-256(in, key) = CIPHER(in, 14, KEYEXPANSION(key))</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.20 §5.1</span><q>The rounds in the specification of CIPHER() are composed of the following four byte-oriented transformations on the state</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.20 §5.1</span><q>MIXCOLUMNS() mixes the data within each column of the state array.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.21 §5.1.1</span><q>SUBBYTES() is an invertible, non-linear transformation of the state in which a substitution table, called an S-box, is applied independently to each byte in the state.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.22 §5.1.2</span><q>SHIFTROWS() is a transformation of the state in which the bytes in the last three rows of the state are cyclically shifted.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.24 §5.1.4</span><q>ADDROUNDKEY() is a transformation of the state in which a round key is combined with the state by applying the bitwise XOR operation.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.10 §2.1</span><q>The sequence consists of four transformations, except for one iteration, in which one of the transformations is omitted.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.33 §3.2.1.4</span><q>The Advanced Encryption Standard (AES) was developed as a replacement for DES and TDEA and is the preferred block cipher algorithm for new products.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.32 §3.2.1.1</span><q>due to advances in computer power and speeds, the strength of the DES algorithm is no longer sufficient to adequately protect Federal Government information.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.32 §3.2.1.1</span><q>DES was withdrawn as an approved algorithm in 2005</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S12">S12</a> p.68 §5.6.1.1 Table 2</span><q>128 AES-128 L = 3072 N = 256 k = 3072</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S12">S12</a> p.68 §5.6.1.1</span><q>algorithm/key-size combinations that have been estimated at a maximum security strength of less than 112 bits</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.268 security by obscurity</span><q>For example, NIST used a long, public process to select AES to replace DES.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.9 §1</span><q>Appendix B gives a step-by-step example of an invocation of AES-128.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.42 App.B</span><q>Input = 32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.42 App.B</span><q>Key = 2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.42 App.B Start of Round 1</span><q>19 a0 9a e9 3d f4 c6 f8 e3 e2 8d 48 be 2b 2a 08</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.42 App.B After SubBytes</span><q>d4 e0 b8 1e 27 bf b4 41 11 98 5d 52 ae f1 e5 30</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.42 App.B After ShiftRows</span><q>d4 e0 b8 1e bf b4 41 27 5d 52 11 98 30 ae f1 e5</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.42 App.B After MixColumns</span><q>04 e0 48 28 66 cb f8 06 81 19 d3 26 e5 9a 7a 4c</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.42 App.B Round Key 1</span><q>a0 88 23 2a fa 54 a3 6c fe 2c 39 76 17 b1 39 05</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.42 App.B Start of Round 2</span><q>a4 68 6b 02 9c 9f 5b 6a 7f 35 ea 50 f2 2b 43 49</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.22 §5.1.1</span><q>the substitution value would be determined by the intersection of the row with index ‘5’ and the column with index ‘3’ in Table 4</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.23 §5.1.3</span><q>MIXCOLUMNS() is a transformation of the state that multiplies each of the four columns of the state by a single fixed matrix</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.23 §5.1.3 Eq.5.8</span><q>so that the individual output bytes are defined as follows: 0s = ({02}• s0,c) ⊕ ({03}• s1,c) ⊕ s2,c ⊕ s3,c</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.26 §5.3</span><q>To implement INVCIPHER(), the transformations in the specification of CIPHER() (Section 5.1) are inverted and executed in reverse order.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.26 §5.3</span><q>The inverted transformations of the state — denoted by INVSHIFTROWS(), INVSUBBYTES(), INVMIXCOLUMNS(), and ADDROUNDKEY()</q></li>
+</ul></article>
+<article class="page" id="mode-overview"><p class="crumb">T4 Modes</p><h1>操作模式（Mode of Operation）：為什麼需要？IV 與填充</h1><dl class="meta"><dt>主題</dt><dd>T4</dd><dt>來源</dt><dd><a class="wl" href="#S03">S03</a>、<a class="wl" href="#S05">S05</a></dd><dt>先備概念</dt><dd><a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>、<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></dd><dt>關聯</dt><dd><span class="rt">related</span> <a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>、<span class="rt">related</span> <a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>、<span class="rt">related</span> <a class="wl" href="#mode-ctr">CTR（Counter）模式</a></dd><dt>關鍵事實（與 facts.json 一致）</dt><dd><code>{&quot;modes.sp800_38a&quot;: [&quot;ECB&quot;, &quot;CBC&quot;, &quot;CFB&quot;, &quot;OFB&quot;, &quot;CTR&quot;]}</code></dd></dl><h2>定義</h2>
+<p>區塊加密（如 AES）一次只能加密<strong>一個固定大小的區塊</strong>。訊息比一個區塊長時，就需要一套規則決定「區塊之間怎麼處理」——這就是<strong>操作模式（mode of operation）</strong> [S03 p.7]。
+NIST SP 800-38A 定義了五種提供機密性的操作模式：<strong>ECB、CBC、CFB、OFB、CTR</strong> [S05 p.5]。</p>
+<h2>重點</h2>
+<ul>
+<li>最簡單的做法是把訊息切塊、各自加密，也就是 ECB；但它在多數應用中有缺點，因此才發展出其他模式 [S03 p.7]（見 <a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>）。</li>
+<li><strong>初始向量（IV, initialization vector）</strong>：CBC、CFB、OFB 在加密時除了明文，還要輸入一個資料區塊 IV [S05 p.15]。</li>
+<li>IV <strong>不需要保密</strong> [S05 p.15]；</li>
+<li>但 CBC／CFB 的 IV <strong>必須無法預測</strong>，OFB 每次都要用<strong>不同的</strong> IV [S05 p.15]。</li>
+<li><strong>填充（padding）</strong>：ECB、CBC、CFB 要求明文長度是區塊大小的整數倍，不足時要在尾端補位元 [S05 p.24]。CTR 不需要（見 <a class="wl" href="#mode-ctr">CTR（Counter）模式</a>）。</li>
+<li>本 Wiki 聚焦 ECB、CBC、CTR 三種，並補充以 CTR 為基礎、TLS 1.3 實際使用的 <strong>GCM</strong>（<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a>）。</li>
+</ul>
+<h2>範例</h2>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>需要 IV／計數器？</th>
+<th>需要填充？</th>
+<th>加密可平行？</th>
+<th>同樣明文區塊 → 同樣密文區塊？</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ECB</td>
+<td>否</td>
+<td>是</td>
+<td>是</td>
+<td><strong>是（洩漏圖樣）</strong></td>
+</tr>
+<tr>
+<td>CBC</td>
+<td>IV（不可預測）</td>
+<td>是</td>
+<td>否（解密可以）</td>
+<td>否</td>
+</tr>
+<tr>
+<td>CTR</td>
+<td>計數器（不可重複）</td>
+<td>否</td>
+<td>是</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<p>（整理自 [S05 p.15–24]、[S03 p.7–9]，各格依據見各模式頁。）</p>
+<h2>關聯</h2>
+<ul>
+<li><a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>、<a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>、<a class="wl" href="#mode-ctr">CTR（Counter）模式</a>、<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></li>
+<li>底層區塊加密：<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.7 §7.2.2</span><q>For messages exceeding n bits, the simplest approach is to partition the message into n-bit blocks and encrypt each separately.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.7 §7.2.2</span><q>This electronic-codebook (ECB) mode has disadvantages in most applications, motivating other methods of employing block ciphers (modes of operation) on larger messages.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.5 Abstract</span><q>This recommendation defines five confidentiality modes of operation for use with an underlying symmetric key block cipher algorithm: Electronic Codebook (ECB), Cipher Block Chaining (CBC), Cipher Feedback (CFB), Output Feedback (OFB), and Counter (CTR).</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.15 §5.3</span><q>The input to the encryption processes of the CBC, CFB, and OFB modes includes, in addition to the plaintext, a data block called the initialization vector (IV), denoted IV.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.15 §5.3</span><q>The IV need not be secret; however, for the CBC and CFB modes, the IV for any particular execution of the encryption process must be unpredictable, and, for the OFB mode, unique IVs must be used for each execution of the encryption process.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.24 App.A</span><q>For the ECB, CBC, and CFB modes, the plaintext must be a sequence of one or more complete data blocks</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.24 App.A</span><q>A common way to achieve the necessary increase is to append some extra bits, called padding, to the trailing end of the data string</q></li>
+</ul></article>
+<article class="page" id="mode-ecb"><p class="crumb">T4 Modes</p><h1>ECB（Electronic Codebook）模式</h1><dl class="meta"><dt>主題</dt><dd>T4</dd><dt>來源</dt><dd><a class="wl" href="#S03">S03</a>、<a class="wl" href="#S05">S05</a></dd><dt>先備概念</dt><dd><a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a></dd><dt>關聯</dt><dd><span class="rt">part-of</span> <a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<span class="rt">contrasts-with</span> <a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>、<span class="rt">contrasts-with</span> <a class="wl" href="#mode-ctr">CTR（Counter）模式</a></dd></dl><h2>定義</h2>
+<p><strong>ECB</strong>：在同一把金鑰下，每個明文區塊都對應到一個固定的密文區塊，就像查「密碼本」一樣 [S05 p.16]。
+加密時，把區塊加密函數<strong>直接、獨立地</strong>套用到每一個明文區塊 [S05 p.16]：Cⱼ = E_K(Pⱼ)。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>致命缺點：洩漏圖樣</strong>——同一把金鑰下，相同的明文區塊<strong>永遠</strong>加密成相同的密文區塊 [S05 p.16–17][S03 p.7]。HAC：區塊加密本身不會隱藏資料圖樣 [S03 p.7]。</li>
+<li>NIST：如果這個性質在應用中不可接受，就<strong>不應該使用 ECB</strong> [S05 p.17]；HAC：ECB <strong>不建議用於超過一個區塊的訊息</strong> [S03 p.7]。</li>
+<li>區塊彼此獨立：攻擊者重排或替換密文區塊，解密出的明文也會跟著被重排／替換 [S03 p.7]。</li>
+<li>優點只有簡單、可平行運算 [S05 p.16]。</li>
+<li>ECB 要求明文是完整區塊，需要填充 [S05 p.24]。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>明文區塊：  [AAAA] [BBBB] [AAAA] [AAAA]
+ECB 密文：  [X7#q] [p2@L] [X7#q] [X7#q]   ← 重複的明文 → 重複的密文，圖樣外洩
+</code></pre>
+<p>（示意。簡報中會用一張簡單圖片示範：ECB 加密後仍看得出輪廓，CBC/CTR 則看起來像雜訊。）</p>
+<h2>常見誤解</h2>
+<ul>
+<li>「用了 AES 就安全，模式不重要」——錯。AES 搭配 ECB 時，重複的明文區塊仍會產生重複的密文區塊 [S05 p.16–17]，攻擊者看得出資料的結構。</li>
+</ul>
+<h2>關聯</h2>
+<ul>
+<li>對比：<a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>（用 IV 與鏈結打破重複）、<a class="wl" href="#mode-ctr">CTR（Counter）模式</a>（用計數器）</li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.16 §6.1</span><q>The Electronic Codebook (ECB) mode is a confidentiality mode that features, for a given key, the assignment of a fixed ciphertext block to each plaintext block, analogous to the assignment of code words in a codebook.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.16 §6.1</span><q>In ECB encryption, the forward cipher function is applied directly and independently to each block of the plaintext.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.16 §6.1</span><q>In ECB encryption and ECB decryption, multiple forward cipher functions and inverse cipher functions can be computed in parallel.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.16 §6.1</span><q>In the ECB mode, under a given key, any given plaintext block always gets encrypted to the</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.17 §6.1</span><q>same ciphertext block. If this property is undesirable in a particular application, the ECB mode should not be used.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.24 App.A</span><q>For the ECB, CBC, and CFB modes, the plaintext must be a sequence of one or more complete data blocks</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.7 §7.2.2</span><q>Identical plaintext blocks (under the same key) result in identical ciphertext.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.7 §7.2.2</span><q>Re-ordering ciphertext blocks results in correspondingly re-ordered plaintext blocks.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.7 §7.2.2 Remark 7.12</span><q>Furthermore, block ciphers do not hide data patterns – identical ciphertext blocks imply identical plaintext blocks. For this reason, the ECB mode is not recommended for messages longer than one block</q></li>
+</ul></article>
+<article class="page" id="mode-cbc"><p class="crumb">T4 Modes</p><h1>CBC（Cipher Block Chaining）模式</h1><dl class="meta"><dt>主題</dt><dd>T4</dd><dt>來源</dt><dd><a class="wl" href="#S01">S01</a>、<a class="wl" href="#S03">S03</a>、<a class="wl" href="#S05">S05</a></dd><dt>先備概念</dt><dd><a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>、<a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></dd><dt>關聯</dt><dd><span class="rt">part-of</span> <a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<span class="rt">contrasts-with</span> <a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>、<span class="rt">contrasts-with</span> <a class="wl" href="#mode-ctr">CTR（Counter）模式</a></dd></dl><h2>定義</h2>
+<p><strong>CBC</strong>：每個明文區塊在加密前，先和<strong>前一個密文區塊</strong>做 XOR（⊕），把區塊「鏈結」起來；第一個區塊則和 <strong>IV</strong> 做 XOR [S05 p.17]。</p>
+<ul>
+<li>C₁ = E_K(P₁ ⊕ IV)</li>
+<li>Cⱼ = E_K(Pⱼ ⊕ Cⱼ₋₁)，j = 2…n  [S05 p.17]</li>
+</ul>
+<p><strong>解密</strong>反過來：先用區塊加密的<strong>反函數</strong>解開密文區塊，再和前一個密文區塊（第一塊用 IV）做 XOR [S05 p.18]。</p>
+<ul>
+<li>P₁ = D_K(C₁) ⊕ IV</li>
+<li>Pⱼ = D_K(Cⱼ) ⊕ Cⱼ₋₁，j = 2…n  [S05 p.18]</li>
+</ul>
+<p>RFC 4949 也說 CBC 是「以鏈結密文區塊來改進 ECB」的模式 [S01 p.61]。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>打破重複</strong>：因為鏈結，每個密文區塊都和它之前的所有明文區塊有關 [S03 p.9]；只要改變 IV，同樣的明文就會產生不同的密文 [S03 p.9]。</li>
+<li><strong>IV 不需要保密，但必須無法預測</strong>，而且 IV 的完整性應受到保護 [S05 p.17]。</li>
+<li><strong>加密無法平行</strong>：每個區塊的輸入要等前一個區塊的加密結果 [S05 p.18]；<strong>解密可以平行</strong>，因為所有密文區塊都已經拿到了 [S05 p.18]。</li>
+<li>需要填充，讓明文成為完整區塊 [S05 p.24]。</li>
+<li>錯誤傳播：密文區塊 cⱼ 有一個位元出錯，會影響 cⱼ 與 cⱼ₊₁ 兩個區塊的解密 [S03 p.9]。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>         IV        C1         C2
+          │         │          │
+ P1 ──▶ (⊕) ──▶ E_K ─┤  P2 ──▶ (⊕) ──▶ E_K ─┤  P3 ──▶ (⊕) ──▶ E_K ──▶ C3
+                    C1                    C2
+</code></pre>
+<p>（依 SP 800-38A §6.2 公式繪製 [S05 p.17]）</p>
+<h2>關聯</h2>
+<ul>
+<li>改進自：<a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>；另一種做法：<a class="wl" href="#mode-ctr">CTR（Counter）模式</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.17 §6.2</span><q>The Cipher Block Chaining (CBC) mode is a confidentiality mode whose encryption process features the combining ('chaining') of the plaintext blocks with the previous ciphertext blocks.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.17 §6.2</span><q>The CBC mode requires an IV to combine with the first plaintext block. The IV need not be secret, but it must be unpredictable</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.17 §6.2</span><q>Also, the integrity of the IV should be protected</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.17 §6.2</span><q>In CBC encryption, the first input block is formed by exclusive-ORing the first block of the plaintext with the IV.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.18 §6.2</span><q>In CBC decryption, the inverse cipher function is applied to the first ciphertext block, and the resulting output block is exclusive-ORed with the initialization vector to recover the first plaintext block.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.18 §6.2</span><q>The inverse cipher function is also applied to the second ciphertext block, and the resulting output block is exclusive-ORed with the first ciphertext block to recover the second plaintext block.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.18 §6.2</span><q>In CBC encryption, the input block to each forward cipher operation (except the first) depends on the result of the previous forward cipher operation, so the forward cipher operations cannot be performed in parallel.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.18 §6.2</span><q>In CBC decryption, however, the input blocks for the inverse cipher function, i.e., the ciphertext blocks, are immediately available, so that multiple inverse cipher operations can be performed in parallel.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.24 App.A</span><q>For the ECB, CBC, and CFB modes, the plaintext must be a sequence of one or more complete data blocks</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.9 §7.2.2</span><q>Changing the IV, key, or first plaintext block (e.g., using a counter or random field) results in different ciphertext.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.9 §7.2.2</span><q>the chaining mechanism causes ciphertext cj to depend on xj and all preceding plaintext blocks</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S03">S03</a> p.9 §7.2.2</span><q>a single bit error in ciphertext block cj affects decipherment of blocks cj and cj+1</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S01">S01</a> p.61 cipher block chaining</span><q>A block cipher mode that enhances ECB mode by chaining together blocks of cipher text it produces.</q></li>
+</ul></article>
+<article class="page" id="mode-ctr"><p class="crumb">T4 Modes</p><h1>CTR（Counter）模式</h1><dl class="meta"><dt>主題</dt><dd>T4</dd><dt>來源</dt><dd><a class="wl" href="#S05">S05</a></dd><dt>先備概念</dt><dd><a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a></dd><dt>關聯</dt><dd><span class="rt">part-of</span> <a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<span class="rt">contrasts-with</span> <a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>、<span class="rt">builds-on</span> <a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a></dd></dl><h2>定義</h2>
+<p><strong>CTR</strong>：不直接加密明文，而是用區塊加密去加密一連串的<strong>計數器區塊（counter）</strong> T₁, T₂, …，產生的輸出再和明文做 XOR，得到密文；解密時做同樣的事 [S05 p.22]。</p>
+<ul>
+<li>Oⱼ = E_K(Tⱼ)</li>
+<li>加密：Cⱼ = Pⱼ ⊕ Oⱼ；解密：Pⱼ = Cⱼ ⊕ Oⱼ  [S05 p.22]</li>
+</ul>
+<p>解密時一樣是「加密計數器」產生同一串 Oⱼ，再和密文 XOR，就把明文還原——<strong>解密不需要區塊加密的反函數</strong> [S05 p.22]。</p>
+<p>等於把區塊加密變成「產生金鑰串流」的工具，用法很像串流加密（見 <a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>）。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>計數器絕對不可重複</strong>：同一把金鑰下，<strong>所有訊息</strong>用過的計數器區塊都必須彼此不同 [S05 p.22]；每則訊息的初始計數器要選得能確保這種唯一性 [S05 p.26]。</li>
+<li><strong>加密與解密都可以平行</strong>；任何一個區塊都能獨立解密 [S05 p.22]。</li>
+<li><strong>不需要填充</strong>：最後一個區塊可以不滿，只取輸出區塊最前面需要的位元數做 XOR，其餘丟棄 [S05 p.22]。</li>
+<li>解密也只用到區塊加密的「正向」函數 [S05 p.22]。</li>
+<li>TLS 1.3 使用的 <strong>AES-GCM</strong> 就是建立在 CTR 的變形之上（<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a>）。</li>
+</ul>
+<h2>範例</h2>
+<pre><code> 計數器： T1        T2        T3
+          │         │         │
+         E_K       E_K       E_K      ← 三個區塊可以同時算（平行）
+          │         │         │
+ P1 ──▶ (⊕)  P2 ──▶ (⊕)  P3 ──▶ (⊕)
+          ▼         ▼         ▼
+          C1        C2        C3
+</code></pre>
+<p>（依 SP 800-38A §6.5 公式繪製 [S05 p.22]）</p>
+<h2>常見誤解</h2>
+<ul>
+<li>「CTR 的計數器跟 IV 一樣，偶爾重複沒關係」——錯。SP 800-38A 要求同一金鑰下所有計數器都必須互不相同 [S05 p.22]。</li>
+</ul>
+<h2>關聯</h2>
+<ul>
+<li>對比：<a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>（需填充、加密不可平行）</li>
+<li>延伸：<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.22 §6.5</span><q>The Counter (CTR) mode is a confidentiality mode that features the application of the forward cipher to a set of input blocks, called counters, to produce a sequence of output blocks that are exclusive-ORed with the plaintext to produce the ciphertext, and vice versa.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.22 §6.5</span><q>The sequence of counters must have the property that each block in the sequence is different from every other block. This condition is not restricted to a single message: across all of the messages that are encrypted under the given key, all of the counters must be distinct.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.22 §6.5</span><q>In CTR decryption, the forward cipher function is invoked on each counter block, and the resulting output blocks are exclusive-ORed with the corresponding ciphertext blocks to recover the plaintext blocks.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.22 §6.5</span><q>For the last block, which may be a partial block of u bits, the most significant u bits of the last output block are used for the exclusive-OR operation; the remaining b-u bits of the last output block are discarded.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.22 §6.5</span><q>In both CTR encryption and CTR decryption, the forward cipher functions can be performed in parallel</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.26 App.B.2</span><q>The initial counter blocks, T1, for each message that is encrypted under the given key must be chosen in a manner than ensures the uniqueness of all the counter blocks across all the messages.</q></li>
+</ul></article>
+<article class="page" id="mode-gcm-aead"><p class="crumb">T4 Modes</p><h1>GCM 與認證加密（Authenticated Encryption, AEAD）</h1><dl class="meta"><dt>主題</dt><dd>T4</dd><dt>來源</dt><dd><a class="wl" href="#S05">S05</a>、<a class="wl" href="#S11">S11</a></dd><dt>先備概念</dt><dd><a class="wl" href="#mode-ctr">CTR（Counter）模式</a>、<a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></dd><dt>關聯</dt><dd><span class="rt">builds-on</span> <a class="wl" href="#mode-ctr">CTR（Counter）模式</a>、<span class="rt">used-by</span> <a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></dd><dt>關鍵事實（與 facts.json 一致）</dt><dd><code>{&quot;gcm.block_bits&quot;: 128}</code></dd></dl><h2>定義</h2>
+<p><strong>GCM（Galois/Counter Mode）</strong> 是一種<strong>帶有附加資料的認證加密（authenticated encryption with associated data, AEAD）</strong> 演算法 [S11 p.9]。
+它建立在<strong>區塊大小 128 位元</strong>的經核准區塊加密（例如 AES）之上，所以 GCM 是 AES 的一種操作模式 [S11 p.9]。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>一次提供兩件事</strong> [S11 p.9]：</li>
+<li><strong>機密性</strong>：使用 <strong>CTR 模式的變形</strong>來加密（見 <a class="wl" href="#mode-ctr">CTR（Counter）模式</a>）；</li>
+<li><strong>真實性／完整性（authenticity）</strong>：用一個通用雜湊函數計算<strong>認證標籤（authentication tag）</strong>。</li>
+<li>加密時同時算出標籤；解密時<strong>先驗證標籤，驗證通過才解密</strong> [S11 p.15]。</li>
+<li>這補上了 ECB／CBC／CTR 的缺口：前三者只提供<strong>機密性</strong>（SP 800-38A 稱它們為 confidentiality modes [S05 p.5]），無法偵測竄改——呼應密碼學四大目標中的「完整性」（<a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a>）。</li>
+<li><strong>IV 不可重複</strong>：同一把金鑰下只要有一個 IV 重複，就可能遭受偽造攻擊；NIST 說這個要求「幾乎和金鑰保密一樣重要」[S11 p.26]。</li>
+<li>本頁只作為銜接 CTR 與 TLS 1.3 的橋樑（TLS 1.3 只使用 AEAD 演算法，見 <a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a>）。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>            ┌──────────── GCM ────────────┐
+明文 ──▶   │ CTR 變形加密 → 密文          │ ──▶ 密文 + 標籤(tag)
+附加資料 ─▶ │ GHASH 計算 → 認證標籤 tag     │
+            └─────────────────────────────┘
+接收方：先驗證 tag ✔ → 才解密；tag ✘ → 拒絕
+</code></pre>
+<p>（依 SP 800-38D §1、§5.2 的描述繪製 [S11 p.9][S11 p.15]）</p>
+<h2>關聯</h2>
+<ul>
+<li>建立在：<a class="wl" href="#mode-ctr">CTR（Counter）模式</a></li>
+<li>被 TLS 1.3 使用：<a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S11">S11</a> p.9 §1</span><q>This Recommendation specifies an algorithm called Galois/Counter Mode (GCM) for authenticated encryption with associated data.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S11">S11</a> p.9 §1</span><q>GCM is constructed from an approved symmetric key block cipher with a block size of 128 bits, such as the Advanced Encryption Standard (AES) algorithm</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S11">S11</a> p.9 §1</span><q>Thus, GCM is a mode of operation of the AES algorithm.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S11">S11</a> p.9 §1</span><q>GCM provides assurance of the confidentiality of data using a variation of the Counter mode of operation for encryption.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S11">S11</a> p.9 §1</span><q>GCM provides assurance of the authenticity of the confidential data</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S11">S11</a> p.15 §5.2</span><q>The authenticated encryption function encrypts the confidential data and computes an authentication tag on both the confidential data and any additional, non-confidential data.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S11">S11</a> p.15 §5.2</span><q>The authenticated decryption function decrypts the confidential data, contingent on the verification of the tag.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S11">S11</a> p.26 §8</span><q>if even one IV is ever repeated, then the implementation may be vulnerable to the forgery attacks</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S11">S11</a> p.26 §8</span><q>In practice, this requirement is almost as important as the secrecy of the key.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S05">S05</a> p.5 Abstract</span><q>This recommendation defines five confidentiality modes of operation for use with an underlying symmetric key block cipher algorithm</q></li>
+</ul></article>
+<article class="page" id="asym-public-key"><p class="crumb">T5 Asymmetric &amp; Apps</p><h1>公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</h1><dl class="meta"><dt>主題</dt><dd>T5</dd><dt>來源</dt><dd><a class="wl" href="#S02">S02</a>、<a class="wl" href="#S06">S06</a>、<a class="wl" href="#S07">S07</a></dd><dt>先備概念</dt><dd><a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></dd><dt>關聯</dt><dd><span class="rt">contrasts-with</span> <a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a>、<span class="rt">related</span> <a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>、<span class="rt">related</span> <a class="wl" href="#asym-rsa">RSA：基本運作原理</a>、<span class="rt">related</span> <a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></dd></dl><h2>定義</h2>
+<p><strong>非對稱式（公開金鑰）演算法</strong>使用<strong>一對金鑰</strong>：<strong>公鑰（public key）</strong> 與 <strong>私鑰（private key）</strong>，兩者在數學上相關 [S06 p.34]。
+- 公鑰可以公開，不會降低安全性；私鑰必須保密 [S06 p.34]。
+- 雖然兩把金鑰相關，但<strong>無法從公鑰有效率地推出私鑰</strong> [S06 p.34]。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>起源</strong>：1976 年 Diffie 與 Hellman 發表《New Directions in Cryptography》，提出公開金鑰密碼學的革命性概念 [S02 p.2]。</li>
+<li>他們的想法：加密金鑰 E 與解密金鑰 D 不同，而且<strong>從 E 算出 D 在計算上不可行</strong>，所以 E 可以公開 [S07 p.1]。</li>
+<li>每個人把自己的公開加密金鑰放進「公開目錄」，任何人都能用它加密訊息，<strong>只有持有對應私鑰的接收者能解密</strong> [S07 p.1]——就算兩人從沒見過面，也能祕密通訊 [S07 p.1]。</li>
+<li><strong>為什麼需要</strong>：對稱式加密必須先透過安全通道分配金鑰；Diffie–Hellman 指出，這個<strong>金鑰分配問題</strong>的成本與延遲，是商業通訊走向大型網路的主要障礙 [S07 p.1]（見 <a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a>）。</li>
+<li><strong>加密 vs. 簽章</strong>的金鑰用法 [S06 p.34]：</li>
+<li>加密：<strong>用公鑰加密、用私鑰解密</strong>；</li>
+<li>數位簽章：<strong>用私鑰簽章、用公鑰驗證</strong>（見 <a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>）。</li>
+<li><strong>缺點：慢</strong>。非對稱演算法比對稱式慢很多，所以不拿來處理大量資料 [S06 p.34]——實務上兩者混合使用（見 <a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a>）。</li>
+</ul>
+<h2>範例</h2>
+<p><strong>信箱比喻</strong>（本 Wiki 的教學比喻）：公鑰像是<strong>投信口</strong>，任何人都能把信投進去；私鑰像是<strong>信箱鑰匙</strong>，只有主人能打開取信。對應「公鑰加密、私鑰解密」[S06 p.34]。</p>
+<pre><code>Bob 的公鑰（公開）  ──▶  Alice 用它加密  ──▶  密文  ──▶  只有 Bob 的私鑰能解開
+</code></pre>
+<h2>關聯</h2>
+<ul>
+<li>對比：<a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a>（同一把金鑰）</li>
+<li>金鑰交換：<a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>；代表演算法：<a class="wl" href="#asym-rsa">RSA：基本運作原理</a>；簽章：<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.34 §3.3</span><q>Asymmetric-key algorithms (often called public-key algorithms) use a pair of keys (i.e., a key pair): a public key and a private key that are mathematically related to each other.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.34 §3.3</span><q>The public key may be made public without reducing the security of the process, but the private key must remain secret if the cryptographic protection is to remain effective.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.34 §3.3</span><q>the private key cannot efficiently be determined based on knowledge of the public key.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.34 §3.3</span><q>a digital signature is computed using a private key, and the signature is verified using the public key</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.34 §3.3</span><q>the encryption is performed using the public key, and the decryption is performed using the private key</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.34 §3.3</span><q>These algorithms tend to be much slower than symmetric-key algorithms so are not used to process large amounts of data.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.2 §1.1</span><q>The most striking development in the history of cryptography came in 1976 when Diffie and Hellman published New Directions in Cryptography. This paper introduced the revolutionary concept of public-key cryptography</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S07">S07</a> p.1 §I</span><q>In a public key cryptosystem enciphering and deciphering are governed by distinct keys, E and D, such that computing D from E is computationally infeasible</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S07">S07</a> p.1 §I</span><q>The enciphering key E can thus be publicly disclosed without compromising the deciphering key D.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S07">S07</a> p.1 §I</span><q>Each user of the network can, therefore, place his enciphering key in a public directory.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S07">S07</a> p.1 §I</span><q>A private conversation can therefore be held between any two individuals regardless of whether they have ever communicated before.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S07">S07</a> p.1 §I</span><q>The cost and delay imposed by this key distribution problem is a major barrier to the transfer of business communications to large teleprocessing networks.</q></li>
+</ul></article>
+<article class="page" id="asym-key-exchange"><p class="crumb">T5 Asymmetric &amp; Apps</p><h1>Diffie–Hellman 金鑰交換（Key Exchange）</h1><dl class="meta"><dt>主題</dt><dd>T5</dd><dt>來源</dt><dd><a class="wl" href="#S02">S02</a>、<a class="wl" href="#S07">S07</a>、<a class="wl" href="#S08">S08</a>、<a class="wl" href="#S10">S10</a></dd><dt>先備概念</dt><dd><a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></dd><dt>關聯</dt><dd><span class="rt">part-of</span> <a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<span class="rt">used-by</span> <a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a>、<span class="rt">contrasts-with</span> <a class="wl" href="#asym-rsa">RSA：基本運作原理</a></dd></dl><h2>定義</h2>
+<p><strong>公開金鑰分配（public key distribution）／金鑰交換</strong>：兩個人在<strong>公開、可被竊聽的通道</strong>上來回交換資訊，最後得到<strong>同一把共享金鑰</strong>；竊聽者即使看到全部交換內容，也無法在可行的計算量內算出這把金鑰 [S07 p.1]。
+Diffie 與 Hellman 在 1976 年提出了這種方法，其安全性建立在<strong>離散對數問題</strong>的困難度上 [S02 p.3][S07 p.6]。</p>
+<h2>重點</h2>
+<ul>
+<li>目的：<strong>不需要事先的安全通道</strong>就能建立對稱式金鑰，解決金鑰分配問題 [S07 p.1]（見 <a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a>）。</li>
+<li>做法（概念）[S07 p.6]：
+  1. 公開一個質數 q 與一個基底 α；
+  2. 每個人各自挑一個<strong>祕密的隨機數</strong> X，只公開 Y = α^X mod q；
+  3. 雙方用「對方公開的 Y」與「自己的祕密 X」，各自算出相同的 K。</li>
+<li>由 X 算 Y 很容易，<strong>由 Y 反推 X（取對數）很難</strong>——系統的安全性正取決於這個困難度 [S07 p.6]。</li>
+<li>它和 RSA 不同：DH 是讓兩人<strong>協議出一把金鑰</strong>，再拿去給一般的（對稱式）密碼系統使用 [S08 p.7]。</li>
+<li><strong>現代應用</strong>：TLS 1.3 的金鑰交換模式之一就是 <strong>(EC)DHE</strong>——建立在有限體或橢圓曲線上的 Diffie–Hellman [S10 p.10]（見 <a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a>）。</li>
+</ul>
+<h2>範例</h2>
+<p>小數字教學範例（本 Wiki 依 [S07 p.6] 的公式自行計算，簡報驗證節點會用程式重算；實務上 q 要非常大）：</p>
+<pre><code>公開：q = 23，α = 5
+Alice 祕密 X_A = 4 → 公開 Y_A = 5^4 mod 23 = 4
+Bob   祕密 X_B = 3 → 公開 Y_B = 5^3 mod 23 = 10
+Alice 算：K = Y_B^X_A mod 23 = 10^4 mod 23 = 18
+Bob   算：K = Y_A^X_B mod 23 = 4^3  mod 23 = 18   ← 兩人得到同一把金鑰
+竊聽者只看到 23、5、4、10，要算出 18 必須先解離散對數
+</code></pre>
+<h2>關聯</h2>
+<ul>
+<li>屬於：<a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a></li>
+<li>被 TLS 1.3 使用：<a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></li>
+<li>與 RSA 的差別：<a class="wl" href="#asym-rsa">RSA：基本運作原理</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S07">S07</a> p.1 §I</span><q>Public key distribution systems offer a different approach to eliminating the need for a secure key distribution channel. In such a system, two users who wish to exchange a key communicate back and forth until they arrive at a key in common.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S07">S07</a> p.1 §I</span><q>A third party eavesdropping on this exchange must find it computationally infeasible to compute the key from the information overheard</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S07">S07</a> p.6 §III</span><q>The new technique makes use of the apparent difficulty of computing logarithms over a finite field GF(q) with a prime number q of elements.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S07">S07</a> p.6 §III</span><q>The security of our technique depends crucially on the difficulty of computing logarithms mod q</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S07">S07</a> p.6 §III</span><q>Each user generates an independent random number</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S07">S07</a> p.6 §III</span><q>Each keeps Xi secret, but places</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.3 §1.1</span><q>for key exchange, the security of which is based on the intractability of the discrete logarithm problem.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.7 §V</span><q>Their technique permits two users to determine a key in common to be used in a normal cryptographic system.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.10 §2</span><q>TLS supports three basic key exchange modes</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.10 §2</span><q>(EC)DHE (Diffie-Hellman over either finite fields or elliptic curves)</q></li>
+</ul></article>
+<article class="page" id="asym-rsa"><p class="crumb">T5 Asymmetric &amp; Apps</p><h1>RSA：基本運作原理</h1><dl class="meta"><dt>主題</dt><dd>T5</dd><dt>來源</dt><dd><a class="wl" href="#S02">S02</a>、<a class="wl" href="#S08">S08</a>、<a class="wl" href="#S09">S09</a>、<a class="wl" href="#S12">S12</a></dd><dt>先備概念</dt><dd><a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></dd><dt>關聯</dt><dd><span class="rt">instance-of</span> <a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<span class="rt">used-by</span> <a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>、<span class="rt">used-by</span> <a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></dd><dt>關鍵事實（與 facts.json 一致）</dt><dd><code>{&quot;rsa.example&quot;: {&quot;p&quot;: 47, &quot;q&quot;: 59, &quot;n&quot;: 2773, &quot;phi&quot;: 2668, &quot;d&quot;: 157, &quot;e&quot;: 17, &quot;m&quot;: 920, &quot;c&quot;: 948}, &quot;rsa.paper_recommended_digits&quot;: 200, &quot;rsa.k_for_112bit&quot;: 2048, &quot;rsa.k_for_128bit&quot;: 3072}</code></dd></dl><h2>定義</h2>
+<p><strong>RSA</strong>（Rivest、Shamir、Adleman，1978）是第一個實用的公開金鑰加密與簽章方案 [S02 p.3]。
+它的特性是：<strong>公開加密金鑰，並不會因此洩漏對應的解密金鑰</strong> [S08 p.1]。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>金鑰產生</strong> [S08 p.6–7]：
+  1. 選兩個<strong>很大的隨機質數</strong> p、q，計算 <strong>n = p·q</strong>；
+  2. 選一個與 (p−1)(q−1) 互質的 d；
+  3. 算出 e，使 e·d ≡ 1 (mod (p−1)(q−1))。</li>
+<li><strong>公鑰</strong> = (e, n)，<strong>私鑰</strong> = (d, n)；每個人公開加密金鑰、保留解密金鑰 [S08 p.6]。RFC 8017 也定義 RSA 公鑰由 <strong>模數 n（modulus）</strong> 與 <strong>公開指數 e</strong> 組成 [S09 p.8]。</li>
+<li><strong>加密／解密</strong> [S08 p.6]：</li>
+<li>加密：C = M^e mod n</li>
+<li>解密：M = C^d mod n</li>
+<li><strong>安全性</strong>：n 公開，但 p、q 因為<strong>大數分解非常困難</strong>而保持隱藏，d 也因此無法從 e 推出 [S08 p.6][S08 p.1]。</li>
+<li><strong>金鑰長度要跟上時代</strong>：1978 年論文建議 n 約 200 位十進位數字 [S08 p.9]；NIST 現行對照表：RSA 模數 k = <strong>2048</strong> 位元約等於 112 位元安全強度、<strong>3072</strong> 位元約等於 128 位元（相當 AES-128）[S12 p.67][S12 p.68]。</li>
+<li><strong>實務上不直接用 M^e mod n</strong>：RFC 8017 規定新應用必須支援 <strong>RSAES-OAEP</strong>（把訊息先經 OAEP 編碼再做 RSA 運算），舊的 PKCS1-v1_5 只為相容而保留 [S09 p.18][S09 p.19]。</li>
+<li>量子電腦實用化後，RSA 等演算法的強度估計會大幅改變 [S12 p.68]。</li>
+</ul>
+<h2>範例</h2>
+<p>RSA 原始論文的小例子 [S08 p.10]（簡報驗證節點會用程式重算）：</p>
+<pre><code>p = 47，q = 59 → n = 47 × 59 = 2773
+(p−1)(q−1) = 46 × 58 = 2668
+私鑰 d = 157 → 公鑰 e = 17（17 × 157 = 2669 ≡ 1 mod 2668）
+加密 M = 920： C = 920^17 mod 2773 = 948
+解密：         M = 948^157 mod 2773 = 920
+</code></pre>
+<h2>常見誤解</h2>
+<ul>
+<li>「RSA 就是直接算 C = M^e mod n 就好」——教科書公式只說明原理；RFC 8017 要求新應用使用 RSAES-OAEP 編碼 [S09 p.18]。</li>
+<li>「200 位數的 n 就夠安全」——那是 1978 年的建議 [S08 p.9]；現行建議至少 2048 位元 [S12 p.67]。</li>
+</ul>
+<h2>關聯</h2>
+<ul>
+<li>屬於：<a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a></li>
+<li>也能做數位簽章：<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></li>
+<li>在 TLS 1.3 中用於憑證簽章，而非金鑰傳輸：<a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.3 §1.1</span><q>In 1978 Rivest, Shamir, and Adleman discovered the first practical public-key encryption and signature scheme, now referred to as RSA.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.1 Abstract</span><q>An encryption method is presented with the novel property that publicly revealing an encryption key does not thereby reveal the corresponding decryption key.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.1 Abstract</span><q>A message is encrypted by representing it as a number M, raising M to a publicly specified power e, and then taking the remainder when the result is divided by the publicly specified product, n, of two large secret prime numbers p and q.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.1 Abstract</span><q>The security of the system rests in part on the difficulty of factoring the published divisor, n.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.6 §V</span><q>The encryption key is thus the pair of positive integers (e,n). Similarly, the decryption key is the pair of positive integers (d,n). Each user makes his encryption key public, and keeps the corresponding decryption key private.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.6 §V</span><q>These primes are very large, 'random' primes.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.6 §V</span><q>the factors p and q will be effectively hidden from everyone else due to the enormous difficulty of factoring n.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.6 §V</span><q>You then pick the integer d to be a large, random integer which is relatively prime to (p− 1) · (q− 1).</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.7 §V</span><q>The integer e is finally computed from p,q, and d to be the 'multiplicative inverse' of d, modulo (p− 1) · (q− 1).</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.9 §VII</span><q>We recommend using 100-digit (decimal) prime numbers p and q, so that n has 200 digits.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.10 §VIII</span><q>Consider the case p = 47,q = 59,n = p·q = 47 · 59 = 2773, and d = 157.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.10 §VIII</span><q>Therefore e = 17, the multiplicative inverse (mod 2668) of d = 157.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.10 §VIII</span><q>the first block (M = 920) is enciphered</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.10 §VIII</span><q>M 17 = (((((1)2 ·M)2)2)2)2 ·M = 948 (mod 2773)</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S09">S09</a> p.8 §3.1</span><q>an RSA public key consists of two components: n the RSA modulus, a positive integer e the RSA public exponent, a positive integer</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S09">S09</a> p.18 §7</span><q>RSAES-OAEP is REQUIRED to be supported for new applications; RSAES-PKCS1-v1_5 is included only for compatibility with existing applications.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S09">S09</a> p.19 §7.1</span><q>RSAES-OAEP combines the RSAEP and RSADP primitives (Sections 5.1.1 and 5.1.2) with the EME-OAEP encoding method</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S12">S12</a> p.67 §5.6.1.1 Table 2</span><q>112 3TDEA68 L = 2048 N = 224 k = 2048</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S12">S12</a> p.67 §5.6.1.1</span><q>The predominant algorithm of this type is the RSA algorithm.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S12">S12</a> p.68 §5.6.1.1 Table 2</span><q>128 AES-128 L = 3072 N = 256 k = 3072</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S12">S12</a> p.68 §5.6.1.1</span><q>The security-strength estimates will be significantly affected when quantum computing becomes a practical consideration.</q></li>
+</ul></article>
+<article class="page" id="asym-signature"><p class="crumb">T5 Asymmetric &amp; Apps</p><h1>數位簽章（Digital Signature）</h1><dl class="meta"><dt>主題</dt><dd>T5</dd><dt>來源</dt><dd><a class="wl" href="#S02">S02</a>、<a class="wl" href="#S06">S06</a>、<a class="wl" href="#S08">S08</a>、<a class="wl" href="#S09">S09</a>、<a class="wl" href="#S10">S10</a></dd><dt>先備概念</dt><dd><a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a></dd><dt>關聯</dt><dd><span class="rt">part-of</span> <a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<span class="rt">used-by</span> <a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a>、<span class="rt">related</span> <a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></dd></dl><h2>定義</h2>
+<p><strong>數位簽章</strong>：用<strong>私鑰</strong>對訊息產生簽章，任何人都能用對應的<strong>公鑰</strong>驗證 [S06 p.34][S08 p.1]。
+RSA 論文指出：簽章<strong>無法偽造</strong>，簽署者事後也<strong>不能否認</strong>簽過 [S08 p.1]。</p>
+<h2>重點</h2>
+<ul>
+<li>數位簽章是公開金鑰密碼學最重要的貢獻之一 [S02 p.3]。</li>
+<li>金鑰方向與加密<strong>相反</strong>：加密是「公鑰加密、私鑰解密」；簽章是「<strong>私鑰簽、公鑰驗</strong>」[S06 p.34]。</li>
+<li>提供的服務：<strong>身分、完整性、來源鑑別</strong> [S06 p.34]，以及<strong>不可否認性</strong>（簽署者無法否認）[S08 p.1]——呼應密碼學四大目標（<a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a>）。</li>
+<li>電子簽章必須<strong>同時依賴訊息與簽署者</strong>，否則接收者可以改訊息、或把簽章貼到別的訊息上 [S08 p.4]。</li>
+<li>現行標準：RFC 8017 規定新應用必須使用 <strong>RSASSA-PSS</strong> [S09 p.31]；TLS 1.3 的 RSA 簽章也必須使用 RSASSA-PSS [S10 p.70]。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>Bob：  訊息 M ──[Bob 的私鑰 簽章]──▶ (M, 簽章 S)
+Alice：(M, S) ──[Bob 的公鑰 驗證]──▶ ✔ 確實是 Bob 簽的，而且 M 沒被改過
+</code></pre>
+<p>（依 [S06 p.34] 的金鑰用法與 [S08 p.1] 的說明繪製）</p>
+<h2>關聯</h2>
+<ul>
+<li>屬於：<a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a></li>
+<li>在 TLS 1.3 中用於伺服器憑證／身分鑑別：<a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.1 Abstract</span><q>A message can be 'signed' using a privately held decryption key. Anyone can verify this signature using the corresponding publicly revealed encryption key. Signatures cannot be forged, and a signer cannot later deny the validity of his signature.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.4 §IV</span><q>An electronic signature must be message-dependent, as well as signer-dependent.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.34 §3.3</span><q>a digital signature is computed using a private key, and the signature is verified using the public key</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.34 §3.3</span><q>To provide identity, integrity, and source authentication services in the form of digital signatures</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S02">S02</a> p.3 §1.1</span><q>One of the most significant contributions provided by public-key cryptography is the digital signature.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S09">S09</a> p.31 §8</span><q>RSASSA-PSS is REQUIRED in new applications.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.70 §4.4.3</span><q>RSA signatures MUST use an RSASSA-PSS algorithm</q></li>
+</ul></article>
+<article class="page" id="app-hybrid-tls"><p class="crumb">T5 Asymmetric &amp; Apps</p><h1>密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</h1><dl class="meta"><dt>主題</dt><dd>T5</dd><dt>來源</dt><dd><a class="wl" href="#S06">S06</a>、<a class="wl" href="#S10">S10</a></dd><dt>先備概念</dt><dd><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>、<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a>、<a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>、<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></dd><dt>關聯</dt><dd><span class="rt">builds-on</span> <a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>、<span class="rt">builds-on</span> <a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>、<span class="rt">builds-on</span> <a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a>、<span class="rt">related</span> <a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></dd><dt>關鍵事實（與 facts.json 一致）</dt><dd><code>{&quot;tls13.static_rsa_removed&quot;: true, &quot;tls13.mandatory_suite&quot;: &quot;TLS_AES_128_GCM_SHA256&quot;}</code></dd></dl><h2>定義</h2>
+<p><strong>TLS</strong> 的主要目標是在兩個通訊端點之間提供一條<strong>安全通道</strong> [S10 p.6]，具備三種性質 [S10 p.6]：
+- <strong>鑑別（authentication）</strong>：伺服器端一定會被鑑別，可使用 RSA、ECDSA 等非對稱密碼學或預先共享金鑰；
+- <strong>機密性（confidentiality）</strong>：建立連線後的資料只有兩端看得到；
+- <strong>完整性（integrity）</strong>：資料被攻擊者修改一定會被偵測出來。</p>
+<p>我們瀏覽 HTTPS 網站時，背後就是 TLS 在保護資料（HTTPS 與 TLS 的關係為本 Wiki 的教學補充）。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>混合加密（hybrid）</strong>：非對稱演算法太慢、不適合處理大量資料；NIST 指出可以<strong>結合對稱與非對稱演算法</strong>，兼顧效率並減少所需金鑰數量 [S06 p.34–35]。</li>
+<li>TLS 由兩部分組成 [S10 p.6]：
+  1. <strong>Handshake（交握）協定</strong>：鑑別雙方、協商演算法，並<strong>建立共享金鑰</strong> → 用到 <strong>(EC)DHE 金鑰交換</strong>（<a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>）與<strong>憑證簽章</strong>（<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>）；
+  2. <strong>Record（記錄）協定</strong>：用交握得到的金鑰保護之後的所有流量 → 用到<strong>對稱式 AEAD 加密</strong>（如 AES-GCM，<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a>）。</li>
+<li><strong>TLS 1.3 的重要改變</strong> [S10 p.8]：</li>
+<li><strong>移除了靜態 RSA 與靜態 Diffie–Hellman 的金鑰交換</strong>，所有公鑰式金鑰交換都提供<strong>前向保密（forward secrecy）</strong>；</li>
+<li>對稱式演算法只保留 <strong>AEAD</strong>。</li>
+<li><strong>前向保密</strong>：即使長期金鑰（例如憑證的簽章私鑰）在交握完成後外洩，也不會危及這次連線的 session key [S10 p.143]。</li>
+<li>每個 TLS 1.3 實作都必須支援 <strong>TLS_AES_128_GCM_SHA256</strong> [S10 p.102]——也就是 AES-128 + GCM。</li>
+<li>RSA 在 TLS 1.3 的角色是<strong>簽章</strong>（且必須用 RSASSA-PSS）[S10 p.70]，不是用來「加密並傳送 session key」。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>瀏覽器（Client）                                  網站（Server）
+   │  ① ClientHello + (EC)DHE 公開值  ────────────▶ │
+   │  ◀──────────── ② ServerHello + (EC)DHE 公開值   │   → 雙方各自算出相同的共享金鑰
+   │  ◀──────────── ③ 憑證 + 簽章（RSA-PSS／ECDSA）  │   → 確認「真的是這個網站」
+   │  ④ 之後的網頁資料：AES-GCM 加密 + 認證  ◀══════▶ │   → 機密性 + 完整性
+</code></pre>
+<p>（依 RFC 8446 §1、§2 的描述簡化繪製 [S10 p.6][S10 p.10]）</p>
+<h2>常見誤解</h2>
+<ul>
+<li>「HTTPS 是用 RSA 加密 session key 再傳給伺服器」——這是舊版 TLS 的靜態 RSA 金鑰傳輸；<strong>TLS 1.3 已移除</strong> [S10 p.8]，改用 (EC)DHE 金鑰交換，RSA 只用於簽章 [S10 p.70]。</li>
+</ul>
+<h2>關聯</h2>
+<ul>
+<li>組成元件：<a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>、<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>、<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a>、<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></li>
+<li>對應四大目標：<a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.6 §1</span><q>The primary goal of TLS is to provide a secure channel between two communicating peers</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.6 §1</span><q>Authentication: The server side of the channel is always authenticated; the client side is optionally authenticated.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.6 §1</span><q>Authentication can happen via asymmetric cryptography (e.g., RSA [RSA], the Elliptic Curve Digital Signature Algorithm (ECDSA) [ECDSA], or the Edwards-Curve Digital Signature Algorithm (EdDSA) [RFC8032]) or a symmetric pre-shared key (PSK).</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.6 §1</span><q>Confidentiality: Data sent over the channel after establishment is only visible to the endpoints.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.6 §1</span><q>Integrity: Data sent over the channel after establishment cannot be modified by attackers without detection.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.6 §1</span><q>A handshake protocol (Section 4) that authenticates the communicating parties, negotiates cryptographic modes and parameters, and establishes shared keying material.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.6 §1</span><q>A record protocol (Section 5) that uses the parameters established by the handshake protocol to protect traffic between the communicating peers.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.8 §1.2</span><q>Static RSA and Diffie-Hellman cipher suites have been removed; all public-key based key exchange mechanisms now provide forward secrecy.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.8 §1.2</span><q>Those that remain are all Authenticated Encryption with Associated Data (AEAD) algorithms.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.10 §2</span><q>(EC)DHE (Diffie-Hellman over either finite fields or elliptic curves)</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.143 App.E.1</span><q>If the long-term keying material (in this case the signature keys in certificate-based authentication modes or the external/resumption PSK in PSK with (EC)DHE modes) is compromised after the handshake is complete, this does not compromise the security of the session key</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.102 §9.1</span><q>A TLS-compliant application MUST implement the TLS_AES_128_GCM_SHA256 [GCM] cipher suite</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S10">S10</a> p.70 §4.4.3</span><q>RSA signatures MUST use an RSASSA-PSS algorithm</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.34 §3.3</span><q>there are methods that combine the use of symmetric and asymmetric algorithms to</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S06">S06</a> p.35 §3.3</span><q>achieve better efficiency than is possible when using only asymmetric algorithms, while reducing the number of keys required when using only symmetric algorithms.</q></li>
+</ul></article>
+<article class="page" id="basics-bits-xor-mod"><p class="crumb">T6 基礎工具與教學法</p><h1>基礎工具：位元、位元組、十六進位、XOR 與 mod</h1><dl class="meta"><dt>主題</dt><dd>T6</dd><dt>來源</dt><dd><a class="wl" href="#S04">S04</a>、<a class="wl" href="#S08">S08</a>、<a class="wl" href="#S13">S13</a>、<a class="wl" href="#S14">S14</a></dd><dt>先備概念</dt><dd><a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a></dd><dt>關聯</dt><dd><span class="rt">used-by</span> <a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>、<span class="rt">used-by</span> <a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>、<span class="rt">used-by</span> <a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>、<span class="rt">used-by</span> <a class="wl" href="#asym-rsa">RSA：基本運作原理</a></dd></dl><h2>定義</h2>
+<table>
+<thead>
+<tr>
+<th>名詞</th>
+<th>意思</th>
+<th>例子</th>
+<th>來源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>位元（bit）</strong></td>
+<td>一個二進位數字，只能是 0 或 1</td>
+<td><code>1</code></td>
+<td>[S04 p.10][S04 p.13]</td>
+</tr>
+<tr>
+<td><strong>位元組（byte）</strong></td>
+<td>8 個位元排在一起</td>
+<td><code>10100011</code></td>
+<td>[S04 p.10][S04 p.13]</td>
+</tr>
+<tr>
+<td><strong>十六進位（hexadecimal）</strong></td>
+<td>用 0–9、a–f 共 16 個字元，每個字元代表 4 個位元；一個位元組剛好寫成 2 個字元</td>
+<td><code>10100011</code> 寫成 <code>a3</code></td>
+<td>[S04 p.13]</td>
+</tr>
+<tr>
+<td><strong>XOR（互斥或，符號 ⊕）</strong></td>
+<td>兩個位元<strong>不同</strong>得 1、<strong>相同</strong>得 0；兩串等長的位元就逐位做</td>
+<td><code>0011 ⊕ 0101 = 0110</code></td>
+<td>[S14 p.17][S13 p.15]</td>
+</tr>
+<tr>
+<td><strong>mod（取餘數）</strong></td>
+<td><code>a mod n</code> = a 除以 n 的<strong>餘數</strong></td>
+<td><code>20 mod 7 = 6</code></td>
+<td>[S13 p.13][S08 p.1]</td>
+</tr>
+</tbody>
+</table>
+<h2>重點</h2>
+<ul>
+<li>AES 處理資料的基本單位是<strong>位元組</strong>；AES 的一個區塊是 128 個位元 = 16 個位元組 [S04 p.13]。</li>
+<li>FIPS 197 用十六進位寫位元組，例如 <code>{10100011}</code> 寫成 <code>{a3}</code> [S04 p.13]。這就是 AES 實例中 <code>32 43 f6 a8…</code> 這種寫法的意思（見 <a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>）。</li>
+<li><strong>XOR 的兩個性質</strong>讓它很適合加密 [S13 p.15]：</li>
+<li>自己和自己 XOR 會變成 0：x ⊕ x = 0</li>
+<li>和 0 XOR 不會改變：x ⊕ 0 = x</li>
+<li>所以「明文 ⊕ 金鑰 = 密文」之後，「密文 ⊕ 同一把金鑰 = 明文」——<strong>同一個動作就能加密也能解密</strong>（本 Wiki 由上面兩個性質推得）。</li>
+<li><strong>mod</strong> 讓數字「繞一圈回來」，像時鐘：Caesar 密碼用 mod 26 讓 Z 之後回到 A（<a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>）；RSA 的加密就是「算次方後除以 n 取餘數」[S08 p.1]（<a class="wl" href="#asym-rsa">RSA：基本運作原理</a>）。</li>
+<li>a mod n 的結果一定介於 0 到 n−1 之間 [S13 p.13]。</li>
+</ul>
+<h2>範例</h2>
+<pre><code>XOR（逐位：相同→0，不同→1）        mod（取餘數）
+  0011                               20 mod 7 = 6   （20 = 2×7 + 6）
+⊕ 0101                               27 mod 26 = 1  （Caesar：Y(24) + 3 = 27 → 1 = B）
+= 0110
+</code></pre>
+<p>（左：[S13 p.15] 的例子；右上：[S13 p.13] 的例子；右下為本 Wiki 依 Caesar 公式計算的教學例）</p>
+<h2>關聯</h2>
+<ul>
+<li>用到 mod：<a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>、<a class="wl" href="#asym-rsa">RSA：基本運作原理</a>、<a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a></li>
+<li>用到 XOR、位元組、十六進位：<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>、<a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>、<a class="wl" href="#mode-ctr">CTR（Counter）模式</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.10 §2.1</span><q>Byte A sequence of eight bits.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.13 §3.2</span><q>The basic processing unit in the AES algorithms is the byte — a sequence of eight bits.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.13 §3.1</span><q>A bit is a binary digit — 0 or 1. A block is a sequence of 128 bits</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.13 §3.2</span><q>It is also convenient to denote byte values using hexadecimal notation. The 16 hexadecimal characters represent sequences of four bits</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S04">S04</a> p.13 §3.2</span><q>For example, the hexadecimal form of the byte {10100011} is {a3}.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S14">S14</a> p.17 §5.1</span><q>is true when either the first input or the second input, but not both, are true.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S14">S14</a> p.17 §5.1</span><q>In mathematics and cryptography papers, exclusive or is generally represented by a cross in a circle</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S13">S13</a> p.15 Def.0.5</span><q>to denote the bitwise exclusive-or</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S13">S13</a> p.15 Def.0.5</span><q>For example, 0011 ⊕ 0101 = 0110.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S13">S13</a> p.15 Def.0.5</span><q>ing a string with itself results in zeroes.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S13">S13</a> p.13 Def.0.2</span><q>The expression a % n (usually read as “a mod n”) represents the remainder after dividing a by n.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S13">S13</a> p.13 Def.0.2</span><q>Example 21 % 7 = 0 because 21 = 3 · 7 + 0. 20 % 7 = 6 because 20 = 2 · 7 + 6.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S08">S08</a> p.1 Abstract</span><q>and then taking the remainder when the result is divided by the publicly specified product, n</q></li>
+</ul></article>
+<article class="page" id="teaching-how-others-explain"><p class="crumb">T6 基礎工具與教學法</p><h1>別人怎麼介紹加密演算法？（教學設計參考）</h1><dl class="meta"><dt>主題</dt><dd>T6</dd><dt>來源</dt><dd><a class="wl" href="#S13">S13</a>、<a class="wl" href="#S14">S14</a>、<a class="wl" href="#S15">S15</a></dd><dt>先備概念</dt><dd>—</dd><dt>關聯</dt><dd><span class="rt">related</span> <a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a>、<span class="rt">related</span> <a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></dd></dl><h2>定義</h2>
+<p>本頁比較三種不同對象的教材如何介紹加密：<strong>大學教科書</strong>（The Joy of Cryptography，Oregon State University）[S13 p.9]、<strong>入門書</strong>（Crypto 101）[S14 p.4]、<strong>科技公司給大眾的說明</strong>（Cloudflare Learning Center）[S15 p.1]，並歸納出本簡報採用的教學原則。</p>
+<h2>重點</h2>
+<ul>
+<li><strong>大學教科書：先複習工具，再從最簡單的密碼開始。</strong> 第 0 章先複習符號與模運算（mod）、字串與 XOR，第 1 章才是第一個密碼（one-time pad）與 Kerckhoffs 原則 [S13 p.9]；之後依序是區塊加密、操作模式、認證加密、RSA、Diffie–Hellman [S13 p.9]。</li>
+<li><strong>教科書會先交代每個符號</strong>：例如「Alice 要傳的訊息叫 m，稱為明文」「轉換後的值叫 c，稱為密文」[S13 p.21]。</li>
+<li><strong>入門書：第一個「積木」就是 XOR</strong>，然後才是區塊加密（其中介紹 AES）、串流加密、金鑰交換、公開金鑰加密 [S14 p.4]；連公式中的下標都會解釋（「i 只是編號」）[S14 p.18]。</li>
+<li><strong>給大眾的說明：定義 → 最簡單的例子 → 比喻 → 分類 → 為什麼重要 → 怎麼被攻擊 → 生活中的應用</strong> [S15 p.1]：</li>
+<li>例子：Alice 把「Hello」每個字母換成字母表後面第 2 個字母 [S15 p.1]</li>
+<li>比喻：金鑰就像實體鑰匙，鎖上（加密）後只有對的鑰匙能打開（解密）[S15 p.1]</li>
+<li>分類：對稱式只有一把金鑰，雙方共用 [S15 p.1]</li>
+<li>攻擊：暴力破解＝猜幾百萬、幾十億次金鑰 [S15 p.1]</li>
+<li>應用：HTTPS 使用 TLS 加密 [S15 p.1]</li>
+<li><strong>本簡報採用的教學原則</strong>（本 Wiki 歸納自以上三者）：
+  1. 先介紹之後會用到的名詞與工具（位元、XOR、mod），再用到它們（<a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a>）。
+  2. 每個主題依序講「基本原理 → 為什麼需要／好處與限制 → 現實中怎麼做」，一個主題分幾頁講完，不擠在一頁。
+  3. 公式出現時，每個符號都說明代表什麼。
+  4. 從最簡單的例子（位移密碼）開始，再進到現代演算法。
+  5. 用生活比喻（鑰匙、信箱）幫助理解，再接回正式名詞。</li>
+</ul>
+<h2>範例</h2>
+<table>
+<thead>
+<tr>
+<th>教材</th>
+<th>對象</th>
+<th>開場方式</th>
+<th>主題順序</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The Joy of Cryptography</td>
+<td>大學生</td>
+<td>複習 mod、XOR 等工具</td>
+<td>工具 → 簡單密碼 → 區塊加密 → 模式 → 認證加密 → RSA → DH</td>
+</tr>
+<tr>
+<td>Crypto 101</td>
+<td>入門工程師</td>
+<td>XOR</td>
+<td>XOR → 區塊加密（AES）→ 串流加密 → 金鑰交換 → 公開金鑰</td>
+</tr>
+<tr>
+<td>Cloudflare</td>
+<td>一般大眾</td>
+<td>定義＋位移 2 的小例子</td>
+<td>定義 → 例子 → 鑰匙比喻 → 對稱／非對稱 → 重要性 → 暴力破解 → HTTPS</td>
+</tr>
+</tbody>
+</table>
+<h2>關聯</h2>
+<ul>
+<li>這些原則套用到：<a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a>、<a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></li>
+</ul>
+<h2>來源引文</h2>
+<ul>
+<li class="q"><span class="qref"><a class="wl" href="#S13">S13</a> p.9 Contents</span><q>0 Review of Concepts &amp; Notation 1 0.1 Logs &amp; Exponents 1 0.2 Modular Arithmetic 1 0.3 Strings</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S13">S13</a> p.21 §1</span><q>Alice has a message m that she wants to send (privately) to Bob. We call m the plaintext.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S13">S13</a> p.21 §1</span><q>will somehow transform that plaintext into a value c (called the ciphertext)</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S14">S14</a> p.4 Contents</span><q>II Buildingblocks 16 5 Exclusiveor 17 5.1 Description</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S14">S14</a> p.4 Contents</span><q>6 Blockciphers 28 6.1 Description</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S14">S14</a> p.18 §5.1</span><q>On the left, we have the plaintext bit Pi. The i is just an index</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S15">S15</a> p.1</span><q>Encryption is a way of scrambling data so that only authorized parties can understand the information.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S15">S15</a> p.1</span><q>but she replaces each letter in her message with the letter that comes two places later in the alphabet.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S15">S15</a> p.1</span><q>Like a physical key, it locks (encrypts) data so that only someone with the right key can unlock (decrypt) it.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S15">S15</a> p.1</span><q>In symmetric encryption, there is only one key, and all communicating parties use the same (secret) key for both encryption and decryption.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S15">S15</a> p.1</span><q>is when an attacker who does not know the decryption key attempts to determine the key by making millions or billions of guesses.</q></li>
+<li class="q"><span class="qref"><a class="wl" href="#S15">S15</a> p.1</span><q>HTTPS uses the encryption protocol called Transport Layer Security (TLS).</q></li>
+</ul></article>
+<article class="page" id="S01"><p class="crumb">來源頁</p><h1>S01 RFC 4949: Internet Security Glossary, Version 2</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://www.rfc-editor.org/rfc/rfc4949.txt" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc4949.txt</a></dd><dt>發布者</dt><dd>IETF（R. Shirey）</dd><dt>年份</dt><dd>2007</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a>、<a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a>、<a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a></dd></dl><h2>摘要</h2>
+<p>IETF 的資訊安全術語表，替數千個資安名詞給出「(I) 建議的網際網路定義」，並註明哪些定義已不建議使用。
+本 Wiki 用它作為 <strong>術語的標準定義</strong>，補足 HAC 偏數學的形式定義，讓初學者看得懂的白話說法有權威出處。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>條目</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$ cryptography</code></td>
+<td>p.90</td>
+<td><a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></td>
+</tr>
+<tr>
+<td><code>$ data confidentiality</code>、<code>$ data integrity</code></td>
+<td>p.94、p.95</td>
+<td><a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></td>
+</tr>
+<tr>
+<td><code>$ authentication</code>、<code>$ non-repudiation service</code></td>
+<td>p.26、p.200</td>
+<td><a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></td>
+</tr>
+<tr>
+<td><code>$ cipher</code>、<code>$ cipher text</code>、<code>$ encryption</code>、<code>$ plain text</code>、<code>$ key</code>、<code>$ key space</code></td>
+<td>p.61、p.62、p.119、p.225、p.171、p.177</td>
+<td><a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a></td>
+</tr>
+<tr>
+<td><code>$ brute force</code>、<code>$ security by obscurity</code></td>
+<td>p.41、p.267–268</td>
+<td><a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li>抽取頁碼與 RFC 原文頁尾的 <code>[Page N]</code> 一致。</li>
+<li>RFC 4949 區分 plain text（加密的輸入）與 cleartext（未加密資料）；初學者教材不需深入此差異，Wiki 僅在術語頁簡述。</li>
+</ul></article>
+<article class="page" id="S02"><p class="crumb">來源頁</p><h1>S02 Handbook of Applied Cryptography, Chapter 1: Overview of Cryptography</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://cacr.uwaterloo.ca/hac/about/chap1.pdf" target="_blank" rel="noopener">https://cacr.uwaterloo.ca/hac/about/chap1.pdf</a></dd><dt>發布者</dt><dd>CRC Press（A. Menezes, P. van Oorschot, S. Vanstone）；University of Waterloo CACR 提供下載</dd><dt>年份</dt><dd>1996</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a>、<a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a>、<a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a>、<a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>、<a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a>、<a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a>、<a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></dd></dl><h2>摘要</h2>
+<p>應用密碼學經典教科書的第 1 章，是全書的導論：密碼學的定義與四大目標、基本術語與兩方通訊模型、
+Kerckhoffs 原則、對稱式加密（含替換與換位密碼）、數位簽章、公開金鑰密碼學。
+本 Wiki 以它作為 <strong>大學教材層級的概念主幹</strong>。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼（= 書頁 + 1）</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§1.1 Introduction</td>
+<td>p.2–3</td>
+<td><a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></td>
+</tr>
+<tr>
+<td>§1.2 Information security and cryptography（Def. 1.1、四大目標）</td>
+<td>p.5</td>
+<td><a class="wl" href="#intro-what-is-crypto">密碼學是什麼？為什麼需要它？</a></td>
+</tr>
+<tr>
+<td>§1.4 Basic terminology and concepts</td>
+<td>p.12–16</td>
+<td><a class="wl" href="#intro-terminology">基本術語：明文、密文、金鑰、加密與解密</a>、<a class="wl" href="#intro-kerckhoffs">Kerckhoffs 原則、金鑰空間與暴力破解</a></td>
+</tr>
+<tr>
+<td>§1.5.1 Ex.1.25（位移 3 的範例）</td>
+<td>p.16</td>
+<td><a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a></td>
+</tr>
+<tr>
+<td>§1.5.2 Substitution / transposition ciphers</td>
+<td>p.18–19</td>
+<td><a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a>、<a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a>、<a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></td>
+</tr>
+<tr>
+<td>§1.5.3 Composition of ciphers</td>
+<td>p.20</td>
+<td><a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li>出版於 1996 年（PDF 標示 ©1997），部分「現況」描述已過時，例如 DES 的地位；使用時以 NIST 現行文件校正。</li>
+<li>PDF 以 TeX 字型排版，抽取後數學符號會失真（例如集合括號），<strong>只引用文字敘述</strong>。</li>
+<li>授權僅允許個人保存一份，因此原始 PDF 只留在本機 <code>Wiki/raw/</code>。</li>
+</ul></article>
+<article class="page" id="S03"><p class="crumb">來源頁</p><h1>S03 Handbook of Applied Cryptography, Chapter 7: Block Ciphers</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://cacr.uwaterloo.ca/hac/about/chap7.pdf" target="_blank" rel="noopener">https://cacr.uwaterloo.ca/hac/about/chap7.pdf</a></dd><dt>發布者</dt><dd>CRC Press（A. Menezes, P. van Oorschot, S. Vanstone）；University of Waterloo CACR 提供下載</dd><dt>年份</dt><dd>1996</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>、<a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a>、<a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a>、<a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a>、<a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>、<a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a></dd></dl><h2>摘要</h2>
+<p>HAC 第 7 章討論區塊加密：一般概念與操作模式（§7.2）、古典密碼與其密碼分析（§7.3）、DES 等。
+本 Wiki 用 §7.3 說明 <strong>古典密碼的運作與弱點</strong>（位移、替換、換位、Vigenère、頻率分析、Kasiski），
+用 §7.2.2 補充 <strong>操作模式的性質</strong>（batch 4）。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼（= 書頁 − 221）</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§7.2.2 Modes of operation（ECB／CBC 性質、Remark 7.12）</td>
+<td>p.7–9</td>
+<td><a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>、<a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a></td>
+</tr>
+<tr>
+<td>§7.3 Classical ciphers（導言）</td>
+<td>p.16–17</td>
+<td><a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></td>
+</tr>
+<tr>
+<td>§7.3.1 Transposition ciphers</td>
+<td>p.17</td>
+<td><a class="wl" href="#classical-transposition">換位密碼（Transposition Cipher）</a></td>
+</tr>
+<tr>
+<td>§7.3.2 Substitution ciphers（Ex.7.48 Caesar、Note 7.50）</td>
+<td>p.18–19</td>
+<td><a class="wl" href="#classical-caesar">Caesar Cipher（凱撒密碼／位移密碼）</a>、<a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a></td>
+</tr>
+<tr>
+<td>§7.3.3 Vigenère</td>
+<td>p.20</td>
+<td><a class="wl" href="#classical-substitution">替換密碼（Substitution Cipher）：單表、同音、多表（Vigenère）</a></td>
+</tr>
+<tr>
+<td>§7.3.5 Cryptanalysis of classical ciphers</td>
+<td>p.24–27</td>
+<td><a class="wl" href="#classical-limitations">古典密碼的限制：金鑰空間太小與頻率分析</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li>HAC 明言古典密碼「僅為歷史與教學目的」介紹，不適合實際使用 [S03 p.17]。</li>
+<li>抽取時 Vigenère 的重音被拆成 "Vigen`ere"，Lint 比對前會先去除重音。</li>
+</ul></article>
+<article class="page" id="S04"><p class="crumb">來源頁</p><h1>S04 FIPS 197 (Update 1): Advanced Encryption Standard (AES)</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf" target="_blank" rel="noopener">https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf</a></dd><dt>發布者</dt><dd>NIST</dd><dt>年份</dt><dd>2023</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></dd></dl><h2>摘要</h2>
+<p>AES 的官方標準（2001 年發布，2023 年更新版 upd1）。定義 AES-128／192／256 三個版本、
+128 位元區塊、輪數（Table 3）、四個輪轉換（SubBytes、ShiftRows、MixColumns、AddRoundKey）與金鑰擴展。
+本 Wiki 以它作為 <strong>AES 參數的唯一權威來源</strong>（facts.json 中 <code>aes.*</code> 的標準值都引自此處）。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Abstract</td>
+<td>p.3</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>Announcement §3 Explanation</td>
+<td>p.4</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>§1 Introduction</td>
+<td>p.9</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>§2.1 Glossary（Round）</td>
+<td>p.10</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>§4/§5 Table 3、Eq. 5.1（輪數）</td>
+<td>p.19</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>§5.1–5.1.4 四個輪轉換（含 §5.1.1 S-box 查表規則、§5.1.3 式 5.8）</td>
+<td>p.20–24</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>§5.3 INVCIPHER()（解密：反運算、倒序執行）</td>
+<td>p.26</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>Appendix B Cipher Example（AES-128 第 1 輪各步驟的 state）</td>
+<td>p.42</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li><strong>抽取品質問題</strong>：此 PDF 的 "fi" 連字 ToUnicode 對應錯誤，pypdf／pdfminer.six／PyMuPDF 抽出的文字都把 fi 吃成 f（specified → "specifed"）。
+  Lint 對此來源以「fi→f 摺疊」比對引文；ingest 節點已加入連字遺失偵測（見 <code>Wiki/log.md</code>）。</li>
+</ul></article>
+<article class="page" id="S05"><p class="crumb">來源頁</p><h1>S05 NIST SP 800-38A: Recommendation for Block Cipher Modes of Operation: Methods and Techniques</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf" target="_blank" rel="noopener">https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf</a></dd><dt>發布者</dt><dd>NIST（M. Dworkin）</dd><dt>年份</dt><dd>2001</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>、<a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a>、<a class="wl" href="#mode-ctr">CTR（Counter）模式</a>、<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></dd></dl><h2>摘要</h2>
+<p>NIST 對區塊加密操作模式的建議，定義五種提供機密性的模式（ECB、CBC、CFB、OFB、CTR），
+並規定 IV 的要求（§5.3）、填充（App. A）、計數器區塊的產生與唯一性（App. B）、IV 的產生（App. C）、錯誤性質（App. D）。
+本 Wiki 以它作為 <strong>ECB／CBC／CTR 定義與 IV／計數器要求的權威來源</strong>。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Abstract</td>
+<td>p.5</td>
+<td><a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></td>
+</tr>
+<tr>
+<td>§5.3 Initialization Vectors</td>
+<td>p.15</td>
+<td><a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a></td>
+</tr>
+<tr>
+<td>§6.1 ECB</td>
+<td>p.16–17</td>
+<td><a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a></td>
+</tr>
+<tr>
+<td>§6.2 CBC</td>
+<td>p.17–18</td>
+<td><a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a></td>
+</tr>
+<tr>
+<td>§6.5 CTR</td>
+<td>p.22</td>
+<td><a class="wl" href="#mode-ctr">CTR（Counter）模式</a></td>
+</tr>
+<tr>
+<td>App. A Padding</td>
+<td>p.24</td>
+<td><a class="wl" href="#mode-overview">操作模式（Mode of Operation）：為什麼需要？IV 與填充</a>、<a class="wl" href="#mode-ecb">ECB（Electronic Codebook）模式</a>、<a class="wl" href="#mode-cbc">CBC（Cipher Block Chaining）模式</a></td>
+</tr>
+<tr>
+<td>App. B.2 Choosing Initial Counter Blocks</td>
+<td>p.26</td>
+<td><a class="wl" href="#mode-ctr">CTR（Counter）模式</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li>2001 年的文件，仍是 ECB／CBC／CTR 的現行定義；認證加密（GCM）另見 <a class="wl" href="#S11">S11</a>。</li>
+</ul></article>
+<article class="page" id="S06"><p class="crumb">來源頁</p><h1>S06 NIST SP 800-175B Rev. 1: Guideline for Using Cryptographic Standards in the Federal Government: Cryptographic Mechanisms</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-175Br1.pdf" target="_blank" rel="noopener">https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-175Br1.pdf</a></dd><dt>發布者</dt><dd>NIST（E. Barker）</dd><dt>年份</dt><dd>2020</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a>、<a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>、<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>、<a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>、<a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></dd></dl><h2>摘要</h2>
+<p>NIST 對聯邦政府使用密碼標準的指引，概述各類密碼機制：雜湊、對稱式演算法（DES／TDEA／AES 的現況與操作模式）、
+非對稱式演算法（數位簽章、金鑰建立）、金鑰管理。
+本 Wiki 用它提供 <strong>「現行」觀點</strong>：例如 DES 已於 2005 年撤銷、AES 是新產品首選、對稱式加密的金鑰數量問題、
+公鑰／私鑰的角色與混合使用。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§2.1 Definitions（secret key）</td>
+<td>p.18</td>
+<td><a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></td>
+</tr>
+<tr>
+<td>§3.2 Symmetric-Key Algorithms</td>
+<td>p.30–31</td>
+<td><a class="wl" href="#sym-concept">對稱式加密（Symmetric Encryption）與金鑰分配問題</a></td>
+</tr>
+<tr>
+<td>§3.2.1 Block Cipher Algorithms、§3.2.1.1 DES</td>
+<td>p.32</td>
+<td><a class="wl" href="#sym-block-vs-stream">區塊加密（Block Cipher）與串流加密（Stream Cipher）</a>、<a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>§3.2.1.4 AES</td>
+<td>p.33</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a></td>
+</tr>
+<tr>
+<td>§3.3 Asymmetric-Key Algorithms（公鑰／私鑰、簽章與加密的金鑰用法、混合使用）</td>
+<td>p.34–35</td>
+<td><a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>、<a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li>抽取文字常在單字中間多出空白（例如 "crypto graphic"、"p air"），Lint 比對時會忽略空白。</li>
+</ul></article>
+<article class="page" id="S07"><p class="crumb">來源頁</p><h1>S07 New Directions in Cryptography</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://ee.stanford.edu/~hellman/publications/24.pdf" target="_blank" rel="noopener">https://ee.stanford.edu/~hellman/publications/24.pdf</a></dd><dt>發布者</dt><dd>IEEE Transactions on Information Theory, IT-22(6)（W. Diffie, M. E. Hellman）；Stanford 提供</dd><dt>年份</dt><dd>1976</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a></dd></dl><h2>摘要</h2>
+<p>開創公開金鑰密碼學的論文。指出對稱式系統的「金鑰分配問題」是商業網路通訊的主要障礙，
+提出 <strong>public key cryptosystem</strong>（加密金鑰可公開、解密金鑰保密）與 <strong>public key distribution system</strong>（在公開通道上協議共享金鑰）兩種方向，
+並給出以「有限體上取對數很困難」為基礎的金鑰交換方法（今日稱 Diffie–Hellman 金鑰交換）。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§I Introduction（公開金鑰系統、金鑰分配問題）</td>
+<td>p.1</td>
+<td><a class="wl" href="#asym-public-key">公開金鑰密碼學（Asymmetric / Public-Key Cryptography）</a>、<a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a></td>
+</tr>
+<tr>
+<td>§III Public Key Cryptography（金鑰交換方法）</td>
+<td>p.6</td>
+<td><a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li>此 PDF 為掃描檔的 OCR 文字，<strong>數學式嚴重失真</strong>（例如 α 被辨識成 01、cr），只引用文字敘述；公式依論文描述以標準寫法重述。</li>
+</ul></article>
+<article class="page" id="S08"><p class="crumb">來源頁</p><h1>S08 A Method for Obtaining Digital Signatures and Public-Key Cryptosystems</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://people.csail.mit.edu/rivest/Rsapaper.pdf" target="_blank" rel="noopener">https://people.csail.mit.edu/rivest/Rsapaper.pdf</a></dd><dt>發布者</dt><dd>Communications of the ACM 21(2)（R. L. Rivest, A. Shamir, L. Adleman）；MIT 提供</dd><dt>年份</dt><dd>1978</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>、<a class="wl" href="#asym-rsa">RSA：基本運作原理</a>、<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></dd></dl><h2>摘要</h2>
+<p>提出 RSA：以兩個大質數之積 n 為模數，加密 C = M^e mod n、解密 M = C^d mod n，
+安全性部分建立在大數分解的困難度上；同一方法也能做數位簽章。論文第 VIII 節有完整的小數字範例。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Abstract</td>
+<td>p.1</td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a>、<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></td>
+</tr>
+<tr>
+<td>§IV Signatures</td>
+<td>p.4</td>
+<td><a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></td>
+</tr>
+<tr>
+<td>§V Our Encryption and Decryption Methods</td>
+<td>p.6–7</td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a>、<a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a></td>
+</tr>
+<tr>
+<td>§VII（金鑰長度建議）</td>
+<td>p.9</td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a></td>
+</tr>
+<tr>
+<td>§VIII A Small Example（p=47, q=59）</td>
+<td>p.10</td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li>論文建議 n 約 200 位十進位數（約 664 位元），已不符合現行要求；以 <a class="wl" href="#S12">S12</a> 的 NIST 對照表為準。</li>
+</ul></article>
+<article class="page" id="S09"><p class="crumb">來源頁</p><h1>S09 RFC 8017: PKCS #1: RSA Cryptography Specifications Version 2.2</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://www.rfc-editor.org/rfc/rfc8017.txt" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc8017.txt</a></dd><dt>發布者</dt><dd>IETF（K. Moriarty, B. Kaliski, J. Jonsson, A. Rusch）</dd><dt>年份</dt><dd>2016</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#asym-rsa">RSA：基本運作原理</a>、<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></dd></dl><h2>摘要</h2>
+<p>RSA 的現行實作規格：RSA 公鑰／私鑰的組成（§3）、基本運算 RSAEP／RSADP（§5）、
+加密方案 RSAES-OAEP 與舊的 RSAES-PKCS1-v1_5（§7）、簽章方案 RSASSA-PSS 與 RSASSA-PKCS1-v1_5（§8）。
+本 Wiki 用它說明 <strong>「教科書 RSA」與實務 RSA 的差距</strong>：新應用必須用 OAEP 加密、PSS 簽章。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§3.1 RSA Public Key</td>
+<td>p.8</td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a></td>
+</tr>
+<tr>
+<td>§7 Encryption Schemes</td>
+<td>p.18</td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a></td>
+</tr>
+<tr>
+<td>§7.1 RSAES-OAEP</td>
+<td>p.19</td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a></td>
+</tr>
+<tr>
+<td>§8 Signature Scheme with Appendix</td>
+<td>p.31</td>
+<td><a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a></td>
+</tr>
+</tbody>
+</table></article>
+<article class="page" id="S10"><p class="crumb">來源頁</p><h1>S10 RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://www.rfc-editor.org/rfc/rfc8446.txt" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc8446.txt</a></dd><dt>發布者</dt><dd>IETF（E. Rescorla）</dd><dt>年份</dt><dd>2018</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>、<a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>、<a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></dd></dl><h2>摘要</h2>
+<p>HTTPS 背後的安全協定 TLS 的 1.3 版。定義安全通道的三個性質（鑑別、機密性、完整性）、
+交握協定（(EC)DHE／PSK 金鑰交換、憑證簽章）與記錄協定（AEAD 加密）。
+本 Wiki 用它說明 <strong>現代網路如何把對稱式與非對稱式密碼學組合起來</strong>，並校正「HTTPS 用 RSA 傳送金鑰」的過時說法。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§1 Introduction（目標、三性質、兩個子協定）</td>
+<td>p.6</td>
+<td><a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></td>
+</tr>
+<tr>
+<td>§1.2 Major Differences from TLS 1.2</td>
+<td>p.8</td>
+<td><a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></td>
+</tr>
+<tr>
+<td>§2 Protocol Overview（金鑰交換模式）</td>
+<td>p.10</td>
+<td><a class="wl" href="#asym-key-exchange">Diffie–Hellman 金鑰交換（Key Exchange）</a>、<a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></td>
+</tr>
+<tr>
+<td>§4.4.3 Certificate Verify（RSA 必須用 PSS）</td>
+<td>p.70</td>
+<td><a class="wl" href="#asym-signature">數位簽章（Digital Signature）</a>、<a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></td>
+</tr>
+<tr>
+<td>§9.1 Mandatory-to-Implement Cipher Suites</td>
+<td>p.102</td>
+<td><a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></td>
+</tr>
+<tr>
+<td>App. E.1 Handshake（forward secrecy）</td>
+<td>p.143</td>
+<td><a class="wl" href="#app-hybrid-tls">密碼學在現代網路的應用：混合加密與 HTTPS／TLS 1.3</a></td>
+</tr>
+</tbody>
+</table></article>
+<article class="page" id="S11"><p class="crumb">來源頁</p><h1>S11 NIST SP 800-38D: Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf" target="_blank" rel="noopener">https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf</a></dd><dt>發布者</dt><dd>NIST（M. Dworkin）</dd><dt>年份</dt><dd>2007</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></dd></dl><h2>摘要</h2>
+<p>定義 GCM：以 128 位元區塊加密（如 AES）為基礎、使用 CTR 變形加密並以 GHASH 產生認證標籤的
+<strong>認證加密（AEAD）</strong> 模式，以及只做認證的 GMAC。§8 規定 IV 與金鑰的唯一性要求。
+本 Wiki 只用它說明「CTR → GCM → TLS 1.3」的銜接，不深入 GHASH 的數學。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§1 Purpose</td>
+<td>p.9</td>
+<td><a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></td>
+</tr>
+<tr>
+<td>§5.2 Elements of GCM</td>
+<td>p.15</td>
+<td><a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></td>
+</tr>
+<tr>
+<td>§8 Uniqueness Requirement on IVs and Keys</td>
+<td>p.26</td>
+<td><a class="wl" href="#mode-gcm-aead">GCM 與認證加密（Authenticated Encryption, AEAD）</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li>抽取文字常在單字中間多出空白（如 "authen ticated"），Lint 比對時忽略空白。</li>
+</ul></article>
+<article class="page" id="S12"><p class="crumb">來源頁</p><h1>S12 NIST SP 800-57 Part 1 Rev. 5: Recommendation for Key Management: Part 1 – General</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57pt1r5.pdf" target="_blank" rel="noopener">https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57pt1r5.pdf</a></dd><dt>發布者</dt><dd>NIST（E. Barker）</dd><dt>年份</dt><dd>2020</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>、<a class="wl" href="#asym-rsa">RSA：基本運作原理</a></dd></dl><h2>摘要</h2>
+<p>NIST 金鑰管理建議的總論。本 Wiki 主要使用 §5.6.1.1 的 <strong>Table 2「Comparable security strengths」</strong>：
+把對稱式演算法（AES）與非對稱式演算法（RSA 的模數長度 k 等）換算成相同的「安全強度（bits）」，
+用來校正 1970–90 年代舊來源中已過時的金鑰長度建議。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§5.6.1.1 Table 2（112 位元列）與欄位說明</td>
+<td>p.67</td>
+<td><a class="wl" href="#asym-rsa">RSA：基本運作原理</a></td>
+</tr>
+<tr>
+<td>§5.6.1.1 Table 2（128–256 位元列）與說明</td>
+<td>p.68</td>
+<td><a class="wl" href="#sym-aes">AES（Advanced Encryption Standard）</a>、<a class="wl" href="#asym-rsa">RSA：基本運作原理</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li>表格在抽取文字中被拆成多行，引文以同一列的連續儲存格摘錄（例如 "128 AES-128 L = 3072 N = 256 k = 3072"）。</li>
+<li>表格附註：量子電腦實用化後，非對稱演算法的強度估計將大幅改變 [S12 p.68]。</li>
+</ul></article>
+<article class="page" id="S13"><p class="crumb">來源頁</p><h1>S13 The Joy of Cryptography</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://joyofcryptography.com/pdf/book.pdf" target="_blank" rel="noopener">https://joyofcryptography.com/pdf/book.pdf</a></dd><dt>發布者</dt><dd>Mike Rosulek（Oregon State University，大學部教科書）</dd><dt>年份</dt><dd>2021</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a>、<a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></dd></dl><h2>摘要</h2>
+<p>由 Oregon State University 課程講義發展而成的大學部密碼學教科書（開放授權）。第 0 章先複習符號、模運算與 XOR，
+第 1 章從 one-time pad 與 Kerckhoffs 原則開始，再依序介紹區塊加密、操作模式、認證加密、RSA 與 Diffie–Hellman。
+本 Wiki 用它作為 <strong>mod 與 XOR 的定義來源</strong>，以及「大學課程怎麼安排教學順序」的參考。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Contents</td>
+<td>p.9</td>
+<td><a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></td>
+</tr>
+<tr>
+<td>§0 Def. 0.2（% / mod）</td>
+<td>p.13</td>
+<td><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></td>
+</tr>
+<tr>
+<td>§0 Def. 0.5（⊕ / XOR）</td>
+<td>p.15</td>
+<td><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a></td>
+</tr>
+<tr>
+<td>§1（m = 明文、c = 密文）</td>
+<td>p.21</td>
+<td><a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li>抽取文字中小型大寫字會變成 "/x.sc/o.sc/r.sc" 這類記號，引文只摘錄一般文字部分。</li>
+</ul></article>
+<article class="page" id="S14"><p class="crumb">來源頁</p><h1>S14 Crypto 101</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://www.crypto101.io/Crypto101.pdf" target="_blank" rel="noopener">https://www.crypto101.io/Crypto101.pdf</a></dd><dt>發布者</dt><dd>Laurens Van Houtven（入門書，開放授權）</dd><dt>年份</dt><dd>2017</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a>、<a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></dd></dl><h2>摘要</h2>
+<p>給程式設計師的密碼學入門書。第 II 部「Building blocks」以 XOR 為第一章，接著是區塊加密（含 AES）、
+串流加密、金鑰交換、公開金鑰加密、雜湊、訊息鑑別碼與簽章。
+本 Wiki 用它作為 <strong>XOR 的白話定義來源</strong>，以及「入門書怎麼安排主題順序」的參考。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Contents（Part II Building blocks）</td>
+<td>p.4</td>
+<td><a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></td>
+</tr>
+<tr>
+<td>§5.1 Exclusive or</td>
+<td>p.17–18</td>
+<td><a class="wl" href="#basics-bits-xor-mod">基礎工具：位元、位元組、十六進位、XOR 與 mod</a>、<a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></td>
+</tr>
+</tbody>
+</table></article>
+<article class="page" id="S15"><p class="crumb">來源頁</p><h1>S15 What is encryption? | Cloudflare Learning Center</h1><dl class="meta"><dt>原始網址</dt><dd><a href="https://www.cloudflare.com/learning/ssl/what-is-encryption/" target="_blank" rel="noopener">https://www.cloudflare.com/learning/ssl/what-is-encryption/</a></dd><dt>發布者</dt><dd>Cloudflare（科技公司給一般大眾的學習中心文章）</dd><dt>年份</dt><dd>2024</dd><dt>使用此來源的節點</dt><dd><a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></dd></dl><h2>摘要</h2>
+<p>Cloudflare 給一般大眾的加密入門文章：先定義加密，再用「Alice 把 Hello 每個字母往後移 2 位」當例子，
+用實體鑰匙比喻金鑰，接著介紹對稱與非對稱兩類、加密為什麼重要、暴力破解，最後說明 HTTPS 與 TLS。
+本 Wiki 用它作為 <strong>「業界怎麼用白話介紹加密」</strong> 的參考。</p>
+<h2>本 Wiki 使用的章節</h2>
+<table>
+<thead>
+<tr>
+<th>章節</th>
+<th>抽取頁碼</th>
+<th>用於節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>全文（網頁，整頁視為 p.1）</td>
+<td>p.1</td>
+<td><a class="wl" href="#teaching-how-others-explain">別人怎麼介紹加密演算法？（教學設計參考）</a></td>
+</tr>
+</tbody>
+</table>
+<h2>備註</h2>
+<ul>
+<li>Cloudflare 的機器人防護擋下 Python urllib（HTTP 403），fetch 節點改用 curl 備援取得（見 <code>Wiki/log.md</code>）。</li>
+</ul></article>
+  </main>
+</div>
+<script>
+(() => {
+  const pages = Array.from(document.querySelectorAll('.page'));
+  const links = Array.from(document.querySelectorAll('nav a[data-target]'));
+  const box = document.getElementById('navbox');
+  function show(id) {
+    const target = document.getElementById(id) || pages[0];
+    pages.forEach(p => p.classList.toggle('on', p === target));
+    links.forEach(a => a.classList.toggle('cur', a.dataset.target === target.id));
+    window.scrollTo({ top: 0 });
+  }
+  window.addEventListener('hashchange', () => {
+    show(location.hash.slice(1));
+    if (window.matchMedia('(max-width: 860px)').matches && box) box.open = false;
+  });
+  show((location.hash || '').slice(1) || pages[0].id);
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({ startOnLoad: true, theme: "neutral" });</script>
+</body>
+</html>

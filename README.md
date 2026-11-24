@@ -2,18 +2,23 @@
 
 大學課程作業：先建立密碼學主題的 LLM Wiki，再以 Wiki 為知識來源，製作給初學者的教學 HTML 簡報；整個流程用 LangGraph 建立成有檢查與退回機制的 Loop／Graph，並實際執行。
 
-- **繳交文件**：[`Report/submission.docx`](Report/submission.docx)（依作業要求逐題作答）
-- **教學簡報**：[`Slides/index.html`](Slides/index.html)（單一檔案，下載後用瀏覽器開啟）
-- **完整報告**：[`Report/final_report.md`](Report/final_report.md)
+## 線上瀏覽
+
+| 內容 | 網址 |
+|---|---|
+| 教學簡報 | https://dmi6969.github.io/cryptography-llm-wiki/Slides/ |
+| LLM Wiki（網頁版） | https://dmi6969.github.io/cryptography-llm-wiki/Wiki/ |
+| LLM Wiki（原始檔） | https://github.com/dmi6969/cryptography-llm-wiki/tree/main/Wiki |
+| Loop／Graph 設計說明 | https://github.com/dmi6969/cryptography-llm-wiki/blob/main/Workflow/workflow.md |
+| 實際執行紀錄 | https://github.com/dmi6969/cryptography-llm-wiki/blob/main/Workflow/execution_log.md |
 
 ## 內容
 
 | 資料夾 | 內容 |
 |---|---|
-| `Wiki/` | LLM Wiki：22 個知識節點（`concepts/`）、15 個來源頁（`sources/`）、知識地圖 `knowledge_map.md`、資料來源清單 `sources.md`、操作紀錄 `log.md`、規範 `WIKI_SCHEMA.md` |
+| `Wiki/` | LLM Wiki：22 個知識節點（`concepts/`）、15 個來源頁（`sources/`）、知識地圖 `knowledge_map.md`、資料來源清單 `sources.md`、操作紀錄 `log.md`、規範 `WIKI_SCHEMA.md`；`index.html` 是網頁版 |
 | `Slides/` | 教學 HTML 簡報（35 張、6 章） |
 | `Workflow/` | LangGraph 主程式 `graph.py`、三個檢查節點 `validators/`、簡報產生器 `tools/`、設計說明 `workflow.md`、實際執行紀錄 `execution_log.md` 與 `logs/`、HTML 測試截圖 `screenshots/` |
-| `Report/` | 繳交文件、完整報告、作業心得 |
 
 ## 資料來源
 
